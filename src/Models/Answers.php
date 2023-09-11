@@ -2,7 +2,8 @@
 
 namespace Partygames\TriviaGame\Models;
 
-class Answers
+use Illuminate\Database\Eloquent\Model;
+class Answers extends Model
 {
 
 }
