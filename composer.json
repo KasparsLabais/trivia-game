@@ -1,0 +1,24 @@
+{
+    "name": "partygames/trivia-game",
+    "autoload": {
+        "psr-4": {
+            "Partygames\\TriviaGame\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Kaspars Vanags",
+            "email": "slaviktheforeigner@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Partygames\\TriviaGame\\TriviaGameServiceProvider"
+            ]
+        }
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.10"
+    }
+}
