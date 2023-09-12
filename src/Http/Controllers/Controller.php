@@ -15,4 +15,9 @@ class Controller
         //return view('trivia-game::register');
     }
 
+    public function create()
+    {
+        //return view('trivia-game::create');
+    }
+
 }

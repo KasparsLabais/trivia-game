@@ -2,23 +2,26 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/' . config('prefix') . '/test', 'BaseController@index');
-Route::get('/' . config('prefix') . '/register', 'BaseController@register');
+Route::get('/' . config('prefix') . '/test', 'Controller@index');
+Route::get('/' . config('prefix') . '/register', 'Controller@register');
 
 //Routes to create a new game
-Route::get('/' . config('prefix') . '/create', 'BaseController@create');
+Route::get('/' . config('prefix') . '/trivia', 'TriviaController@index');
+Route::post('/' . config('prefix') . '/trivia', 'TriviaController@create');
+Route::get('/' . config('prefix') . '/trivia/{id}', 'TriviaController@getTrivia');
+
 //Route to create a question for a game
-Route::get('/' . config('prefix') . '/create/question', 'BaseController@createQuestion');
+Route::get('/' . config('prefix') . '/question', 'QuestionController@index');
+Route::post('/' . config('prefix') . '/question', 'QuestionController@create');
+Route::get('/' . config('prefix') . '/question/{id}', 'QuestionController@getQuestion');
+
 //Route to create an answer for a question
-Route::get('/' . config('prefix') . '/create/answer', 'BaseController@createAnswer');
+Route::get('/' . config('prefix') . '/answer', 'AmswerController@index');
+Route::post('/' . config('prefix') . '/answer', 'AnswerController@create');
+Route::get('/' . config('prefix') . '/answer/{id}', 'AnswerController@getAnswer');
+Route::post('/' . config('prefix') . '/answer/{id}', 'AnswerController@submitAnswer');
 
 //Route to get available games
-Route::get('/' . config('prefix') . '/games', 'BaseController@getGames');
-//Route to get a specific game
-Route::get('/' . config('prefix') . '/game/{id}', 'BaseController@getGame');
-//Route to get a specific question
-Route::get('/' . config('prefix') . '/question/{id}', 'BaseController@getQuestion');
-//Route to get a specific answer
-Route::get('/' . config('prefix') . '/answer/{id}', 'BaseController@getAnswer');
-//Route to submit answer to a question
-Route::post('/' . config('prefix') . '/answer/{id}', 'BaseController@submitAnswer');
+Route::get('/' . config('prefix') . '/games', 'Controller@getGames');
+
+
