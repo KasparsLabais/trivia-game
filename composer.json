@@ -18,6 +18,12 @@
             ]
         }
     },
+    "repositories": {
+        "game-api": {
+            "type" : "path",
+            "url" : "../game-api"
+        }
+    },
     "require-dev": {
         "orchestra/testbench": "^8.10"
     }
