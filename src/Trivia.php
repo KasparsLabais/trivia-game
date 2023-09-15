@@ -1,6 +1,6 @@
 <?php
 
-namespace Partygames\TriviaGame;
+namespace PartyGames\TriviaGame;
 
 class Trivia
 {

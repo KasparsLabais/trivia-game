@@ -1,6 +1,6 @@
 <?php
 
-namespace Partygames\TriviaGame\Http\Controllers;
+namespace PartyGames\TriviaGame\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

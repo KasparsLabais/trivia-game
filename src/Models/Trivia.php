@@ -1,9 +1,9 @@
 <?php
 
-namespace Partygames\TriviaGame\Models;
+namespace PartyGames\TriviaGame\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Partygames\TriviaGame\Models\Questions;
+use PartyGames\TriviaGame\Models\Questions;
 class Trivia extends Model
 {
 

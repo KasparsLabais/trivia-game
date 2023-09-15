@@ -2,7 +2,7 @@
     "name": "partygames/trivia-game",
     "autoload": {
         "psr-4": {
-            "Partygames\\TriviaGame\\": "src/"
+            "PartyGames\\TriviaGame\\": "src/"
         }
     },
     "authors": [
@@ -14,7 +14,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Partygames\\TriviaGame\\TriviaGameServiceProvider"
+                "PartyGames\\TriviaGame\\TriviaGameServiceProvider",
+                "PartyGames\\TriviaGame\\RouteServiceProvider"
             ]
         }
     },

@@ -1,6 +1,6 @@
 <?php
 
-namespace Partygames\TriviaGame\Http\Controllers;
+namespace PartyGames\TriviaGame\Http\Controllers;
 
 class Controller
 {
