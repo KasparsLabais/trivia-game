@@ -47,8 +47,31 @@
                 </div>
             </form>
         </div>
-        <div>
-            <div>this will be all available trivias</div>
+        <div class="bg-slate-200 px-6 py-8">
+            <div>Available Trivia's</div>
+            <table>
+                <thead>
+                    <tr>
+                        <td class="py-2 px-2">Title</td>
+                        <td class="py-2 px-2">Category</td>
+                        <td class="py-2 px-2">Difficulty</td>
+                        <td class="py-2 px-2">Type</td>
+                        <td>Action</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($allTrivia as $trivia)
+                        <tr>
+                            <td>{{ $trivia['title'] }}</td>
+                            <td>{{ $trivia['category'] }}</td>
+                            <td>{{ $trivia['difficulty'] }}</td>
+                            <td class="text-center">{{ $trivia['type'] }}</td>
+                            <td class="text-center"><a href="/trivia/{{ $trivia['id'] }}">Play</a></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
         </div>
     </div>
 @endsection

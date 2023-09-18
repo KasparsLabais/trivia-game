@@ -4,14 +4,15 @@ namespace PartyGames\TriviaGame\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Partygames\TriviaGame\Models\Trivia;
+use PartyGames\TriviaGame\Models\Trivia;
 
 class TriviaController
 {
 
     public function index()
     {
-        return view('trivia-game::trivia.index');
+        $allTrivia = Trivia::all();
+        return view('trivia-game::trivia.index')->with(['allTrivia' => $allTrivia]);
     }
 
     public function create(Request $request)

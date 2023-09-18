@@ -27,5 +27,8 @@
     },
     "require-dev": {
         "orchestra/testbench": "^8.10"
+    },
+    "require": {
+        "partygames/game-api": "dev-main"
     }
 }
