@@ -9,7 +9,7 @@ class TriviaGameServiceProvider extends ServiceProvider
     public function boot()
     {
         //$this->loadRoutesFrom(__DIR__.'/../routes/web.php');
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'trivia');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'trivia-game');
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->publishes([
             __DIR__.'/views' => resource_path('views/vendor/trivia'),
