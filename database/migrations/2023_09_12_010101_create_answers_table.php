@@ -8,12 +8,12 @@ class CreateAnswersTable extends Migration
 {
     public function up()
     {
-        Schema::create(config('prefix') . '_answers', function (Blueprint $table) {
+        Schema::create('trv_answers', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('question_id');
             $table->foreign('question_id')
                 ->references('id')
-                ->on(config('prefix') . '_questions')
+                ->on('trv_questions')
                 ->onDelete('cascade');
 
             $table->string('answer', 255)->nullable();
@@ -25,6 +25,6 @@ class CreateAnswersTable extends Migration
 
     public function down()
     {
-        Schema::dropIfExists(config('prefix') . '_answers');
+        Schema::dropIfExists('trv_answers');
     }
 }

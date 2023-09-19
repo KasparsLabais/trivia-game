@@ -11,7 +11,7 @@ class CreateTriviaTable extends Migration
      */
     public function up()
     {
-        Schema::create(config('prefix') . '_trivia', function (Blueprint $table) {
+        Schema::create('trv_trivia', function (Blueprint $table) {
             $table->id();
 
             $table->string('title', 255);
@@ -28,6 +28,6 @@ class CreateTriviaTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(config('prefix') . '_trivia');
+        Schema::dropIfExists('trv_trivia');
     }
 };

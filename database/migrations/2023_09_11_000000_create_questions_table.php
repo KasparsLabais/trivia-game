@@ -8,13 +8,13 @@ class CreateQuestionsTable extends Migration
 {
     public function up()
     {
-        Schema::create(config('prefix') . '_questions', function (Blueprint $table) {
-            $table->increments('id');
+        Schema::create('trv_questions', function (Blueprint $table) {
+            $table->id('id');
 
             $table->unsignedBigInteger('trivia_id');
             $table->foreign('trivia_id')
                 ->references('id')
-                ->on(config('prefix') . '_trivia')
+                ->on('trv_trivia')
                 ->onDelete('cascade');
 
             $table->text('question');
@@ -25,6 +25,6 @@ class CreateQuestionsTable extends Migration
 
     public function down()
     {
-        Schema::dropIfExists(config('prefix') . '_questions');
+        Schema::dropIfExists('trv_questions');
     }
 }
