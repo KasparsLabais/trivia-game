@@ -5,13 +5,17 @@ namespace Partygames\TriviaGame\Http\Controllers;
 use Partygames\TriviaGame\Models\Questions;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use PartyGames\TriviaGame\Models\Trivia;
 
 class QuestionController
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        return view('trivia-game::index');
+        $trivia = Trivia::where('id', $request->get('trivia_id'))->first();
+        $questions = Questions::where('trivia_id', $request->get('trivia_id'))->get();
+
+        return view('trivia-game::questions.index')->with(['trivia' => $trivia, 'questions' => $questions]);
     }
 
     public function create(Request $request)

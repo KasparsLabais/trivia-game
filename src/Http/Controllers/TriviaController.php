@@ -24,11 +24,15 @@ class TriviaController
             'type' => $request->type,
         ]);
 
-        return new JsonResponse([
-            'success' => true,
-            'message' => 'Trivia created successfully',
-            'data' => $trivia
-        ]);
+        if ($request->get('responseType') == 'json') {
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Trivia created successfully',
+                'data' => $trivia
+            ]);
+        }
+
+        return redirect()->back();
     }
 
     public function show($id)
