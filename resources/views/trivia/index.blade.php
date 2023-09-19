@@ -67,7 +67,7 @@
                             <td>{{ $trivia['category'] }}</td>
                             <td>{{ $trivia['difficulty'] }}</td>
                             <td class="text-center">{{ $trivia['type'] }}</td>
-                            <td class="text-center"><a href="/trv/question?trivia={{ $trivia['id'] }}">Edit</a></td>
+                            <td class="text-center"><a href="/trv/question?trivia_id={{ $trivia['id'] }}">Edit</a></td>
                             <td class="text-center"><a href="/trv/trivia/{{ $trivia['id'] }}">Play</a></td>
                         </tr>
                     @endforeach

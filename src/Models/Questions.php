@@ -1,6 +1,6 @@
 <?php
 
-namespace Partygames\TriviaGame\Models;
+namespace PartyGames\TriviaGame\Models;
 
 use Illuminate\Database\Eloquent\Model;
 class Questions extends Model

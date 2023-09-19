@@ -2,10 +2,10 @@
 
 namespace Partygames\TriviaGame\Http\Controllers;
 
-use Partygames\TriviaGame\Models\Questions;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use PartyGames\TriviaGame\Models\Trivia;
+use PartyGames\TriviaGame\Models\Questions;
 
 class QuestionController
 {
