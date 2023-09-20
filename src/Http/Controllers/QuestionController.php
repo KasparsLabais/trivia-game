@@ -14,7 +14,7 @@ class QuestionController
     {
         $trivia = Trivia::where('id', $request->get('trivia_id'))->first();
         $questions = Questions::where('trivia_id', $request->get('trivia_id'))->get();
-
+//dd($questions[0]->answers);
         return view('trivia-game::questions.index')->with(['trivia' => $trivia, 'questions' => $questions]);
     }
 
@@ -25,11 +25,15 @@ class QuestionController
             'trivia_id' => $request->get('trivia_id'),
         ]);
 
-        return new JsonResponse([
-            'success' => true,
-            'message' => 'Question created successfully',
-            'data' => $question
-        ]);
+        if ($request->get('responseType') == 'json') {
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Question created successfully',
+                'data' => $question
+            ]);
+        }
+
+        return redirect()->back();
     }
 
     //create function to get single question in json format

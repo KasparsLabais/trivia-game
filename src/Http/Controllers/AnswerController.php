@@ -4,7 +4,7 @@ namespace PartyGames\TriviaGame\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Partygames\TriviaGame\Models\Answers;
+use PartyGames\TriviaGame\Models\Answers;
 class AnswerController
 {
 
@@ -21,11 +21,15 @@ class AnswerController
             'is_correct' => $request->get('is_correct'),
         ]);
 
-        return new JsonResponse([
-            'success' => true,
-            'message' => 'Answer created successfully',
-            'data' => $answer
-        ]);
+        if ($request->get('responseType') == 'json') {
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Answer created successfully',
+                'data' => $answer
+            ]);
+        }
+
+        return redirect()->back();
     }
 
     public function show($id) {
