@@ -12,7 +12,19 @@ class TriviaController
     public function index()
     {
         $allTrivia = Trivia::all();
-        return view('trivia-game::trivia.index')->with(['allTrivia' => $allTrivia]);
+        return view('trivia-game::pages.index')->with(['allTrivia' => $allTrivia]);
+    }
+
+    public function startGame(Request $request)
+    {
+
+    }
+
+
+    public function adminIndex()
+    {
+        $allTrivia = Trivia::all();
+        return view('trivia-game::admin.trivia.index')->with(['allTrivia' => $allTrivia]);
     }
 
     public function create(Request $request)
