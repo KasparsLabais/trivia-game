@@ -19,14 +19,20 @@
             //create POST fetch request to /trv/trivia with passing triviaID in post body
             fetch('/trv/trivia', {
                 'method': 'POST',
-                'headers': {'Content-Type': 'application/json'},
+                'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN' : '{{ csrf_token() }}' },
                 'body': JSON.stringify({'trivia_id': triviaId})
             })
                 .then(response => response.json())
                 .then(data => {
+
+                    if (data.status == false) {
+                        alert(data.message);
+                        return;
+                    }
+
                     console.log(data);
                     alert('Trivia Started');
-                    //window.location.href = '/trv/' + triviaId;
+                    window.location.href = '/trv/trivia/' + triviaId;
                 })
                 .catch(error => console.log(error));
 

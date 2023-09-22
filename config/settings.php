@@ -3,5 +3,5 @@
 
 return [
     'prefix' => 'trv',
-    'token' => '1rDBFyNpCDbo40DTbAEG10CBXRInGlpUPGKWNDFdgPNVbUdDyX3xhbxVYPLA4uc8pM89hZHaZOQ3hHINe9d3hH425aP2N6mAVTrjIjE0LniR3NMDSZdwE7xM',
+    'token' => 'Xx4cK6o0uAIR3NELjUjxFSaccPS8I8rBIwfhL3Zvg1oikZP6DvsBdf61PwbsDvQrxWNIvMlOrrQW1HLSN7XD2vq2uMyzZ3lnOtXyHk0MDkrWLMPT00HwmQbJ',
 ];

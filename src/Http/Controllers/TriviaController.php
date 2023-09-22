@@ -4,6 +4,7 @@ namespace PartyGames\TriviaGame\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use PartyGames\GameApi\GameApi;
 use PartyGames\TriviaGame\Models\Trivia;
 
 class TriviaController
@@ -19,8 +20,21 @@ class TriviaController
     {
         $trivia = Trivia::find($request->get('trivia_id'));
 
+        $response = GameApi::createGameInstance(config('settings.token'), $trivia->title);
 
+        if ($response['status'] == false) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => $response['message'],
+                'data' => NULL
+            ]);
+        }
 
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Game instance created successfully',
+            'data' => $response['gameInstance']
+        ]);
     }
 
 
