@@ -32,7 +32,7 @@
 
                     console.log(data);
                     alert('Trivia Started');
-                    window.location.href = '/trv/trivia/' + triviaId;
+                    //window.location.href = '/trv/trivia/' + triviaId;
                 })
                 .catch(error => console.log(error));
 

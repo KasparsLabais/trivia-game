@@ -2,6 +2,8 @@
 
 namespace PartyGames\TriviaGame\Http\Controllers;
 
+use PartyGames\GameApi\GameApi;
+
 class Controller
 {
 
@@ -10,9 +12,17 @@ class Controller
         return view('trivia-game::index');
     }
 
-    public function regiset()
+    public function register()
     {
-        //return view('trivia-game::register');
+        $params = [
+            'version' => config('settings.version'),
+            'start_point_url' => config('settings.start_point_url'),
+            'description' => config('settings.description'),
+            'creators_name' => config('settings.creators_name'),
+            'creators_url' => config('settings.creators_url'),
+        ];
+        $response = GameApi::registerGame(config('settings.token'), $params);
+        return view('trivia-game::pages.register')->with(['response' => $response]);
     }
 
     public function create()
