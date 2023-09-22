@@ -13,7 +13,9 @@ Route::get('/' . config('settings.prefix') . '/register', 'Controller@register')
 
 //create trivia route
 Route::get('/' . config('settings.prefix') . '/trivia', 'TriviaController@index');
-Route::post('/' . config('settings.prefix') . '/trivia/{id}', 'TriviaController@startGame');
+Route::post('/' . config('settings.prefix') . '/trivia', 'TriviaController@startGame');
+
+//Route::post('/' . config('settings.prefix') . '/trivia/{id}', 'TriviaController@startGame');
 
 //Routes to create a new game
 Route::get('/admin/' . config('settings.prefix') . '/trivia', 'TriviaController@adminIndex');

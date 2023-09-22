@@ -16,7 +16,12 @@
     <script>
         function startTriviaGame(triviaId) {
 
-            fetch('/trv/trivia/' + triviaId, {'method': 'POST', 'headers': {'Content-Type': 'application/json'}})
+            //create POST fetch request to /trv/trivia with passing triviaID in post body
+            fetch('/trv/trivia', {
+                'method': 'POST',
+                'headers': {'Content-Type': 'application/json'},
+                'body': JSON.stringify({'trivia_id': triviaId})
+            })
                 .then(response => response.json())
                 .then(data => {
                     console.log(data);
@@ -24,6 +29,18 @@
                     //window.location.href = '/trv/' + triviaId;
                 })
                 .catch(error => console.log(error));
+
+            /*
+            fetch('/trv/trivia' + triviaId, {'method': 'POST', 'headers': {'Content-Type': 'application/json'}, 'data'})
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    alert('Trivia Started');
+                    //window.location.href = '/trv/' + triviaId;
+                })
+                .catch(error => console.log(error));
+
+             */
         }
     </script>
 @endsection

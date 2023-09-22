@@ -17,6 +17,9 @@ class TriviaController
 
     public function startGame(Request $request)
     {
+        $trivia = Trivia::find($request->get('trivia_id'));
+
+
 
     }
 
