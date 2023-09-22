@@ -16,6 +16,8 @@ Route::group(['middleware' => ['web']], function() {
     Route::get('/' . config('settings.prefix') . '/trivia', 'TriviaController@index');
     Route::post('/' . config('settings.prefix') . '/trivia', 'TriviaController@startGame');
 
+    Route::get('/' . config('settings.prefix') . '/trivia/{id}/{token}', 'TriviaController@game');
+
     //Route::post('/' . config('settings.prefix') . '/trivia/{id}', 'TriviaController@startGame');
 
     //Routes to create a new game

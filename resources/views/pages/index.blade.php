@@ -29,10 +29,8 @@
                         alert(data.message);
                         return;
                     }
-
                     console.log(data);
-                    alert('Trivia Started');
-                    //window.location.href = '/trv/trivia/' + triviaId;
+                    window.location.href = '/trv/trivia/' + triviaId + '/' + data.data.token;
                 })
                 .catch(error => console.log(error));
 

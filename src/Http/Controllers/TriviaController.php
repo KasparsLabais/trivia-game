@@ -37,6 +37,27 @@ class TriviaController
         ]);
     }
 
+    public function game($triviaId, $gameToken)
+    {
+        $response = GameApi::getGameInstance($gameToken);
+
+        //if game instance is not found redirect to /trv/trivia
+        if ($response['status'] == false) {
+            return redirect()->route('trv.trivia');
+        }
+
+        $gameInstance = $response['gameInstance'];
+
+        if ($gameInstance['status'] == 'created') {
+            return view('trivia-game::game.start')->with(['gameInstance' => $gameInstance]);
+        }
+
+        if ($gameInstance['status'] == 'ended') {
+            return view('trivia-game::game.end')->with(['gameInstance' => $gameInstance]);
+        }
+
+        return view('trivia-game::game.play')->with(['gameInstance' => $gameInstance]);
+    }
 
     public function adminIndex()
     {
