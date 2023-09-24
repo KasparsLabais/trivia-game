@@ -37,10 +37,9 @@ class TriviaController
         ]);
     }
 
-    public function game($triviaId, $gameToken)
+    public function game($gameToken)
     {
         $response = GameApi::getGameInstance($gameToken);
-
         //if game instance is not found redirect to /trv/trivia
         if ($response['status'] == false) {
             return redirect()->route('trv.trivia');
