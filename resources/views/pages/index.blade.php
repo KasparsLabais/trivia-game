@@ -30,7 +30,7 @@
                         return;
                     }
                     console.log(data);
-                    window.location.href = '/trv/trivia/' + triviaId + '/' + data.data.token;
+                    window.location.href = '/trv/trivia/' + data.data.token;
                 })
                 .catch(error => console.log(error));
 
