@@ -1,6 +1,6 @@
 @extends('game-api::layout')
 @section('body')
-
+    @include('trivia-game::game.partials.scripts')
     <div class="flex flex-row justify-center">
         <div class="flex flex-col">
             <div class="bg-slate-300 px-6 py-8">
@@ -34,5 +34,7 @@
     </div>
 
 
-    <h1>Im start</h1>
+    <script>
+        joinRoom('{{ $gameInstance['token'] }}');
+    </script>
 @endsection
