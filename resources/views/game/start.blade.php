@@ -9,6 +9,7 @@
             </div>
             <div class="bg-slate-200 px-6 py-8">
                 <h2>Players</h2>
+                <div id="player-holder">
                 @foreach($gameInstance['playerInstances'] as $player)
                     @if($player['user_id'] == $gameInstance['user_id'])
                         <div class="flex flex-row justify-between">
@@ -22,6 +23,7 @@
                         </div>
                     @endif
                 @endforeach
+                </div>
             </div>
             <div class="bg-slate-300 px-6 py-8">
                 @if(Auth::user()->id == $gameInstance['user_id'])
