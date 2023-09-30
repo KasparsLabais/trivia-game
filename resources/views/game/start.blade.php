@@ -38,5 +38,10 @@
 
     <script>
         joinRoom('{{ $gameInstance['token'] }}');
+
+        const startTriviaGame = () => {
+            fetch
+        }
+
     </script>
 @endsection

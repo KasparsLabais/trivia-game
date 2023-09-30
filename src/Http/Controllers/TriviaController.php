@@ -16,11 +16,14 @@ class TriviaController
         return view('trivia-game::pages.index')->with(['allTrivia' => $allTrivia]);
     }
 
-    public function startGame(Request $request)
+    public function createGame(Request $request)
     {
         $trivia = Trivia::find($request->get('trivia_id'));
+        $remoteData = [
+            'trivia_id' => $trivia->id,
+        ];
 
-        $response = GameApi::createGameInstance(config('settings.token'), $trivia->title);
+        $response = GameApi::createGameInstance(config('settings.token'), $trivia->title, $remoteData);
 
         if ($response['status'] == false) {
             return new JsonResponse([
@@ -94,4 +97,9 @@ class TriviaController
         ]);
     }
 
+    public function startGame(Request $request)
+    {
+        $gameToken = $request->get('gameToken');
+        GameApi::changeGameInstanceStatus($gameToken, 'started');
+    }
 }
