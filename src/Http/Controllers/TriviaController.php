@@ -100,6 +100,12 @@ class TriviaController
     public function startGame(Request $request)
     {
         $gameToken = $request->get('gameToken');
-        GameApi::changeGameInstanceStatus($gameToken, 'started');
+        $response = GameApi::changeGameInstanceStatus($gameToken, 'started');
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Game started successfully',
+            'data' => $response
+        ]);
     }
 }

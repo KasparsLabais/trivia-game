@@ -40,7 +40,26 @@
         joinRoom('{{ $gameInstance['token'] }}');
 
         const startTriviaGame = () => {
-            fetch
+            fetch('/trv/start', {'method': 'POST', 'headers': {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'gameToken': '{{ $gameInstance['token'] }}'})})
+                .then(response => response.json())
+                .then(data => {
+                    //console.log(data);
+                    //window.location.href = '/trv/trivia/' + data.data.token;
+                    updateGameInstance('{{ $gameInstance['token'] }}', data.gameInstance, 'gameStarted');
+                })
+                .catch(error => console.log(error));
+        }
+
+        const callbackGameInstanceUpdated = (gameToken, game, action) => {
+            console.log('game instance updated');
+            switch (action) {
+                case 'playerJoined':
+                    playerJoined(game);
+                    break;
+                case 'gameStarted':
+                    window.location.href = '/trv/trivia/' + gameToken;
+                    break;
+            }
         }
 
     </script>
