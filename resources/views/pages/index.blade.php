@@ -30,7 +30,7 @@
                         return;
                     }
 
-                    addGameInstance(data.data.token, data.data);
+                    GameApi.addGameInstance(data.data.token, data.data);
 
                     console.log(data);
                     window.location.href = '/trv/trivia/' + data.data.token;

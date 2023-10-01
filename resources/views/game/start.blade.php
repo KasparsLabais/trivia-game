@@ -45,7 +45,7 @@
                 .then(data => {
                     //console.log(data);
                     //window.location.href = '/trv/trivia/' + data.data.token;
-                    updateGameInstance('{{ $gameInstance['token'] }}', data.gameInstance, 'gameStarted');
+                    GameApi.updateGameInstance('{{ $gameInstance['token'] }}', data.gameInstance, 'gameStarted');
                 })
                 .catch(error => console.log(error));
         }
