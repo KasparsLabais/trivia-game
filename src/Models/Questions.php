@@ -9,7 +9,8 @@ class Questions extends Model
     protected $table = 'trv_questions';
     protected $fillable = [
         'trivia_id',
-        'question'
+        'question',
+        'order_nr'
     ];
 
     public function answers()

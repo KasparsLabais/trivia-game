@@ -5,6 +5,7 @@ namespace PartyGames\TriviaGame\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use PartyGames\GameApi\GameApi;
+use PartyGames\GameApi\Models\Game;
 use PartyGames\TriviaGame\Models\Trivia;
 
 class TriviaController
@@ -58,7 +59,8 @@ class TriviaController
             return view('trivia-game::game.end')->with(['gameInstance' => $gameInstance]);
         }
 
-        return view('trivia-game::game.play')->with(['gameInstance' => $gameInstance]);
+        $remoteData = json_decode($response['gameInstance']['remote_data'], true);
+        return view('trivia-game::game.play')->with(['gameInstance' => $gameInstance, 'remoteData' => $remoteData]);
     }
 
     public function adminIndex()
@@ -104,6 +106,10 @@ class TriviaController
 
         $trivia = Trivia::find($gameInstance['gameInstance']['remote_data']['trivia_id']);
 
+        $remoteData = $gameInstance['gameInstance']['remote_data'];
+        $remoteData['current_question'] = 1;
+
+        GameApi::updateGameInstanceRemoteData($gameToken, $remoteData);
         $response = GameApi::changeGameInstanceStatus($gameToken, 'started');
 
         return new JsonResponse([
@@ -111,5 +117,10 @@ class TriviaController
             'message' => 'Game started successfully',
             'data' => $response
         ]);
+    }
+
+    public function getQuestion(Request  $request)
+    {
+
     }
 }
