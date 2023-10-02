@@ -43,9 +43,9 @@
             fetch('/trv/start', {'method': 'POST', 'headers': {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'gameToken': '{{ $gameInstance['token'] }}'})})
                 .then(response => response.json())
                 .then(data => {
-                    //console.log(data);
+                    console.log(data);
                     //window.location.href = '/trv/trivia/' + data.data.token;
-                    GameApi.updateGameInstance('{{ $gameInstance['token'] }}', data.gameInstance, 'gameStarted');
+                    GameApi.updateGameInstance('{{ $gameInstance['token'] }}', data.data.gameInstance, 'gameStarted');
                 })
                 .catch(error => console.log(error));
         }

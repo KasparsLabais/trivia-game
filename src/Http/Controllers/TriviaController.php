@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use PartyGames\GameApi\GameApi;
 use PartyGames\GameApi\Models\Game;
 use PartyGames\TriviaGame\Models\Questions;
+use Partygames\TriviaGame\Models\SubmitedAnswers;
 use PartyGames\TriviaGame\Models\Trivia;
 
 class TriviaController
@@ -118,14 +119,56 @@ class TriviaController
         ]);
     }
 
-    public function getQuestion(Request $request)
+    public function getQuestion($token)
     {
-        $triviaId = $request->get('triviaId');
-        $currentQuestion = $request->get('currentQuestion');
+        //$triviaId = $request->get('triviaId');
+        //$currentQuestion = $request->get('currentQuestion');
+        $data = GameApi::getGameInstance($token);
+        $remoteData = json_decode($data['gameInstance']['remote_data'], true);
 
-        $question = Questions::where('trivia_id', $triviaId)->where('order_nr', $currentQuestion)->first();
+
+        $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
         $question->load('answers');
 
-        dd($question);
+        $response = [
+            'question' => $question['question'],
+            'question_id' => $remoteData['current_question'],
+            'total_questions' => Questions::where('trivia_id', $remoteData['trivia_id'])->count(),
+            'answers' => []
+        ];
+
+        foreach ($question->answers as $answer) {
+            $response['answers'][] = [
+                'id' => $answer['id'],
+                'answer' => $answer['answer'],
+            ];
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Question fetched successfully',
+            'data' => $response
+        ]);
+    }
+
+    public function submitAnswer($token, Request $request)
+    {
+        $data = GameApi::getGameInstance($token);
+        $remoteData = json_decode($data['gameInstance']['remote_data'], true);
+
+        //first step is to check if user have not already answered this question
+        $haveAnswered = SubmitedAnswers::where('game_instance_id', $data['gameInstance']['id'])
+            ->where('question_id', $remoteData['current_question'])
+            ->where('user_id', Auth::user()->id)->first();
+
+        if ($haveAnswered) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'You have already answered this question',
+                'data' => NULL
+            ]);
+        }
+
+        $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
     }
 }
