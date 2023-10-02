@@ -29,7 +29,8 @@
                         alert(data.message);
                         return;
                     }
-
+                    console.log(typeof GameApi)
+                    console.log(GameApi);
                     GameApi.addGameInstance(data.data.token, data.data);
 
                     console.log(data);

@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use PartyGames\GameApi\GameApi;
 use PartyGames\GameApi\Models\Game;
+use PartyGames\TriviaGame\Models\Questions;
 use PartyGames\TriviaGame\Models\Trivia;
 
 class TriviaController
@@ -104,9 +105,7 @@ class TriviaController
         $gameToken = $request->get('gameToken');
         $gameInstance = GameApi::getGameInstance($gameToken);
 
-        $trivia = Trivia::find($gameInstance['gameInstance']['remote_data']['trivia_id']);
-
-        $remoteData = $gameInstance['gameInstance']['remote_data'];
+        $remoteData = json_decode($gameInstance['gameInstance']['remote_data'], true);
         $remoteData['current_question'] = 1;
 
         GameApi::updateGameInstanceRemoteData($gameToken, $remoteData);
@@ -119,8 +118,14 @@ class TriviaController
         ]);
     }
 
-    public function getQuestion(Request  $request)
+    public function getQuestion(Request $request)
     {
+        $triviaId = $request->get('triviaId');
+        $currentQuestion = $request->get('currentQuestion');
 
+        $question = Questions::where('trivia_id', $triviaId)->where('order_nr', $currentQuestion)->first();
+        $question->load('answers');
+
+        dd($question);
     }
 }

@@ -27,7 +27,7 @@
             </div>
             <div class="bg-slate-300 px-6 py-8">
                 @if(Auth::user()->id == $gameInstance['user_id'])
-                    <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startGame()">Start Game</button>
+                    <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame()">Start Game</button>
                 @else
                     <h2>Wait for game to start!</h2>
                 @endif
@@ -37,7 +37,7 @@
 
 
     <script>
-        joinRoom('{{ $gameInstance['token'] }}');
+        GameApi.joinRoom('{{ $gameInstance['token'] }}');
 
         const startTriviaGame = () => {
             fetch('/trv/start', {'method': 'POST', 'headers': {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'gameToken': '{{ $gameInstance['token'] }}'})})

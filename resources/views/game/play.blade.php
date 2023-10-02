@@ -13,7 +13,7 @@
     </div>
 
     <script>
-        let triviaID = '{{ $remoteData['trivia_id'] }}';
+        let triviaId = '{{ $remoteData['trivia_id'] }}';
         let currentQuestion = '{{ $remoteData['current_question'] }}';
 
         fetch(''
