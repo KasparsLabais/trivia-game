@@ -169,6 +169,38 @@ class TriviaController
             ]);
         }
 
-        $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+        SubmitedAnswers::create([
+            'game_instance_id' => $data['gameInstance']['id'],
+            'question_id' => $remoteData['current_question'],
+            'answer_id' => $request->get('answer_id'),
+            'user_id' => Auth::user()->id
+        ]);
+        $answer = Answers::find($request->get('answer_id'));
+        $playerInstance = (GameApi::getPlayerInstance($data['gameInstance']['id'], Auth::user()->id))['playerInstance'];
+
+        if ($answer->is_correct == 1) {
+            $playerInstance['remote_data'][$remoteData['current_question']] = [
+                'correct' => true,
+                'status' => 'answered',
+                'answer_id' => $request->get('answer_id')
+            ];
+            GameApi::updatePlayerInstanceScore($playerInstance['id'], $playerInstance['score'] + 1);
+        } else {
+            $playerInstance['remote_data'][$remoteData['current_question']] = [
+                'correct' => false,
+                'status' => 'answered',
+                'answer_id' => $request->get('answer_id')
+            ];
+        }
+        GameApi::updatePlayerInstanceRemoteData($playerInstance['id'], $playerInstance['remote_data']);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Answer submitted successfully',
+            'data' => [
+                'gameInstance' => $data['gameInstance'],
+                'playerInstance' => $playerInstance
+            ]
+        ]);
     }
 }
