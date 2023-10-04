@@ -2,6 +2,9 @@
 @section('body')
     <div class="flex flex-row justify-center">
         <div class="flex flex-col">
+            <h2>
+                POINTS: <x-points points="0"></x-points>
+            </h2>
             <div class="bg-slate-300 px-6 py-8">
                 <h1 id="question-holder">Waiting For Question...</h1>
             </div>
@@ -47,7 +50,6 @@
                 .then(data => {
                     console.log(data);
                     if (data.status) {
-
                         GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance, 'updateUserRemoteData');
                         //if answer was correct, display correct message
                         if (data.data.correct) {
