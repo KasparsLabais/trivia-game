@@ -47,6 +47,8 @@
                 .then(data => {
                     console.log(data);
                     if (data.status) {
+
+                        GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance, 'updateUserRemoteData');
                         //if answer was correct, display correct message
                         if (data.data.correct) {
                             answerHolder.innerHTML = '<h1>Correct!</h1>';
