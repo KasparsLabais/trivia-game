@@ -52,7 +52,7 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log(data);
-                    if (data.status) {
+                    if (data.success) {
 
                         GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance, 'playerAnswered');
 
