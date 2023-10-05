@@ -19,25 +19,28 @@
         //let triviaId = '{{ $remoteData['trivia_id'] }}';
         let currentQuestion = '{{ $remoteData['current_question'] }}';
 
-        fetch('/trv/trivia/{{ $gameInstance['token'] }}/question', {'method': 'GET', 'headers': {'Content-Type': 'application/json'}})
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                if (data.status) {
-                    let questionHolder = document.getElementById('question-holder');
-                    currentQuestion = data.data.question_id;
-                    questionHolder.innerHTML = data.data.question;
-                    let answerHolder = document.querySelector('.answer-holder');
-                    data.data.answers.forEach(answer => {
-                        let answerButton = document.createElement('button');
-                        answerButton.classList.add('py-2', 'px-4', 'shadow-md', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'mr-2', 'mb-2');
-                        answerButton.innerHTML = answer.answer;
-                        answerButton.setAttribute('onclick', 'answerQuestion(' + answer.id + ')');
-                        answerHolder.appendChild(answerButton);
-                    });
-                }
-            })
-            .catch(error => console.log(error));
+        function loadQuestion()
+        {
+            fetch('/trv/trivia/{{ $gameInstance['token'] }}/question', {'method': 'GET', 'headers': {'Content-Type': 'application/json'}})
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if (data.status) {
+                        let questionHolder = document.getElementById('question-holder');
+                        currentQuestion = data.data.question_id;
+                        questionHolder.innerHTML = data.data.question;
+                        let answerHolder = document.querySelector('.answer-holder');
+                        data.data.answers.forEach(answer => {
+                            let answerButton = document.createElement('button');
+                            answerButton.classList.add('py-2', 'px-4', 'shadow-md', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'mr-2', 'mb-2');
+                            answerButton.innerHTML = answer.answer;
+                            answerButton.setAttribute('onclick', 'answerQuestion(' + answer.id + ')');
+                            answerHolder.appendChild(answerButton);
+                        });
+                    }
+                })
+                .catch(error => console.log(error));
+        }
 
         function answerQuestion(id) {
             //replace answer buttons with loading spinner
@@ -50,7 +53,9 @@
                 .then(data => {
                     console.log(data);
                     if (data.status) {
-                        GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance, 'updateUserRemoteData');
+
+                        GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance, 'playerAnswered');
+
                         //if answer was correct, display correct message
                         if (data.data.correct) {
                             answerHolder.innerHTML = '<h1>Correct!</h1>';
@@ -65,6 +70,21 @@
 
             //second step to emit event to all players in game that answer was given
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadQuestion();
+        });
+
+        document.addEventListener('playerAnswered', (e) => {
+            console.log(e.detail);
+            let answerHolder = document.querySelector('.answer-holder');
+            answerHolder.innerHTML = '<h1>' + e.detail.username + ' answered!</h1>';
+        });
+
+        document.addEventListener('nextQuestion', (e) => {
+            console.log(e.details);
+            loadQuestion();
+        });
 
     </script>
 @endsection
