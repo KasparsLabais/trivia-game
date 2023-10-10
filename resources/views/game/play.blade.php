@@ -16,6 +16,8 @@
     </div>
 
     <script>
+
+        GameApi.joinRoom('{{ $gameInstance['token'] }}');
         //let triviaId = '{{ $remoteData['trivia_id'] }}';
         let currentQuestion = '{{ $remoteData['current_question'] }}';
 
@@ -25,7 +27,7 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log(data);
-                    if (data.status) {
+                    if (data.success) {
                         let questionHolder = document.getElementById('question-holder');
                         currentQuestion = data.data.question_id;
                         questionHolder.innerHTML = data.data.question;

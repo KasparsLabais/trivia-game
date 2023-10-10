@@ -1,12 +1,12 @@
 <?php
 
-namespace Partygames\TriviaGame\Models;
+namespace PartyGames\TriviaGame\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SubmitedAnswers extends Model
+class SubmittedAnswers extends Model
 {
-    protected $table = 'trv_submited_answers';
+    protected $table = 'trv_submitted_answers';
     protected $fillable = [
         'game_instance_id',
         'question_id',

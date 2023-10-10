@@ -7,8 +7,11 @@ use Illuminate\Http\Request;
 use PartyGames\GameApi\GameApi;
 use PartyGames\GameApi\Models\Game;
 use PartyGames\TriviaGame\Models\Questions;
-use Partygames\TriviaGame\Models\SubmitedAnswers;
+use PartyGames\TriviaGame\Models\SubmittedAnswers;
 use PartyGames\TriviaGame\Models\Trivia;
+use PartyGames\TriviaGame\Models\Answers;
+
+use Illuminate\Support\Facades\Auth;
 
 class TriviaController
 {
@@ -157,7 +160,7 @@ class TriviaController
         $remoteData = json_decode($data['gameInstance']['remote_data'], true);
 
         //first step is to check if user have not already answered this question
-        $haveAnswered = SubmitedAnswers::where('game_instance_id', $data['gameInstance']['id'])
+        $haveAnswered = SubmittedAnswers::where('game_instance_id', $data['gameInstance']['id'])
             ->where('question_id', $remoteData['current_question'])
             ->where('user_id', Auth::user()->id)->first();
 
@@ -169,29 +172,36 @@ class TriviaController
             ]);
         }
 
-        SubmitedAnswers::create([
+        SubmittedAnswers::create([
             'game_instance_id' => $data['gameInstance']['id'],
             'question_id' => $remoteData['current_question'],
             'answer_id' => $request->get('answer_id'),
             'user_id' => Auth::user()->id
         ]);
+
         $answer = Answers::find($request->get('answer_id'));
+
         $playerInstance = (GameApi::getPlayerInstance($data['gameInstance']['id'], Auth::user()->id))['playerInstance'];
+        $playerRemoteData = json_decode($playerInstance['remote_data'], true);
+
+        if (is_null($playerRemoteData)) {
+            $playerRemoteData = [];
+        }
 
         if ($answer->is_correct == 1) {
-            $playerInstance['remote_data'][$remoteData['current_question']] = [
-                'correct' => true,
-                'status' => 'answered',
-                'answer_id' => $request->get('answer_id')
-            ];
+            $isCorrect = true;
             GameApi::updatePlayerInstanceScore($playerInstance['id'], $playerInstance['score'] + 1);
         } else {
-            $playerInstance['remote_data'][$remoteData['current_question']] = [
-                'correct' => false,
-                'status' => 'answered',
-                'answer_id' => $request->get('answer_id')
-            ];
+            $isCorrect = false;
         }
+
+        array_push($playerRemoteData, [$remoteData['current_question'] => [
+            'correct' => $isCorrect,
+            'status' => 'answered',
+            'answer_id' => $request->get('answer_id')
+        ]]);
+
+        $playerInstance['remote_data'] = $playerRemoteData;
         GameApi::updatePlayerInstanceRemoteData($playerInstance['id'], $playerInstance['remote_data']);
 
         return new JsonResponse([
@@ -199,7 +209,8 @@ class TriviaController
             'message' => 'Answer submitted successfully',
             'data' => [
                 'gameInstance' => $data['gameInstance'],
-                'playerInstance' => $playerInstance
+                'playerInstance' => $playerInstance,
+                'correct' => $isCorrect
             ]
         ]);
     }
