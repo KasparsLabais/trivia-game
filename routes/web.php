@@ -23,6 +23,7 @@ Route::group(['middleware' => ['web']], function() {
 
     Route::get('/' . config('settings.prefix') . '/trivia/{token}/question', 'TriviaController@getQuestion');
     Route::post('/' . config('settings.prefix') . '/trivia/{token}/answer', 'TriviaController@submitAnswer');
+    Route::post('/' . config('settings.prefix') . '/trivia/{token}/next', 'TriviaController@nextQuestion');
 
     //Route::post('/' . config('settings.prefix') . '/trivia/{id}', 'TriviaController@startGame');
 

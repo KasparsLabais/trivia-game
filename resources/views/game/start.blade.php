@@ -50,14 +50,24 @@
                 .catch(error => console.log(error));
         }
 
+        //TODO: Convert callbackGameInstanceUpdated to event listener
+        document.addEventListener('gameStarted', (e) => {
+            console.log(e);
+            window.location.href = '/trv/trivia/' + e.detail.gameToken;
+        });
+
+        document.addEventListener('playerJoined', (e) => {
+            playerJoined(game);
+        });
+
         const callbackGameInstanceUpdated = (gameToken, game, action) => {
             console.log('game instance updated');
             switch (action) {
                 case 'playerJoined':
-                    playerJoined(game);
+                    //playerJoined(game);
                     break;
                 case 'gameStarted':
-                    window.location.href = '/trv/trivia/' + gameToken;
+                    //window.location.href = '/trv/trivia/' + gameToken;
                     break;
             }
         }

@@ -49,6 +49,7 @@ class TriviaController
     public function game($gameToken)
     {
         $response = GameApi::getGameInstance($gameToken);
+        $playerInstance = GameApi::getPlayerInstance($response['gameInstance']['id'], Auth::user()->id);
         //if game instance is not found redirect to /trv/trivia
         if ($response['status'] == false) {
             return redirect()->route('trv.trivia');
@@ -65,7 +66,7 @@ class TriviaController
         }
 
         $remoteData = json_decode($response['gameInstance']['remote_data'], true);
-        return view('trivia-game::game.play')->with(['gameInstance' => $gameInstance, 'remoteData' => $remoteData]);
+        return view('trivia-game::game.play')->with(['gameInstance' => $gameInstance, 'remoteData' => $remoteData, 'playerInstance' => $playerInstance['playerInstance']]);
     }
 
     public function adminIndex()
@@ -127,11 +128,28 @@ class TriviaController
         //$triviaId = $request->get('triviaId');
         //$currentQuestion = $request->get('currentQuestion');
         $data = GameApi::getGameInstance($token);
-        $remoteData = json_decode($data['gameInstance']['remote_data'], true);
+        $playerInstance = GameApi::getPlayerInstance($data['gameInstance']['id'], Auth::user()->id);
 
+        $remoteData = json_decode($data['gameInstance']['remote_data'], true);
 
         $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
         $question->load('answers');
+
+        if (isset($playerInstance['playerInstance']['remote_data'])) {
+            $playerRemoteData = json_decode($playerInstance['playerInstance']['remote_data'], true);
+            if (array_key_exists($remoteData['current_question'], $playerRemoteData)) {
+                if ($playerRemoteData[$remoteData['current_question']]['status'] == 'answered') {
+                    return new JsonResponse([
+                        'success' => false,
+                        'message' => 'You have already answered this question',
+                        'data' => [
+                            'question' => $question['question'],
+                            'question_id' => $remoteData['current_question']
+                        ]
+                    ]);
+                }
+            }
+        }
 
         $response = [
             'question' => $question['question'],
@@ -190,16 +208,23 @@ class TriviaController
 
         if ($answer->is_correct == 1) {
             $isCorrect = true;
-            GameApi::updatePlayerInstanceScore($playerInstance['id'], $playerInstance['score'] + 1);
+            GameApi::updatePlayerInstanceScore($playerInstance['id'], $playerInstance['points'] + 1);
+            $playerInstance['points'] = $playerInstance['points'] + 1;
         } else {
             $isCorrect = false;
         }
 
+        $playerRemoteData[$remoteData['current_question']] = [
+            'correct' => $isCorrect,
+            'status' => 'answered',
+            'answer_id' => $request->get('answer_id')
+        ];
+        /*
         array_push($playerRemoteData, [$remoteData['current_question'] => [
             'correct' => $isCorrect,
             'status' => 'answered',
             'answer_id' => $request->get('answer_id')
-        ]]);
+        ]]);*/
 
         $playerInstance['remote_data'] = $playerRemoteData;
         GameApi::updatePlayerInstanceRemoteData($playerInstance['id'], $playerInstance['remote_data']);
@@ -211,6 +236,42 @@ class TriviaController
                 'gameInstance' => $data['gameInstance'],
                 'playerInstance' => $playerInstance,
                 'correct' => $isCorrect
+            ]
+        ]);
+    }
+
+    public function nextQuestion($token, Request $request)
+    {
+        $data = GameApi::getGameInstance($token);
+        $remoteData = json_decode($data['gameInstance']['remote_data'], true);
+
+        $currentQuestion = $remoteData['current_question'];
+
+        //step 1 check if current question isn't last available question
+        if ($currentQuestion == Questions::where('trivia_id', $remoteData['trivia_id'])->count()) {
+            //if it is last question then end game
+            GameApi::changeGameInstanceStatus($token, 'ended');
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Game ended successfully',
+                'data' => [
+                    'event' => 'gameOverEvent',
+                    'gameInstance' => $data['gameInstance']
+                ]
+            ]);
+        }
+
+        //step 2 update remote data with next question number
+        $remoteData['current_question'] = $currentQuestion + 1;
+        GameApi::updateGameInstanceRemoteData($token, $remoteData);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Next question fetched successfully',
+            'data' => [
+                'event' => 'nextQuestionEvent',
+                'question' => $remoteData['current_question'],
+                'gameInstance' => $data['gameInstance']
             ]
         ]);
     }
