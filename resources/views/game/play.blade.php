@@ -86,6 +86,9 @@
 
         function nextQuestion()
         {
+            let playerHolder = document.getElementById('answered-players-holder');
+            playerHolder.innerHTML = '';
+
             fetch('/trv/trivia/{{ $gameInstance['token'] }}/next', {'method': 'POST', 'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})
                 .then(response => response.json())
                 .then(data => {

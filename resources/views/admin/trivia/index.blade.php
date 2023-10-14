@@ -10,21 +10,9 @@
                 <div class="flex flex-col">
                     <label for="category">Category:</label>
                     <select class="border border-slate-400" name="category" id="category">
-                        <option value="general">General</option>
-                        <option value="books">Books</option>
-                        <option value="film">Film</option>
-                        <option value="music">Music</option>
-                        <option value="musicals">Musicals</option>
-                        <option value="television">Television</option>
-                        <option value="video games">Video Games</option>
-                        <option value="animals">Animals</option>
-                        <option value="anime">Anime</option>
-                        <option value="cartoons">Cartoons</option>
-                        <option value="comics">Comics</option>
-                        <option value="gadgets">Gadgets</option>
-                        <option value="celebrities">Celebrities</option>
-                        <option value="vehicles">Vehicles</option>
-                        <option value="places">Places</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat['id'] }}">{{ $cat['name'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="flex flex-col">

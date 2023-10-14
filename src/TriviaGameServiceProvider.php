@@ -13,7 +13,11 @@ class TriviaGameServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->publishes([
             __DIR__.'/views' => resource_path('views/vendor/trivia'),
-        ]);
+        ], 'trivia-game-views');
+
+        $this->publishes([
+            __DIR__.'/../resources/static' => public_path('vendor/trivia-game'),
+        ], 'trivia-game-assets');
     }
 
     public function register()

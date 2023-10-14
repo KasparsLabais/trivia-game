@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use PartyGames\GameApi\GameApi;
 use PartyGames\GameApi\Models\Game;
+use PartyGames\TriviaGame\Models\Categories;
 use PartyGames\TriviaGame\Models\Questions;
 use PartyGames\TriviaGame\Models\SubmittedAnswers;
 use PartyGames\TriviaGame\Models\Trivia;
@@ -18,8 +19,10 @@ class TriviaController
 
     public function index()
     {
-        $allTrivia = Trivia::all();
-        return view('trivia-game::pages.index')->with(['allTrivia' => $allTrivia]);
+        //$allTrivia = Trivia::all();
+        //dd($allTrivia);
+        $categories = Categories::where('is_active', 1)->orderBy('name')->get();
+        return view('trivia-game::pages.index')->with(['categories' => $categories]);
     }
 
     public function createGame(Request $request)
@@ -72,14 +75,16 @@ class TriviaController
     public function adminIndex()
     {
         $allTrivia = Trivia::all();
-        return view('trivia-game::admin.trivia.index')->with(['allTrivia' => $allTrivia]);
+        $categories = Categories::where('is_active', 1)->get();
+
+        return view('trivia-game::admin.trivia.index')->with(['allTrivia' => $allTrivia, 'categories' => $categories]);
     }
 
     public function create(Request $request)
     {
         $trivia = Trivia::create([
             'title' => $request->title,
-            'category' => $request->category,
+            'category_id' => $request->category,
             'difficulty' => $request->difficulty,
             'type' => $request->type,
         ]);
@@ -274,5 +279,13 @@ class TriviaController
                 'gameInstance' => $data['gameInstance']
             ]
         ]);
+    }
+
+    public function results($token)
+    {
+        $gameInstance = GameApi::getGameInstance($token);
+        $winners = GameApi::getWinners($gameInstance['gameInstance']['id']);
+
+        return view('trivia-game::game.results')->with(['gameInstance' => $gameInstance['gameInstance'], 'winners' => $winners['response']]);
     }
 }

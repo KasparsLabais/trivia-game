@@ -11,7 +11,7 @@ class Trivia extends Model
 
     protected $fillable = [
         'title',
-        'category',
+        'category_id',
         'difficulty',
         'type',
     ];
