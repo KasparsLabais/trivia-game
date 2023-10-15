@@ -21,4 +21,9 @@ class Trivia extends Model
         return $this->hasMany(Questions::class);
     }
 
+    public function category()
+    {
+        return $this->belongsTo(Categories::class, 'category_id', 'id');
+    }
+
 }

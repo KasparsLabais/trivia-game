@@ -1,26 +1,44 @@
 @extends('game-api::layout')
 @section('body')
     <div class="flex flex-row justify-center">
-        <div class="flex flex-col">
-            <div id="answered-players-holder">
-            </div>
-            <h2>
+        <div class="flex flex-col w-1/2">
+            <h2 class="fire-sans font-normal text-lg">
                 @if(Auth::user()->id == $gameInstance['user_id'])
-                    HOST: {{ Auth::user()->username }}
+                    Game Host: {{ Auth::user()->username }}
                 @else
-                    POINTS: <x-points points="{{ $playerInstance['points']  }}"></x-points>
+                    Your Points: <x-points points="{{ $playerInstance['points']  }}"></x-points>
                 @endif
             </h2>
-            <div class="bg-slate-300 px-6 py-8">
-                <h1 id="question-holder">Waiting For Question...</h1>
-            </div>
-            <div class="bg-slate-200 px-6 py-8">
-                <div class="answer-holder">
+            <div class="shadow-md">
+                <div class="bg-slate-100 px-6 py-6">
+                    <h1 id="question-holder" class="fira-sans text-xl text-center">Waiting For Question...</h1>
+                </div>
+                <div class="bg-slate-200 px-6 py-8">
+                    <div class="answer-holder flex flex-wrap justify-between">
+                    </div>
                 </div>
             </div>
-            <div>
+            <div class="py-4">
                 @if(Auth::user()->id == $gameInstance['user_id'])
+                    <button class="py-2 px-4 shadow-md bg-cyan-500 text-slate-100 font-semibold" onclick="showCorrectAnswer()">Show Correct Answer</button>
                     <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="nextQuestion()">Next Question</button>
+                @endif
+            </div>
+            @if(Auth::user()->id == $gameInstance['user_id'])
+                <h2 class="fire-sans font-normal text-lg">Players that have submitted answer:</h2>
+            @endif
+            <div id="answered-players-holder">
+                @if(Auth::user()->id == $gameInstance['user_id'])
+                    @foreach($answeredUsers as $user)
+                        <div class="flex flex-col bg-slate-100 shadow-md py-2 px-2 rounded w-1/6">
+                            <div class="flex flex-row justify-center">
+                                <img src="@if(is_null($user->user->avatar)) /images/default-avatar.jpg @else{{$user->user->avatar}}@endif" class="w-14 h-14 rounded-full shadow-md border-2 border-slate-500" alt="avatar" />
+                            </div>
+                            <div class="flex flex-row justify-center">
+                                <div class="raleway font-semibold">{{ $user->user->username }}</div>
+                            </div>
+                        </div>
+                    @endforeach
                 @endif
             </div>
         </div>
@@ -46,11 +64,18 @@
                         answerHolder.innerHTML = '';
 
                         data.data.answers.forEach(answer => {
+
+                            let answerButtonHolderDiv = document.createElement('div');
+                            answerButtonHolderDiv.classList.add('flex', 'flex-col', 'justify-center', 'px-2', 'w-2/4');
+                            answerButtonHolderDiv.setAttribute('answer-id', answer.id);
+
                             let answerButton = document.createElement('button');
-                            answerButton.classList.add('py-2', 'px-4', 'shadow-md', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'mr-2', 'mb-2');
+                            answerButton.classList.add('py-2', 'px-4', 'shadow-md', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'mb-2', 'w-full');
                             answerButton.innerHTML = answer.answer;
                             answerButton.setAttribute('onclick', 'answerQuestion(' + answer.id + ')');
-                            answerHolder.appendChild(answerButton);
+
+                            answerButtonHolderDiv.appendChild(answerButton);
+                            answerHolder.appendChild(answerButtonHolderDiv);
                         });
                     } else {
                         let questionHolder = document.getElementById('question-holder');
@@ -72,7 +97,7 @@
                 .then(data => {
                     if (data.success) {
                         GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
-                        GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'username' : '{{ Auth::user()->username }}'}, 'action': 'playerAnsweredEvent'});
+                        GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'username' : '{{ Auth::user()->username }}', 'avatar': @if(is_null(Auth::user()->avatar)) '/images/default-avatar.jpg' @else '{{Auth::user()->avatar}}' @endif}, 'action': 'playerAnsweredEvent'});
 
                         if (data.data.correct) {
                             answerHolder.innerHTML = '<h1>Correct!</h1>';
@@ -111,6 +136,21 @@
             //GameApi.notifyRoom('{{ $gameInstance['token'] }}', {data: {'question': currentQuestion}, 'action': 'nextQuestionEvent'});
         }
 
+
+        function showCorrectAnswer() {
+
+            fetch('/trv/trivia/{{ $gameInstance['token'] }}/correct', {'question' : currentQuestion})
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if(data.success) {
+                        let answerHolder = document.querySelector('.answer-holder .flex[answer-id="' + data.data.answer.id + '"] button');
+                        answerHolder.classList.remove('bg-lime-500');
+                        answerHolder.classList.add('bg-violet-500');
+                    }
+                })
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadQuestion();
         });
@@ -118,7 +158,27 @@
         document.addEventListener('playerAnsweredEvent', (e) => {
             console.log('playerAnsweredEvent',e.detail);
             let playerHolder = document.getElementById('answered-players-holder');
-            playerHolder.innerHTML = '<h1><span>' + e.detail.username + '</span> answered!</h1>';
+
+            let playerDiv = document.createElement('div');
+            playerDiv.classList.add('flex', 'flex-col', 'py-2', 'px-2', 'rounded', 'w-1/6', 'bg-slate-100', 'shadow-md');
+
+            let playerImageDiv = document.createElement('div');
+            playerImageDiv.classList.add('flex', 'flex-row', 'justify-center');
+
+            let playerImage = document.createElement('img');
+            playerImage.classList.add('w-14', 'h-14', 'rounded-full', 'shadow-md', 'border-2', 'border-slate-500');
+            playerImage.setAttribute('src', e.detail.avatar);
+
+            playerImageDiv.appendChild(playerImage);
+
+            let playerNicknameDiv = document.createElement('div');
+            playerNicknameDiv.classList.add('flex', 'flex-row', 'justify-center', 'raleway', 'font-semibold');
+            playerNicknameDiv.innerHTML = e.detail.username;
+
+            playerDiv.appendChild(playerImageDiv);
+            playerDiv.appendChild(playerNicknameDiv);
+
+            playerHolder.appendChild(playerDiv);
         });
 
         document.addEventListener('nextQuestionEvent', (e) => {

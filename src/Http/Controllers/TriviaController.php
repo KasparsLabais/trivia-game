@@ -59,17 +59,25 @@ class TriviaController
         }
 
         $gameInstance = $response['gameInstance'];
+        $remoteData = json_decode($response['gameInstance']['remote_data'], true);
 
         if ($gameInstance['status'] == 'created') {
-            return view('trivia-game::game.start')->with(['gameInstance' => $gameInstance]);
+            $trivia = Trivia::find($remoteData['trivia_id']);
+            return view('trivia-game::game.start')->with(['gameInstance' => $gameInstance, 'trivia' => $trivia]);
         }
 
         if ($gameInstance['status'] == 'ended') {
             return view('trivia-game::game.end')->with(['gameInstance' => $gameInstance]);
         }
 
-        $remoteData = json_decode($response['gameInstance']['remote_data'], true);
-        return view('trivia-game::game.play')->with(['gameInstance' => $gameInstance, 'remoteData' => $remoteData, 'playerInstance' => $playerInstance['playerInstance']]);
+        $answeredUsers = SubmittedAnswers::where('game_instance_id', $gameInstance['id'])->where('question_id', $remoteData['current_question'])->get();
+        $returnObject = [
+            'gameInstance' => $gameInstance,
+            'remoteData' => $remoteData,
+            'answeredUsers' => $answeredUsers,
+            'playerInstance' => $playerInstance['playerInstance']
+        ];
+        return view('trivia-game::game.play')->with($returnObject);
     }
 
     public function adminIndex()
@@ -277,6 +285,31 @@ class TriviaController
                 'event' => 'nextQuestionEvent',
                 'question' => $remoteData['current_question'],
                 'gameInstance' => $data['gameInstance']
+            ]
+        ]);
+    }
+
+    public function correctAnswer($token, Request $request)
+    {
+        $data = GameApi::getGameInstance($token);
+        if ($data['gameInstance']['user_id'] != Auth::user()->id) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'You are not the owner of this game instance',
+                'data' => []
+            ]);
+        }
+
+        $remoteData = json_decode($data['gameInstance']['remote_data'], true);
+
+        $currentQuestion = $remoteData['current_question'];
+        $correctAnswer = Answers::where('question_id', $currentQuestion)->where('is_correct', 1)->first();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Correct answer fetched successfully',
+            'data' => [
+                'answer' => $correctAnswer,
             ]
         ]);
     }
