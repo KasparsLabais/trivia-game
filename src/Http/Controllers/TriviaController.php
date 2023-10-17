@@ -321,4 +321,68 @@ class TriviaController
 
         return view('trivia-game::game.results')->with(['gameInstance' => $gameInstance['gameInstance'], 'winners' => $winners['response']]);
     }
+
+
+    /* all individual user functions */
+    public function management()
+    {
+        $usersTrivias = Trivia::where('user_id', Auth::user()->id)->get();
+        $categories = Categories::where('is_active', 1)->get();
+
+        return view('trivia-game::pages.management')->with(['trivias' => $usersTrivias, 'categories' => $categories]);
+    }
+
+    public function createTrivia(Request $request)
+    {
+        $newTrivia = Trivia::create([
+            'title' => $request->title,
+            'category_id' => $request->category,
+            'description' => $request->description,
+            'difficulty' => $request->difficulty,
+            'type' => 'boolean', //just for now
+            'user_id' => Auth::user()->id,
+        ]);
+
+        return redirect()->to('/trv/management/trivia/' . $newTrivia['id']);
+    }
+
+    public function editTrivia($id)
+    {
+        $trivia = Trivia::where('id', $id)->first();
+        $questions = Questions::where('trivia_id', $id)->orderBy('order_nr')->get();
+
+        return view('trivia-game::pages.edit')->with(['trivia' => $trivia, 'questions' => $questions]);
+    }
+
+    public function createQuestion($id, Request $request)
+    {
+        //get last order_nr for this trivia
+        $lastOrder = Questions::where('trivia_id', $id)->orderBy('order_nr', 'desc')->first();
+        $question = Questions::create([
+            'trivia_id' => $id,
+            'question' => $request->question,
+            'order_nr' => $lastOrder['order_nr']+1,
+        ]);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Question created successfully',
+            'payload' => $question
+        ]);
+    }
+
+    public function createAnswer($id, $questionId, Request $request)
+    {
+        $answer = Answers::create([
+            'question_id' => $questionId,
+            'answer' => $request->answer,
+            'is_correct' => $request->is_correct,
+        ]);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Answer created successfully',
+            'payload' => $answer
+        ]);
+    }
 }
