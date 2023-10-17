@@ -22,15 +22,24 @@
                         <h2 class="raleway">Questions:</h2>
                         <div id="question-holder">
                         @foreach($questions as $question)
-                            <div class="flex flex-col bg-slate-200 shadow rounded mt-4">
-
+                            <div id="question-{{ $question['id'] }}"  class="flex flex-col bg-slate-200 shadow rounded mt-4">
                                 <div class="flex flex-row bg-slate-300  py-2 px-2">
+                                    <div class="px-1 cursor-pointer" onclick="moveUp()" data-questionid="{{ $question['id'] }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="stroke-lime-600 w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                        </svg>
+                                    </div>
                                      <span>
-                                         Nr: {{ $question['order_nr'] }} |
+                                         Order Nr: {{ $question['order_nr'] }}
                                      </span>
+                                    <div class="px-1 cursor-pointer" onclick="moveDown()" data-questionid="{{ $question['id'] }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="stroke-rose-600	w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                        </svg>
+                                    </div>
+                                    |
                                     <span class="text-xl px-4">{{ $question['question'] }}</span>
                                 </div>
-
                                 <div id="answer-holder-{{ $question['id'] }}" class="flex flex-row py-4">
                                 @foreach($question->answers as $answer)
                                     <div class="@if($answer['is_correct']) border-lime-500 bg-lime-500 @else border-slate-500 bg-slate-500 @endif text-slate-100 font-semibold border-2 px-4 py-2 rounded shadow mx-1">
@@ -66,168 +75,184 @@
     </div>
 
     <script>
-        const addQuestion = () => {
-            console.log('add question');
 
-            fetch('/trv/management/trivia/{{ $trivia['id'] }}/question', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        let questionsList = {
+            @foreach($questions as $question)
+            '{{ $question['order_nr'] }}' :{ 'id' :{{ $question['id'] }}, 'order_nr':{{ $question['order_nr'] }}, 'question':'{{ $question['question'] }}', 'answers':[
+                @foreach($question->answers as $answer)
+                {
+                    'id': {{ $answer['id'] }},
+                    'answer': '{{ $answer['answer'] }}',
+                    'is_correct': {{ $answer['is_correct'] }}
                 },
-                body: JSON.stringify({
-                    question: document.querySelector('#question').value
-                })
-            }).then(response => response.json())
-            .then(data => {
-                console.log(data);
-                if (data.success) {
-                    let questionHolder = document.querySelector('#question-holder');
-                    let question = data.payload;
+                @endforeach
+            ]},
+        @endforeach
+        };
 
-                    let questionDiv = document.createElement('div');
-                    questionDiv.classList.add('flex', 'flex-col', 'bg-slate-200', 'shadow', 'rounded', 'mt-4');
+const addQuestion = () => {
+    console.log('add question');
 
-                    let questionHeader = document.createElement('div');
-                    questionHeader.classList.add('flex', 'flex-row', 'bg-slate-300', 'py-2', 'px-2');
+    fetch('/trv/management/trivia/{{ $trivia['id'] }}/question', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            question: document.querySelector('#question').value
+        })
+    }).then(response => response.json())
+    .then(data => {
+        console.log(data);
+        if (data.success) {
+            let questionHolder = document.querySelector('#question-holder');
+            let question = data.payload;
 
-                    let questionHeaderNr = document.createElement('span');
-                    questionHeaderNr.innerText = 'Nr: ' + question.order_nr + ' | ';
+            let questionDiv = document.createElement('div');
+            questionDiv.classList.add('flex', 'flex-col', 'bg-slate-200', 'shadow', 'rounded', 'mt-4');
 
-                    let questionHeaderQuestion = document.createElement('span');
-                    questionHeaderQuestion.classList.add('text-xl', 'px-4');
-                    questionHeaderQuestion.innerText = question.question;
+            let questionHeader = document.createElement('div');
+            questionHeader.classList.add('flex', 'flex-row', 'bg-slate-300', 'py-2', 'px-2');
 
-                    questionHeader.appendChild(questionHeaderNr);
-                    questionHeader.appendChild(questionHeaderQuestion);
+            let questionHeaderNr = document.createElement('span');
+            questionHeaderNr.innerText = 'Order Nr: ' + question.order_nr + ' | ';
 
-                    let answerHolder = document.createElement('div');
-                    answerHolder.classList.add('flex', 'flex-row', 'py-4');
-                    answerHolder.id = 'answer-holder-' + question.id;
+            let questionHeaderQuestion = document.createElement('span');
+            questionHeaderQuestion.classList.add('text-xl', 'px-4');
+            questionHeaderQuestion.innerText = question.question;
 
-                    if (question.answers) {
-                        question.answers.forEach(answer => {
-                            let answerDiv = document.createElement('div');
-                            answerDiv.classList.add('border-slate-500', 'bg-slate-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
-                            answerDiv.innerText = answer.answer;
+            questionHeader.appendChild(questionHeaderNr);
+            questionHeader.appendChild(questionHeaderQuestion);
 
-                            answerHolder.appendChild(answerDiv);
-                        });
-                    }
+            let answerHolder = document.createElement('div');
+            answerHolder.classList.add('flex', 'flex-row', 'py-4');
+            answerHolder.id = 'answer-holder-' + question.id;
 
-                    let questionFooter = document.createElement('div');
-                    questionFooter.classList.add('flex', 'flex-row', 'bg-slate-300', 'py-2', 'px-2');
-
-                    let questionFooterAnswer = document.createElement('div');
-                    questionFooterAnswer.classList.add('flex', 'flex-row');
-
-                    let questionFooterAnswerAnswer = document.createElement('div');
-                    questionFooterAnswerAnswer.classList.add('flex', 'flex-col', 'px-2', 'py-1');
-
-                    let questionFooterAnswerAnswerLabel = document.createElement('label');
-                    questionFooterAnswerAnswerLabel.classList.add('raleway', 'font-semibold', 'text-sm');
-                    questionFooterAnswerAnswerLabel.setAttribute('for', 'answer');
-                    questionFooterAnswerAnswerLabel.innerText = 'Answer:';
-
-                    let questionFooterAnswerAnswerInput = document.createElement('input');
-                    questionFooterAnswerAnswerInput.classList.add('bg-slate-100', 'border', 'border-zinc-400', 'shadow', 'shadow-zinc-400', 'rounded');
-                    questionFooterAnswerAnswerInput.setAttribute('type', 'text');
-                    questionFooterAnswerAnswerInput.setAttribute('name', 'answer-' + question.id);
-                    questionFooterAnswerAnswerInput.setAttribute('id', 'answer-' + question.id);
-
-                    questionFooterAnswerAnswer.appendChild(questionFooterAnswerAnswerLabel);
-                    questionFooterAnswerAnswer.appendChild(questionFooterAnswerAnswerInput);
-
-                    let questionFooterAnswerIsCorrect = document.createElement('div');
-                    questionFooterAnswerIsCorrect.classList.add('flex', 'flex-col', 'px-2', 'py-1');
-
-                    let questionFooterAnswerIsCorrectLabel = document.createElement('label');
-                    questionFooterAnswerIsCorrectLabel.classList.add('raleway', 'font-semibold', 'text-sm');
-                    questionFooterAnswerIsCorrectLabel.setAttribute('for', 'is_correct-' + question.id);
-                    questionFooterAnswerIsCorrectLabel.innerText = 'Is Correct:';
-
-                    let questionFooterAnswerIsCorrectSelect = document.createElement('select');
-                    questionFooterAnswerIsCorrectSelect.classList.add('bg-slate-100', 'border', 'border-zinc-400', 'shadow', 'shadow-zinc-400', 'rounded');
-                    questionFooterAnswerIsCorrectSelect.setAttribute('name', 'is_correct-' + question.id);
-                    questionFooterAnswerIsCorrectSelect.setAttribute('id', 'is_correct-' + question.id);
-
-                    let questionFooterAnswerIsCorrectSelectOptionNo = document.createElement('option');
-                    questionFooterAnswerIsCorrectSelectOptionNo.setAttribute('value', '0');
-                    questionFooterAnswerIsCorrectSelectOptionNo.innerText = 'No';
-
-                    let questionFooterAnswerIsCorrectSelectOptionYes = document.createElement('option');
-                    questionFooterAnswerIsCorrectSelectOptionYes.setAttribute('value', '1');
-                    questionFooterAnswerIsCorrectSelectOptionYes.innerText = 'Yes';
-
-                    questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionNo);
-                    questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionYes);
-
-                    questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectLabel);
-                    questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectSelect);
-
-                    questionFooterAnswer.appendChild(questionFooterAnswerAnswer);
-                    questionFooterAnswer.appendChild(questionFooterAnswerIsCorrect);
-
-                    let questionFooterAddAnswer = document.createElement('div');
-                    questionFooterAddAnswer.classList.add('flex', 'flex-col', 'justify-center');
-
-                    let questionFooterAddAnswerButton = document.createElement('button');
-                    questionFooterAddAnswerButton.classList.add('py-2', 'px-2', 'shadow-md', 'bg-cyan-500', 'text-slate-100', 'font-semibold');
-                    questionFooterAddAnswerButton.setAttribute('data-questionid', question.id);
-                    questionFooterAddAnswerButton.innerText = 'Add Answer';
-                    questionFooterAddAnswerButton.addEventListener('click', addAnswer);
-
-                    questionFooterAddAnswer.appendChild(questionFooterAddAnswerButton);
-
-                    questionFooter.appendChild(questionFooterAnswer);
-                    questionFooter.appendChild(questionFooterAddAnswer);
-
-                    questionDiv.appendChild(questionHeader);
-                    questionDiv.appendChild(answerHolder);
-                    questionDiv.appendChild(questionFooter);
-
-                    questionHolder.appendChild(questionDiv);
-                }
-            })
-            .catch(error => console.log(error));
-        }
-
-        const addAnswer = () => {
-            console.log('add answer');
-
-            let questionId = event.target.getAttribute('data-questionid');
-
-            fetch('/trv/management/trivia/{{ $trivia['id'] }}/question/' + questionId + '/answer', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    answer: document.querySelector('#answer-'+questionId).value,
-                    is_correct: document.querySelector('#is_correct-'+questionId).value
-                })
-            }).then(response => response.json())
-            .then(data => {
-                console.log(data);
-                if (data.success) {
-
-                    let answerHolder = document.querySelector('#answer-holder-' + questionId);
-                    let answer = data.payload;
-
+            if (question.answers) {
+                question.answers.forEach(answer => {
                     let answerDiv = document.createElement('div');
-
-                    if(answer.is_correct == "1") {
-                        answerDiv.classList.add('border-lime-500', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
-                    } else {
-                        answerDiv.classList.add('border-slate-500', 'bg-slate-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
-                    }
+                    answerDiv.classList.add('border-slate-500', 'bg-slate-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
                     answerDiv.innerText = answer.answer;
 
                     answerHolder.appendChild(answerDiv);
-                }
-            })
-            .catch(error => console.log(error));
+                });
+            }
+
+            let questionFooter = document.createElement('div');
+            questionFooter.classList.add('flex', 'flex-row', 'bg-slate-300', 'py-2', 'px-2');
+
+            let questionFooterAnswer = document.createElement('div');
+            questionFooterAnswer.classList.add('flex', 'flex-row');
+
+            let questionFooterAnswerAnswer = document.createElement('div');
+            questionFooterAnswerAnswer.classList.add('flex', 'flex-col', 'px-2', 'py-1');
+
+            let questionFooterAnswerAnswerLabel = document.createElement('label');
+            questionFooterAnswerAnswerLabel.classList.add('raleway', 'font-semibold', 'text-sm');
+            questionFooterAnswerAnswerLabel.setAttribute('for', 'answer');
+            questionFooterAnswerAnswerLabel.innerText = 'Answer:';
+
+            let questionFooterAnswerAnswerInput = document.createElement('input');
+            questionFooterAnswerAnswerInput.classList.add('bg-slate-100', 'border', 'border-zinc-400', 'shadow', 'shadow-zinc-400', 'rounded');
+            questionFooterAnswerAnswerInput.setAttribute('type', 'text');
+            questionFooterAnswerAnswerInput.setAttribute('name', 'answer-' + question.id);
+            questionFooterAnswerAnswerInput.setAttribute('id', 'answer-' + question.id);
+
+            questionFooterAnswerAnswer.appendChild(questionFooterAnswerAnswerLabel);
+            questionFooterAnswerAnswer.appendChild(questionFooterAnswerAnswerInput);
+
+            let questionFooterAnswerIsCorrect = document.createElement('div');
+            questionFooterAnswerIsCorrect.classList.add('flex', 'flex-col', 'px-2', 'py-1');
+
+            let questionFooterAnswerIsCorrectLabel = document.createElement('label');
+            questionFooterAnswerIsCorrectLabel.classList.add('raleway', 'font-semibold', 'text-sm');
+            questionFooterAnswerIsCorrectLabel.setAttribute('for', 'is_correct-' + question.id);
+            questionFooterAnswerIsCorrectLabel.innerText = 'Is Correct:';
+
+            let questionFooterAnswerIsCorrectSelect = document.createElement('select');
+            questionFooterAnswerIsCorrectSelect.classList.add('bg-slate-100', 'border', 'border-zinc-400', 'shadow', 'shadow-zinc-400', 'rounded');
+            questionFooterAnswerIsCorrectSelect.setAttribute('name', 'is_correct-' + question.id);
+            questionFooterAnswerIsCorrectSelect.setAttribute('id', 'is_correct-' + question.id);
+
+            let questionFooterAnswerIsCorrectSelectOptionNo = document.createElement('option');
+            questionFooterAnswerIsCorrectSelectOptionNo.setAttribute('value', '0');
+            questionFooterAnswerIsCorrectSelectOptionNo.innerText = 'No';
+
+            let questionFooterAnswerIsCorrectSelectOptionYes = document.createElement('option');
+            questionFooterAnswerIsCorrectSelectOptionYes.setAttribute('value', '1');
+            questionFooterAnswerIsCorrectSelectOptionYes.innerText = 'Yes';
+
+            questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionNo);
+            questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionYes);
+
+            questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectLabel);
+            questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectSelect);
+
+            questionFooterAnswer.appendChild(questionFooterAnswerAnswer);
+            questionFooterAnswer.appendChild(questionFooterAnswerIsCorrect);
+
+            let questionFooterAddAnswer = document.createElement('div');
+            questionFooterAddAnswer.classList.add('flex', 'flex-col', 'justify-center');
+
+            let questionFooterAddAnswerButton = document.createElement('button');
+            questionFooterAddAnswerButton.classList.add('py-2', 'px-2', 'shadow-md', 'bg-cyan-500', 'text-slate-100', 'font-semibold');
+            questionFooterAddAnswerButton.setAttribute('data-questionid', question.id);
+            questionFooterAddAnswerButton.innerText = 'Add Answer';
+            questionFooterAddAnswerButton.addEventListener('click', addAnswer);
+
+            questionFooterAddAnswer.appendChild(questionFooterAddAnswerButton);
+
+            questionFooter.appendChild(questionFooterAnswer);
+            questionFooter.appendChild(questionFooterAddAnswer);
+
+            questionDiv.appendChild(questionHeader);
+            questionDiv.appendChild(answerHolder);
+            questionDiv.appendChild(questionFooter);
+
+            questionHolder.appendChild(questionDiv);
         }
-    </script>
+    })
+    .catch(error => console.log(error));
+}
+
+const addAnswer = () => {
+    console.log('add answer');
+
+    let questionId = event.target.getAttribute('data-questionid');
+
+    fetch('/trv/management/trivia/{{ $trivia['id'] }}/question/' + questionId + '/answer', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            answer: document.querySelector('#answer-'+questionId).value,
+            is_correct: document.querySelector('#is_correct-'+questionId).value
+        })
+    }).then(response => response.json())
+    .then(data => {
+        console.log(data);
+        if (data.success) {
+
+            let answerHolder = document.querySelector('#answer-holder-' + questionId);
+            let answer = data.payload;
+
+            let answerDiv = document.createElement('div');
+
+            if(answer.is_correct == "1") {
+                answerDiv.classList.add('border-lime-500', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
+            } else {
+                answerDiv.classList.add('border-slate-500', 'bg-slate-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
+            }
+            answerDiv.innerText = answer.answer;
+
+            answerHolder.appendChild(answerDiv);
+        }
+    })
+    .catch(error => console.log(error));
+}
+
+</script>
 @endsection
