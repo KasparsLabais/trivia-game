@@ -193,8 +193,9 @@ class TriviaController
         $remoteData = json_decode($data['gameInstance']['remote_data'], true);
 
         //first step is to check if user have not already answered this question
+        $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
         $haveAnswered = SubmittedAnswers::where('game_instance_id', $data['gameInstance']['id'])
-            ->where('question_id', $remoteData['current_question'])
+            ->where('question_id', $question['id'])
             ->where('user_id', Auth::user()->id)->first();
 
         if ($haveAnswered) {
@@ -207,7 +208,7 @@ class TriviaController
 
         SubmittedAnswers::create([
             'game_instance_id' => $data['gameInstance']['id'],
-            'question_id' => $remoteData['current_question'],
+            'question_id' => $question['id'],
             'answer_id' => $request->get('answer_id'),
             'user_id' => Auth::user()->id
         ]);
@@ -305,7 +306,9 @@ class TriviaController
         $remoteData = json_decode($data['gameInstance']['remote_data'], true);
 
         $currentQuestion = $remoteData['current_question'];
-        $correctAnswer = Answers::where('question_id', $currentQuestion)->where('is_correct', 1)->first();
+
+        $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $currentQuestion)->first();
+        $correctAnswer = Answers::where('question_id', $question['id'])->where('is_correct', 1)->first();
 
         return new JsonResponse([
             'success' => true,
