@@ -18,4 +18,9 @@ class Categories extends Model
     {
         return $this->hasMany(Trivia::class, 'category_id', 'id');
     }
+
+    public function availableTrivia()
+    {
+        return $this->trivia()->where('is_active', true);
+    }
 }

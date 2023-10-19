@@ -19,9 +19,11 @@ Route::group(['middleware' => ['web']], function() {
     Route::get('/' . config('settings.prefix') . '/management', 'TriviaController@management');
     Route::post('/' . config('settings.prefix') . '/management/trivia', 'TriviaController@createTrivia');
     Route::get('/' . config('settings.prefix') . '/management/trivia/{id}', 'TriviaController@editTrivia');
+    Route::post('/' . config('settings.prefix') . '/management/trivia/{id}', 'TriviaController@updateTrivia');
 
     Route::post('/' . config('settings.prefix') . '/management/trivia/{id}/question', 'TriviaController@createQuestion');
     Route::post('/'. config('settings.prefix')  . '/management/trivia/{id}/question/{questionId}/answer', 'TriviaController@createAnswer');
+    Route::put('/' . config('settings.prefix') . '/management/trivia/{id}/question/{questionId}/order', 'TriviaController@updateQuestionOrder');
 
     Route::post('/' . config('settings.prefix') . '/start', 'TriviaController@startGame');
     Route::post('/' . config('settings.prefix') . '/end', 'TriviaController@endGame');

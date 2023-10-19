@@ -6,7 +6,7 @@
                 <h1 class="fira-sans font-semibold text-2xl">Management</h1>
                 <hr>
                 <div class="bg-slate-100">
-                    <form action="/trv/management/trivia" method="POST" class="flex flex-col px-2 py-4 bg-slate-200 shadow-md">
+                    <form action="/trv/management/trivia" method="POST" class="flex flex-col px-2 py-4 bg-slate-200 shadow">
                         {{ csrf_field() }}
                         <div class="flex flex-row">
                             <div class="flex flex-col px-2 py-2">
@@ -46,14 +46,16 @@
                                 <th class="px-2 py-2">Description</th>
                                 <th class="px-2 py-2">Difficulty</th>
                                 <th class="px-2 py-2">Category</th>
+                                <th class="px-2 py-2">Active</th>
                                 <th class="px-2 py-2">Actions</th>
                             </tr>
                             @foreach($trivias as $trv)
                                 <tr>
-                                    <td>{{ $trv['title'] }}</td>
-                                    <td>{{ $trv['description'] }}</td>
-                                    <td>{{ $trv['difficulty'] }}</td>
-                                    <td>{{ $trv->category['name'] }}</td>
+                                    <td class="text-center">{{ $trv['title'] }}</td>
+                                    <td class="text-center">{{ $trv['description'] }}</td>
+                                    <td class="text-center">{{ Str::limit($trv['difficulty'], 50, '...') }}</td>
+                                    <td class="text-center">{{ $trv->category['name'] }}</td>
+                                    <td class="text-center">{{ $trv['is_active'] }}</td>
                                     <td class="flex flex-row justify-around">
                                         <a class="inline-block py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" href="/trv/management/trivia/{{ $trv['id'] }}">Edit</a>
                                         <button class="py-2 px-4 shadow-md bg-red-500 text-slate-100 font-semibold">Delete</button>

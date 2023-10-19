@@ -5,19 +5,50 @@
             <div>
                 <h1 class="fira-sans font-semibold text-2xl">{{ $trivia['title'] }}</h1>
                 <hr>
-                <div class="bg-slate-100 pb-4 rounded shadow">
-                    <div class="flex flex-col px-2 py-4 bg-slate-200 shadow-md">
+                <div class="bg-slate-100 rounded shadow">
+
+                    <form action="" method="POST" class="flex flex-col px-2 py-4 bg-slate-200 shadow">
                         {{ csrf_field() }}
                         <div class="flex flex-row">
                             <div class="flex flex-col px-2 py-2">
-                                <label class="raleway font-semibold text-md" for="question">Question:</label>
-                                <input class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" type="text" name="question" id="question">
+                                <label class="raleway font-semibold text-md" for="title">Title:</label>
+                                <input value="{{ $trivia['title'] }}" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" type="text" name="title" id="title">
                             </div>
+                            <div class="flex flex-col px-2 py-2">
+                                <label class="raleway font-semibold text-md" for="question">Description:</label>
+                                <input value="{{ $trivia['description'] }}"  class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" type="text" name="description" id="description">
+                            </div>
+                            <div class="flex flex-col px-2 py-2">
+                                <label class="raleway font-semibold text-md" for="difficulty">Difficulty</label>
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="difficulty" id="difficulty">
+                                    <option value="easy" @if($trivia['difficulty'] == 'easy') selected="selected" @endif>Easy</option>
+                                    <option value="medium" @if($trivia['difficulty'] == 'medium') selected="selected" @endif>Medium</option>
+                                    <option value="hard" @if($trivia['difficulty'] == 'hard') selected="selected" @endif>Hard</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col px-2 py-2">
+                                <label class="raleway font-semibold text-md" for="category">Category</label>
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="category" id="category">
+                                    @foreach($categories as $cat)
+                                        <option value="{{ $cat['id'] }}" @if($trivia['category_id'] == $cat['id']) selected="selected" @endif>{{ $cat['name'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="flex flex-col px-2 py-2">
+                                <label class="raleway font-semibold text-md" for="is_active">Is Active: </label>
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="is_active" id="is_active">
+                                    <option value="0" @if($trivia['is_active'] == 0) selected="selected" @endif>0</option>
+                                    <option value="1" @if($trivia['is_active'] == 1) selected="selected" @endif>1</option>
+                                </select>
+                            </div>
+
                         </div>
                         <div class="flex flex-row px-2">
-                            <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="addQuestion()">Add Question</button>
+                            <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold">Save</button>
                         </div>
-                    </div>
+                    </form>
+
                     <div class="flex flex-col px-4 mt-4">
                         <h2 class="raleway">Questions:</h2>
                         <div id="question-holder">
@@ -67,6 +98,19 @@
                                 </div>
                             </div>
                         @endforeach
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col px-2 py-4 bg-slate-200 shadow-md mt-4">
+                        {{ csrf_field() }}
+                        <div class="flex flex-row">
+                            <div class="flex flex-col px-2 py-2">
+                                <label class="raleway font-semibold text-md" for="question">Question:</label>
+                                <input class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" type="text" name="question" id="question">
+                            </div>
+                        </div>
+                        <div class="flex flex-row px-2">
+                            <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="addQuestion()">Add Question</button>
                         </div>
                     </div>
                 </div>
@@ -271,10 +315,7 @@
         }
 
         const addAnswer = () => {
-            console.log('add answer');
-
             let questionId = event.target.getAttribute('data-questionid');
-
             fetch('/trv/management/trivia/{{ $trivia['id'] }}/question/' + questionId + '/answer', {
                 method: 'POST',
                 headers: {
@@ -301,9 +342,15 @@
                         answerDiv.classList.add('border-slate-500', 'bg-slate-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
                     }
                     answerDiv.innerText = answer.answer;
-
                     answerHolder.appendChild(answerDiv);
+
+                    //add answer to questionsList
+                    questionsList[questionId]['answers'].push(answer);
                 }
+
+                document.querySelector('#answer-' + questionId).value = '';
+                document.querySelector('#is_correct-'+questionId).value = 0;
+
             })
             .catch(error => console.log(error));
         }
@@ -311,12 +358,7 @@
         const moveQuestionOrderNrUp = (e) => {
 
             let questionId = event.target.getAttribute('data-questionid');
-            //find question in questionsList by attribute questionId
             let question = questionsList[questionId];
-
-            console.log(questionsList);
-            //get total number of questions
-            let totalQuestions = Object.keys(questionsList).length;
 
             if (question['order_nr'] == 0) {
                 return;
@@ -324,19 +366,61 @@
 
             question['order_nr'] = question['order_nr'] - 1;
 
-            //find question with order_nr + 1 and replace by current questions old order_nr
             let questionToReplace = Object.values(questionsList).find(q => q['order_nr'] == question['order_nr']);
             questionToReplace['order_nr'] = questionToReplace['order_nr'] + 1;
-            //update questionList with new values
+
             questionsList[questionToReplace['id']] = questionToReplace;
             questionsList[question['id']] = question;
 
-            //order questionList by order_nr
+            updateQuestionOrderNr(question['id'], question['order_nr']);
+            updateQuestionOrderNr(questionToReplace['id'], questionToReplace['order_nr']);
+
             redrawQuestionsUI();
         }
 
         const moveQuestionOrderNrDown = () => {
+            let questionId = event.target.getAttribute('data-questionid');
+            let question = questionsList[questionId];
 
+            let totalQuestions = Object.keys(questionsList).length;
+
+            if (question['order_nr'] >= totalQuestions) {
+                return;
+            }
+
+            question['order_nr'] = question['order_nr'] + 1;
+
+            //find question with order_nr + 1 and replace by current questions old order_nr
+            let questionToReplace = Object.values(questionsList).find(q => q['order_nr'] == question['order_nr']);
+            questionToReplace['order_nr'] = questionToReplace['order_nr'] - 1;
+            //update questionList with new values
+            questionsList[questionToReplace['id']] = questionToReplace;
+            questionsList[question['id']] = question;
+
+            updateQuestionOrderNr(question['id'], question['order_nr']);
+            updateQuestionOrderNr(questionToReplace['id'], questionToReplace['order_nr']);
+            //order questionList by order_nr
+            redrawQuestionsUI();
+        }
+
+        const updateQuestionOrderNr = (questionId, orderNr) => {
+            fetch('/trv/management/trivia/{{ $trivia['id'] }}/question/' + questionId + '/order', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    order_nr: orderNr
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    console.log('question order nr updated');
+                }
+            })
         }
 
         const redrawQuestionsUI = () => {

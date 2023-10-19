@@ -22,7 +22,9 @@ class TriviaController
         //$allTrivia = Trivia::all();
         //dd($allTrivia);
         $categories = Categories::where('is_active', 1)->orderBy('name')->get();
-        return view('trivia-game::pages.index')->with(['categories' => $categories]);
+        $usersTrivias = Trivia::where('user_id', Auth::user()->id)->get();
+
+        return view('trivia-game::pages.index')->with(['categories' => $categories, 'usersTrivias' => $usersTrivias]);
     }
 
     public function createGame(Request $request)
@@ -348,10 +350,33 @@ class TriviaController
 
     public function editTrivia($id)
     {
-        $trivia = Trivia::where('id', $id)->first();
-        $questions = Questions::where('trivia_id', $id)->orderBy('order_nr')->get();
+        if (!Auth::check()) {
+            return redirect()->to('/trv/trivia');
+        }
 
-        return view('trivia-game::pages.edit')->with(['trivia' => $trivia, 'questions' => $questions]);
+        $trivia = Trivia::where('id', $id)->first();
+
+        if (Auth::user()->user_id == $trivia->user_id) {
+            return redirect()->to('/trv/trivia');
+        }
+
+        $questions = Questions::where('trivia_id', $id)->orderBy('order_nr')->get();
+        $categories = Categories::where('is_active', 1)->get();
+
+        return view('trivia-game::pages.edit')->with(['trivia' => $trivia, 'questions' => $questions, 'categories' => $categories]);
+    }
+
+    public function updateTrivia($id, Request $request)
+    {
+        $trivia = Trivia::where('id', $id)->first();
+        $trivia->title = $request->title;
+        $trivia->description = $request->description;
+        $trivia->category_id = $request->category;
+        $trivia->difficulty = $request->difficulty;
+        $trivia->is_active = (int)$request->is_active;
+        $trivia->save();
+
+        return redirect()->back();
     }
 
     public function createQuestion($id, Request $request)
@@ -383,6 +408,19 @@ class TriviaController
             'success' => true,
             'message' => 'Answer created successfully',
             'payload' => $answer
+        ]);
+    }
+
+    public function updateQuestionOrder($id, $questionId, Request $request)
+    {
+        $question = Questions::where('id', $questionId)->first();
+        $question->order_nr = $request->order_nr;
+        $question->save();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Question order updated successfully',
+            'payload' => $question
         ]);
     }
 }
