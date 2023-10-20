@@ -1,7 +1,7 @@
 @extends('game-api::layout')
 @section('body')
     <div class="flex flex-row justify-center">
-        <div class="flex flex-col w-1/2">
+        <div class="flex flex-col w-full px-4 md:px-none md:w-1/2">
             <h2 class="fire-sans font-normal text-lg">
                 @if(Auth::user()->id == $gameInstance['user_id'])
                     Game Host: {{ Auth::user()->username }}
@@ -13,7 +13,7 @@
                 <div class="bg-slate-100 px-6 py-6">
                     <h1 id="question-holder" class="fira-sans text-xl text-center">Waiting For Question...</h1>
                 </div>
-                <div class="bg-slate-200 px-6 py-8">
+                <div class="bg-slate-200 px-2 py-2 md:px-6 md:py-8">
                     <div class="answer-holder flex flex-wrap justify-between">
                     </div>
                 </div>
@@ -30,7 +30,7 @@
             <div id="answered-players-holder">
                 @if(Auth::user()->id == $gameInstance['user_id'])
                     @foreach($answeredUsers as $user)
-                        <div class="flex flex-col bg-slate-100 shadow-md py-2 px-2 rounded w-1/6">
+                        <div class="flex flex-col bg-slate-100 shadow-md py-2 px-2 rounded w-3/6 md:w-1/6">
                             <div class="flex flex-row justify-center">
                                 <img src="@if(is_null($user->user->avatar)) /images/default-avatar.jpg @else{{$user->user->avatar}}@endif" class="w-14 h-14 rounded-full shadow-md border-2 border-slate-500" alt="avatar" />
                             </div>
@@ -66,7 +66,7 @@
                         data.data.answers.forEach(answer => {
 
                             let answerButtonHolderDiv = document.createElement('div');
-                            answerButtonHolderDiv.classList.add('flex', 'flex-col', 'justify-center', 'px-2', 'w-2/4');
+                            answerButtonHolderDiv.classList.add('flex', 'flex-col', 'justify-center', 'px-2', 'md:w-2/4', 'w-full');
                             answerButtonHolderDiv.setAttribute('answer-id', answer.id);
 
                             let answerButton = document.createElement('button');
@@ -160,7 +160,7 @@
             let playerHolder = document.getElementById('answered-players-holder');
 
             let playerDiv = document.createElement('div');
-            playerDiv.classList.add('flex', 'flex-col', 'py-2', 'px-2', 'rounded', 'w-1/6', 'bg-slate-100', 'shadow-md');
+            playerDiv.classList.add('flex', 'flex-col', 'py-2', 'px-2', 'rounded', 'md:w-1/6', 'w-3/6', 'bg-slate-100', 'shadow-md');
 
             let playerImageDiv = document.createElement('div');
             playerImageDiv.classList.add('flex', 'flex-row', 'justify-center');

@@ -1,7 +1,7 @@
 @extends('game-api::layout')
 @section('body')
     @include('trivia-game::game.partials.scripts')
-    <div class="flex flex-row justify-center">
+    <div class="flex flex-row justify-center px-4 md:px-none">
         <div class="flex flex-col">
             <div class="bg-slate-200 px-6 py-8">
                 <h1 class="fira-sans font-semibold text-2xl border-b border-slate-300 my-2">{{ $trivia['title'] }}</h1>

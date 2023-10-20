@@ -68,7 +68,7 @@ class TriviaController
             return view('trivia-game::game.start')->with(['gameInstance' => $gameInstance, 'trivia' => $trivia]);
         }
 
-        if ($gameInstance['status'] == 'ended') {
+        if ($gameInstance['status'] == 'completed') {
             return view('trivia-game::game.end')->with(['gameInstance' => $gameInstance]);
         }
 
@@ -266,7 +266,7 @@ class TriviaController
         //step 1 check if current question isn't last available question
         if ($currentQuestion == Questions::where('trivia_id', $remoteData['trivia_id'])->count()) {
             //if it is last question then end game
-            GameApi::changeGameInstanceStatus($token, 'ended');
+            GameApi::changeGameInstanceStatus($token, 'completed');
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Game ended successfully',

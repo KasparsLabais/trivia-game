@@ -1,6 +1,6 @@
 @extends('game-api::layout')
 @section('body')
-    <div class="flex flex-col  mt-2 px-12">
+    <div class="flex flex-col  mt-2 px-4 md:px-12">
         <div class="flex flex-row">
             <h1 class="fira-sans font-semibold text-2xl">Trivia's by categories</h1>
             <hr>
@@ -14,7 +14,7 @@
                 </div>
                 <div class="flex flex-col">
                     @foreach($cat->availableTrivia as $trivia)
-                        <div class="flex flex-row mx-2 py-4 border-b border-b-slate-300">
+                        <div class="hidden md:flex flex-row mx-2 py-4 border-b border-b-slate-300">
                             <div class="raleway font-semibold flex flex-col justify-center px-4 w-1/6">{{ $trivia['title'] }}</div>
                             <div class="flex flex-col justify-center px-4 w-2/6">
                                 {{ Str::limit($trivia['description'], 50, '...') }}
@@ -28,6 +28,20 @@
                                 <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame({{ $trivia['id'] }})">Play</button>
                             </div>
                         </div>
+
+                        <div class="md:hidden flex flex-row mx-2 py-4 border-b border-b-slate-300">
+                            <div class="raleway flex flex-col justify-center px-4 w-4/6">
+                                <span class="font-semibold ">{{ $trivia['title'] }}</span>
+                                <span>{{ Str::limit($trivia['description'], 50, '...') }}</span>
+                            </div>
+                            <div class="flex flex-col justify-center px-4 w-2/6">
+                                <div>
+                                    Difficulty: <span class="capitalize text-semibold fira-sans @if($trivia['difficulty'] == 'medium') text-amber-700 @elseif($trivia['difficulty'] == 'hard') text-red-700 @else text-lime-600	 @endif">{{ $trivia['difficulty'] }}</span>
+                                </div>
+                                <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame({{ $trivia['id'] }})">Play</button>
+                            </div>
+                        </div>
+
                     @endforeach
                 </div>
             </div>
@@ -36,7 +50,7 @@
     </div>
 
     @if(Auth::check())
-    <div class="flex flex-col  mt-4 px-12">
+    <div class="flex flex-col  mt-4 px-4 md:px-12">
         <div class="flex flex-row">
             <h1 class="fira-sans font-semibold text-2xl">Your Trivia's</h1>
             <hr>
