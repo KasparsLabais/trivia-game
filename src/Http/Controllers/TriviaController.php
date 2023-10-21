@@ -69,7 +69,8 @@ class TriviaController
         }
 
         if ($gameInstance['status'] == 'completed') {
-            return view('trivia-game::game.end')->with(['gameInstance' => $gameInstance]);
+            return redirect()->to("/trv/trivia/{$gameToken}/results");
+            //return view('trivia-game::game.results')->with(['gameInstance' => $gameInstance]);
         }
 
         $answeredUsers = SubmittedAnswers::where('game_instance_id', $gameInstance['id'])->where('question_id', $remoteData['current_question'])->get();
