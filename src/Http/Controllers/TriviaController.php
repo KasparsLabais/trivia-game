@@ -19,11 +19,12 @@ class TriviaController
 
     public function index()
     {
-        //$allTrivia = Trivia::all();
-        //dd($allTrivia);
         $categories = Categories::where('is_active', 1)->orderBy('name')->get();
-        $usersTrivias = Trivia::where('user_id', Auth::user()->id)->get();
-
+        if(Auth::check()) {
+            $usersTrivias = Trivia::where('user_id', Auth::user()->id)->get();
+        } else {
+            $usersTrivias = [];
+        }
         return view('trivia-game::pages.index')->with(['categories' => $categories, 'usersTrivias' => $usersTrivias]);
     }
 

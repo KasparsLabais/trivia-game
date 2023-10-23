@@ -8,14 +8,45 @@
         <div class="flex flex-col bg-slate-200">
             @foreach($categories as $cat)
             <div class="">
-                <div class="bg-slate-300 py-4 px-8 fira-sans shadow-md border-b border-b-slate-400">
-                    <h2 class="text-semibold">{{ $cat['name'] }} <span class="text-normal">({{ $cat->availableTrivia->count() }})</span></h2>
-                    <p>{{ $cat['description'] }}</p>
+                <div class="flex flex-row justify-between bg-slate-300 fira-sans shadow-md border-b @if($cat->availableTrivia->count() == 0) border-b-slate-400 @else border-b-2 border-b-lime-500 @endif">
+                    <div class="flex flex-row">
+                        <div class="shadow-md px-4 py-2 @if($cat->availableTrivia->count() == 0) bg-stone-300	 @else shadow-lime-500 bg-lime-500 @endif">
+                            <span class="text-normal">{{ $cat->availableTrivia->count() }}</span>
+                        </div>
+                        <div class="flex flex-col justify-center">
+                            <h2 class="text-semibold px-2">{{ $cat['name'] }}</h2>
+                        </div>
+                    </div>
+                    <div class="flex flex-row">
+                        <div class="hidden flex flex-row" id="expanded-cat-{{$cat['id']}}">
+                            <div class="flex flex-col justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="text-rose-600 w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col justify-center">
+                                <button class="px-4" onclick="hideCategory({{ $cat['id'] }})">Hide All</button>
+                            </div>
+                        </div>
+                        <div class="flex flex-row"  id="collapsed-cat-{{$cat['id']}}">
+                            <div class="flex flex-col justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="text-slate-600 w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                </svg>
+                            </div>
+                            <div class="flex flex-col justify-center">
+                                <button class="px-4" onclick="expandCategory({{ $cat['id'] }})">Show All</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex flex-col">
+                <div id="trivia-holder-{{$cat['id']}}" class="hidden flex flex-col transition-all duration-200">
                     @foreach($cat->availableTrivia as $trivia)
                         <div class="hidden md:flex flex-row mx-2 py-4 border-b border-b-slate-300">
-                            <div class="raleway font-semibold flex flex-col justify-center px-4 w-1/6">{{ $trivia['title'] }}</div>
+                            <div class="raleway font-semibold flex flex-col justify-center px-4 w-1/6">
+                                {{ $trivia['title'] }}
+                                <div class="flex flex-row"><span class="font-normal">Author: </span><span class="font-semibold">&nbsp;{{ $trivia->user->username }}</span></div>
+                            </div>
                             <div class="flex flex-col justify-center px-4 w-2/6">
                                 {{ Str::limit($trivia['description'], 50, '...') }}
                             </div>
@@ -25,23 +56,37 @@
                                 </div>
                             </div>
                             <div class="flex flex-col justify-center px-4 w-2/6">
-                                <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame({{ $trivia['id'] }})">Play</button>
+
+                                @if(Auth::check())
+                                    <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame({{ $trivia['id'] }})">Play</button>
+                                @else
+                                    <div>
+                                        <span class="">You Need To Login To Play</span>
+                                    </div>
+                                @endif
                             </div>
                         </div>
-
                         <div class="md:hidden flex flex-row mx-2 py-4 border-b border-b-slate-300">
                             <div class="raleway flex flex-col justify-center px-4 w-4/6">
                                 <span class="font-semibold ">{{ $trivia['title'] }}</span>
+                                <div class="flex flex-row"><span class="font-normal">Author: </span><span class="font-semibold">&nbsp;{{ $trivia->user->username }}</span></div>
                                 <span>{{ Str::limit($trivia['description'], 50, '...') }}</span>
                             </div>
                             <div class="flex flex-col justify-center px-4 w-2/6">
                                 <div>
                                     Difficulty: <span class="capitalize text-semibold fira-sans @if($trivia['difficulty'] == 'medium') text-amber-700 @elseif($trivia['difficulty'] == 'hard') text-red-700 @else text-lime-600	 @endif">{{ $trivia['difficulty'] }}</span>
                                 </div>
-                                <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame({{ $trivia['id'] }})">Play</button>
+                                @if(Auth::check())
+                                    <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame({{ $trivia['id'] }})">Play</button>
+                                @else
+                                    <div>
+                                        <div>
+                                            <span class="">You Need To Login To Play</span>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
-
                     @endforeach
                 </div>
             </div>
@@ -107,6 +152,26 @@
                 .catch(error => console.log(error));
 
              */
+        }
+
+        function expandCategory(categoryId) {
+
+            //hide expand button and show collapse button
+            document.getElementById('expanded-cat-' + categoryId).classList.remove('hidden');
+            document.getElementById('collapsed-cat-' + categoryId).classList.add('hidden');
+
+            //show all trivia's in category
+            document.getElementById('trivia-holder-' + categoryId).classList.remove('hidden');
+        }
+
+        function hideCategory(categoryId) {
+
+            //hide collapse button and show expand button
+            document.getElementById('expanded-cat-' + categoryId).classList.add('hidden');
+            document.getElementById('collapsed-cat-' + categoryId).classList.remove('hidden');
+
+            //hide all trivia's in category
+            document.getElementById('trivia-holder-' + categoryId).classList.add('hidden');
         }
     </script>
 @endsection
