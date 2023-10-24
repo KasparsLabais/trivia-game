@@ -17,10 +17,10 @@
             </div>
             <div>
                 <h1>Runner Up's</h1>
-                <div class="flex flex-row flex-row">
+                <div class="flex flex-row flex-row justify-center md:justify-start">
                     @foreach($winners['winners'] as $runnerUp)
                         @if($runnerUp->user->id != $winners['winner']->user->id)
-                            <div class="flex flex-col w-1/6 px-2">
+                            <div class="flex flex-col w-1/2 md:w-1/6 px-2">
                                 <div class="flex flex-col bg-slate-100 shadow-lg rounded-md py-2">
                                     <div class="flex flex-row justify-center">
                                         <img class="w-20 h-20 rounded-lg shadow border-2 border-slate-400" src="@if(is_null($runnerUp->user->avatar)) /images/default-avatar.jpg @else{{ $runnerUp->user->avatar }}@endif" alt="Game Image"/>
