@@ -430,4 +430,66 @@ class TriviaController
             'payload' => $question
         ]);
     }
+
+    public function csvUpload(Request $request)
+    {
+        $csvFile = $request->file('trivia-csv');
+        $csvData = file_get_contents($csvFile);
+
+        $rows = array_map("str_getcsv", explode("\n", $csvData));
+        $header = array_shift($rows);
+
+        if (count($header) < 2) {
+            return redirect()->back()->with([
+                'success' => false,
+                'message' => 'CSV file is not in correct format',
+                'payload' => NULL
+            ]);
+        }
+
+        $csv = array();
+        foreach ($rows as $row) {
+            $csv[] = [
+                'question' => $row[0],
+                'answers' => []
+            ];
+            for ($i = 1; $i < count($row); $i++) {
+                $csv[count($csv) - 1]['answers'][] = ['answer' => $row[$i], 'is_correct' => ($i == 1) ? 1 : 0];
+            }
+        }
+
+        $trivia = Trivia::create([
+            'title' => $header[0],
+            'category_id' => 1,
+            'description' => $header[1],
+            'difficulty' => 'easy',
+            'type' => 'boolean', //just for now
+            'user_id' => Auth::user()->id,
+        ]);
+
+        foreach ($csv as $key => $question) {
+
+            if (is_null($question['question'])) {
+                continue;
+            }
+
+            $newQuestion = Questions::create([
+                'trivia_id' => $trivia->id,
+                'question' => $question['question'],
+                'order_nr' => $key + 1,
+            ]);
+
+            //randomize answers order for each question
+            shuffle($question['answers']);
+            foreach ($question['answers'] as $answer) {
+                Answers::create([
+                    'question_id' => $newQuestion->id,
+                    'answer' => $answer['answer'],
+                    'is_correct' => $answer['is_correct'],
+                ]);
+            }
+        }
+
+        return redirect()->back();
+    }
 }

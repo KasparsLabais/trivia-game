@@ -1,7 +1,7 @@
 @extends('game-api::layout')
 @section('body')
     <div class="flex flex-row justify-center">
-        <div class="flex flex-col  w-1/2">
+        <div class="flex flex-col w-5/6 md:w-1/2">
             <div class="flex flex-col justify-center">
                 <h1 class="text-center fire-sans font-semibold text-4xl py-4">Winner</h1>
                 <hr>
