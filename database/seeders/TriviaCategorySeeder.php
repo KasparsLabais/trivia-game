@@ -10,7 +10,8 @@ class TriviaCategorySeeder extends Seeder
 
     public function run()
     {
-        Categories::createMany([
+
+        $categoryList = [
             [
                 'name' => 'General Knowledge',
                 'is_active' => 1
@@ -75,7 +76,11 @@ class TriviaCategorySeeder extends Seeder
                 'name' => 'Engineering',
                 'is_active' => 1
             ]
-        ]);
+        ];
+
+        foreach ($categoryList as $category) {
+            Categories::create($category);
+        }
     }
 
 }
