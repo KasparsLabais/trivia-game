@@ -15,7 +15,7 @@ class CreateTriviaTable extends Migration
             $table->id();
 
             $table->string('title', 255);
-            $table->string('category', 255);
+            $table->unsignedBigInteger('category_id')->nullable();
             $table->string('difficulty', 255);
             $table->string('type', 255);
 
