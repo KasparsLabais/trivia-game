@@ -45,7 +45,7 @@
                 <span class="fira-sans font-semibold text-xl my-2">Join:</span>
                 <div class="flex flex-row justify-center" id="qrcode"></div>
                 <span class="flex flex-row justify-center my-4">OR</span>
-                <h2 class="fira-sans flex flex-row justify-center"><span>http://is-a.gay/join/{{ $gameInstance['token'] }}</span></h2>
+                <h2 class="fira-sans flex flex-row justify-center"><span>https://is-a.gay/join/{{ $gameInstance['token'] }}</span></h2>
             </div>
             <div class="bg-slate-300 px-6 py-8">
                 @if(Auth::user()->id == $gameInstance['user_id'])
@@ -61,7 +61,7 @@
     <script>
 
         var qrcode = new QRCode("qrcode", {
-            text: "http://is-a.gay/join/{{ $gameInstance['token'] }}",
+            text: "https://is-a.gay/join/{{ $gameInstance['token'] }}",
             width: 128,
             height: 128,
             colorDark : "#000000",
