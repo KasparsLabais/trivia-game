@@ -391,7 +391,7 @@ class TriviaController
         $question = Questions::create([
             'trivia_id' => $id,
             'question' => $request->question,
-            'order_nr' => $lastOrder['order_nr']+1,
+            'order_nr' => !isset($lastOrder['order_nr']) ? 1 : $lastOrder['order_nr']+1,
         ]);
 
         return new JsonResponse([
