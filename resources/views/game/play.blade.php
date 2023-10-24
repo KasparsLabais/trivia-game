@@ -161,8 +161,11 @@
             console.log('playerAnsweredEvent',e.detail);
             let playerHolder = document.getElementById('answered-players-holder');
 
+            let playerDivHolder = document.createElement('div');
+            playerDivHolder.classList.add('px-1', 'py-1', 'md:w-1/6', 'w-3/6');
+
             let playerDiv = document.createElement('div');
-            playerDiv.classList.add('flex', 'flex-col', 'py-2', 'px-2', 'rounded', 'md:w-1/6', 'w-3/6', 'bg-slate-100', 'shadow-md');
+            playerDiv.classList.add('flex', 'flex-col', 'py-2', 'px-2', 'rounded', 'bg-slate-100', 'shadow-md');
 
             let playerImageDiv = document.createElement('div');
             playerImageDiv.classList.add('flex', 'flex-row', 'justify-center');
@@ -180,7 +183,9 @@
             playerDiv.appendChild(playerImageDiv);
             playerDiv.appendChild(playerNicknameDiv);
 
-            playerHolder.appendChild(playerDiv);
+            playerDivHolder.appendChild(playerDiv);
+
+            playerHolder.appendChild(playerDivHolder);
         });
 
         document.addEventListener('nextQuestionEvent', (e) => {
