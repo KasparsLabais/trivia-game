@@ -61,7 +61,7 @@
     <script>
 
         var qrcode = new QRCode("qrcode", {
-            text: "http://trivia.test/join/{{ $gameInstance['token'] }}",
+            text: "http://is-a.gay/join/{{ $gameInstance['token'] }}",
             width: 128,
             height: 128,
             colorDark : "#000000",
