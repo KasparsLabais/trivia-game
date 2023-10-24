@@ -74,7 +74,9 @@ class TriviaController
             //return view('trivia-game::game.results')->with(['gameInstance' => $gameInstance]);
         }
 
-        $answeredUsers = SubmittedAnswers::where('game_instance_id', $gameInstance['id'])->where('question_id', $remoteData['current_question'])->get();
+        $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+        $answeredUsers = SubmittedAnswers::where('game_instance_id', $gameInstance['id'])->where('question_id', $question['id'])->get();
+
         $returnObject = [
             'gameInstance' => $gameInstance,
             'remoteData' => $remoteData,

@@ -27,15 +27,17 @@
             @if(Auth::user()->id == $gameInstance['user_id'])
                 <h2 class="fire-sans font-normal text-lg">Players that have submitted answer:</h2>
             @endif
-            <div id="answered-players-holder">
+            <div id="answered-players-holder" class="flex flex-row">
                 @if(Auth::user()->id == $gameInstance['user_id'])
                     @foreach($answeredUsers as $user)
-                        <div class="flex flex-col bg-slate-100 shadow-md py-2 px-2 rounded w-3/6 md:w-1/6">
-                            <div class="flex flex-row justify-center">
-                                <img src="@if(is_null($user->user->avatar)) /images/default-avatar.jpg @else{{$user->user->avatar}}@endif" class="w-14 h-14 rounded-full shadow-md border-2 border-slate-500" alt="avatar" />
-                            </div>
-                            <div class="flex flex-row justify-center">
-                                <div class="raleway font-semibold">{{ $user->user->username }}</div>
+                        <div class="px-1 py-1">
+                            <div class="flex flex-col bg-slate-100 shadow-md py-2 px-2 rounded">
+                                <div class="flex flex-row justify-center">
+                                    <img src="@if(is_null($user->user->avatar)) /images/default-avatar.jpg @else{{$user->user->avatar}}@endif" class="w-14 h-14 rounded-full shadow-md border-2 border-slate-500" alt="avatar" />
+                                </div>
+                                <div class="flex flex-row justify-center">
+                                    <div class="raleway font-semibold">{{ $user->user->username }}</div>
+                                </div>
                             </div>
                         </div>
                     @endforeach
