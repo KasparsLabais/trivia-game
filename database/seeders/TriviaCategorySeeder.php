@@ -1,6 +1,6 @@
 <?php
 
-namespace PartyGames\TriviaGame\database\seeders;
+namespace PartyGames\TriviaGame\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use PartyGames\TriviaGame\Models\Categories;
