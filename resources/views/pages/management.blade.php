@@ -6,7 +6,7 @@
                 <h1 class="fira-sans font-semibold text-2xl">Management</h1>
                 <hr>
                 <div class="bg-slate-100">
-                    <div class="flex flex-row bg-slate-200 shadow">
+                    <div class="flex flex-col bg-slate-200 shadow">
                         <div>
                             <form action="/trv/management/trivia" method="POST" class="flex flex-col px-2 py-4 ">
                                 {{ csrf_field() }}
@@ -51,7 +51,7 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-row px-2">
-                                    <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold">Create New Trivia</button>
+                                    <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold">Create Trivia From CSV</button>
                                 </div>
                             </form>
                         </div>
