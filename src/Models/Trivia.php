@@ -5,6 +5,7 @@ namespace PartyGames\TriviaGame\Models;
 use Illuminate\Database\Eloquent\Model;
 use PartyGames\TriviaGame\Models\Questions;
 use PartyGames\GameApi\Models\User;
+use PartyGames\TriviaGame\Models\Ratings;
 
 class Trivia extends Model
 {
@@ -35,4 +36,15 @@ class Trivia extends Model
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
+
+    //add function to get average rating and count of users given rating to trivia
+    public function getRating()
+    {
+        $rating = $this->hasMany(Ratings::class, 'trivia_id', 'id')->avg('rating');
+        $count = $this->hasMany(Ratings::class, 'trivia_id', 'id')->count();
+        return [
+            'rating' => round($rating, 0),
+            'count' => $count
+        ];
+    }
 }

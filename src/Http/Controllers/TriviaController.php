@@ -11,6 +11,7 @@ use PartyGames\TriviaGame\Models\Questions;
 use PartyGames\TriviaGame\Models\SubmittedAnswers;
 use PartyGames\TriviaGame\Models\Trivia;
 use PartyGames\TriviaGame\Models\Answers;
+use PartyGames\TriviaGame\Models\Ratings;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -515,5 +516,58 @@ class TriviaController
         }
 
         return redirect()->back();
+    }
+
+    public function rateTrivia(Request $request)
+    {
+
+        if (!Auth::check()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'You are not logged in',
+                'data' => NULL
+            ]);
+        }
+
+        $trivia = Trivia::where('id', $request->get('trivia_id'))->first();
+        if (!$trivia) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Trivia not found',
+                'data' => NULL
+            ]);
+        }
+
+        //check if user has already rated this trivia
+        $rating = Ratings::where('trivia_id', $trivia->id)->where('user_id', Auth::user()->id)->first();
+        if($rating) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'You have already rated this trivia',
+                'data' => NULL
+            ]);
+        }
+
+        //check if rating is between 1 and 5
+        if($request->get('rating') < 1 || $request->get('rating') > 5) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Rating must be between 1 and 5',
+                'data' => NULL
+            ]);
+        }
+
+        //rate a trivia
+        $rating = Ratings::create([
+            'trivia_id' => $trivia->id,
+            'user_id' => Auth::user()->id,
+            'rating' => $request->get('rating')
+        ]);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Trivia rated successfully',
+            'data' => $rating
+        ]);
     }
 }

@@ -11,7 +11,7 @@
                 <div class="flex flex-row justify-between bg-slate-300 fira-sans shadow-md border-b @if($cat->availableTrivia->count() == 0) border-b-slate-400 @else border-b-2 border-b-lime-500 @endif">
                     <div class="flex flex-row">
                         <div class="shadow-md px-4 py-2 @if($cat->availableTrivia->count() == 0) bg-stone-300	 @else shadow-lime-500 bg-lime-500 @endif">
-                            <span class="text-normal">{{ $cat->availableTrivia->count() }}</span>
+                            <span class="@if($cat->availableTrivia->count() > 0) font-semibold @endif">{{ $cat->availableTrivia->count() }}</span>
                         </div>
                         <div class="flex flex-col justify-center">
                             <h2 class="text-semibold px-2">{{ $cat['name'] }}</h2>
@@ -43,9 +43,17 @@
                 <div id="trivia-holder-{{$cat['id']}}" class="hidden flex flex-col transition-all duration-200">
                     @foreach($cat->availableTrivia as $trivia)
                         <div class="hidden md:flex flex-row mx-2 py-4 border-b border-b-slate-300">
-                            <div class="raleway font-semibold flex flex-col justify-center px-4 w-1/6">
-                                {{ $trivia['title'] }} ({{ $trivia->questions->count() }})
-                                <div class="flex flex-row"><span class="font-normal">Author: </span><span class="font-semibold">&nbsp;{{ $trivia->user->username }}</span></div>
+                            <div class="fire-sans font-semibold flex flex-col justify-center px-4 w-1/6">
+                                {{ $trivia['title'] }}
+                                <div class="font-normal fira-sans flex flex-row">
+                                    @for( $i = 1; $i <= 5; $i++)
+                                        <svg @if(Auth::check()) onclick="rateTrivia({{ $trivia->id }}, {{ $i + 1 }})" @endif xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="@if($i <= ($trivia->getRating())['rating'] && ($trivia->getRating())['rating'] != 0 ) fill-amber-500 stroke-amber-500 @endif w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                                        </svg>
+                                    @endfor
+                                    ({{ ($trivia->getRating())['count'] }})
+                                </div>
+                                <div class="flex flex-row fira-sans"><span class="font-normal">Author: </span><span class="font-semibold">&nbsp;{{ $trivia->user->username }}</span></div>
                             </div>
                             <div class="flex flex-col justify-center px-4 w-2/6">
                                 {{ Str::limit($trivia['description'], 50, '...') }}
@@ -53,6 +61,9 @@
                             <div class="flex flex-col justify-center px-4 w-1/6">
                                 <div>
                                     Difficulty: <span class="capitalize text-semibold fira-sans @if($trivia['difficulty'] == 'medium') text-amber-700 @elseif($trivia['difficulty'] == 'hard') text-red-700 @else text-lime-600	 @endif">{{ $trivia['difficulty'] }}</span>
+                                </div>
+                                <div>
+                                    <span class="font-semibold">{{ $trivia->questions->count() }}</span> Questions
                                 </div>
                             </div>
                             <div class="flex flex-col justify-center px-4 w-2/6">
@@ -67,14 +78,24 @@
                             </div>
                         </div>
                         <div class="md:hidden flex flex-row mx-2 py-4 border-b border-b-slate-300">
-                            <div class="raleway flex flex-col justify-center px-4 w-4/6">
+                            <div class="raleway flex flex-col justify-center px-4 w-3/6">
                                 <span class="font-semibold ">{{ $trivia['title'] }} ({{ $trivia->questions->count() }})</span>
+                                <div class="font-normal fira-sans flex flex-row">
+                                    @for( $i = 0; $i < 5; $i++)
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="@if($i <= ($trivia->getRating())['rating'] && ($trivia->getRating())['rating'] != 0 ) fill-amber-500 stroke-amber-500 @endif w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                                        </svg>
+                                    @endfor
+                                    ({{ ($trivia->getRating())['count'] }})
+                                </div>
                                 <div class="flex flex-row"><span class="font-normal">Author: </span><span class="font-semibold">&nbsp;{{ $trivia->user->username }}</span></div>
-                                <span>{{ Str::limit($trivia['description'], 50, '...') }}</span>
                             </div>
-                            <div class="flex flex-col justify-center px-4 w-2/6">
+                            <div class="flex flex-col justify-center px-4 w-3/6">
                                 <div>
                                     Difficulty: <span class="capitalize text-semibold fira-sans @if($trivia['difficulty'] == 'medium') text-amber-700 @elseif($trivia['difficulty'] == 'hard') text-red-700 @else text-lime-600	 @endif">{{ $trivia['difficulty'] }}</span>
+                                </div>
+                                <div>
+                                    <span  class="font-semibold">{{ $trivia->questions->count() }}</span> Questions
                                 </div>
                                 @if(Auth::check())
                                     <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame({{ $trivia['id'] }})">Play</button>
@@ -173,5 +194,19 @@
             //hide all trivia's in category
             document.getElementById('trivia-holder-' + categoryId).classList.add('hidden');
         }
+
+        function rateTrivia(triviaId, rating) {
+            fetch('/trv/trivia/rating', {'method' : 'POST', 'body': JSON.stringify({'trivia_id' : triviaId, 'rating' : rating}), 'headers' : {'Content-Type' : 'application/json', 'X-CSRF-TOKEN' : '{{ csrf_token() }}'}})
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if(data.success) {
+                        alert(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                });
+        }
+
     </script>
 @endsection
