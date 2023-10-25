@@ -74,7 +74,9 @@
                             let answerButton = document.createElement('button');
                             answerButton.classList.add('py-2', 'px-4', 'shadow-md', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'mb-2', 'w-full');
                             answerButton.innerHTML = answer.answer;
+                            @if(Auth::user()->id != $gameInstance['user_id'])
                             answerButton.setAttribute('onclick', 'answerQuestion(' + answer.id + ')');
+                            @endif
 
                             answerButtonHolderDiv.appendChild(answerButton);
                             answerHolder.appendChild(answerButtonHolderDiv);
