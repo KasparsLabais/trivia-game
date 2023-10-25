@@ -2,6 +2,11 @@
 @section('body')
     <div class="flex flex-row justify-center">
         <div class="flex flex-col w-full px-4 md:px-none md:w-1/2">
+            <div>
+                <h1 class="fira-sans text-xl">{{ $gameInstance['title'] }}</h1>
+                <div>Question <span id="current-question-number">{{ $remoteData['current_question'] }}</span> / {{ $totalQuestions }}</div>
+            </div>
+            <hr class="my-4">
             <h2 class="fire-sans font-normal text-lg">
                 @if(Auth::user()->id == $gameInstance['user_id'])
                     Game Host: {{ Auth::user()->username }}
@@ -193,6 +198,10 @@
         document.addEventListener('nextQuestionEvent', (e) => {
             console.log('nextQuestionEvent', e.detail);
             currentQuestion = e.detail.question;
+
+            let questionNumberHolder = document.getElementById('current-question-number');
+            questionNumberHolder.innerHTML = e.detail.question;
+
             loadQuestion();
         });
 

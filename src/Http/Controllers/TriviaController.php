@@ -79,6 +79,7 @@ class TriviaController
         $answeredUsers = SubmittedAnswers::where('game_instance_id', $gameInstance['id'])->where('question_id', $question['id'])->get();
 
         $returnObject = [
+            'totalQuestions' => Questions::where('trivia_id', $remoteData['trivia_id'])->count(),
             'gameInstance' => $gameInstance,
             'remoteData' => $remoteData,
             'answeredUsers' => $answeredUsers,
