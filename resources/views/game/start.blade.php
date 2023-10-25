@@ -76,8 +76,12 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log(data);
+                    if(data.success) {
+                        GameApi.updateGameInstance('{{ $gameInstance['token'] }}', data.data.gameInstance, 'gameStarted');
+                    } else {
+                        alert(data.message);
+                    }
                     //window.location.href = '/trv/trivia/' + data.data.token;
-                    GameApi.updateGameInstance('{{ $gameInstance['token'] }}', data.data.gameInstance, 'gameStarted');
                 })
                 .catch(error => console.log(error));
         }

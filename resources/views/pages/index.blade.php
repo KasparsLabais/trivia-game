@@ -44,7 +44,7 @@
                     @foreach($cat->availableTrivia as $trivia)
                         <div class="hidden md:flex flex-row mx-2 py-4 border-b border-b-slate-300">
                             <div class="raleway font-semibold flex flex-col justify-center px-4 w-1/6">
-                                {{ $trivia['title'] }}
+                                {{ $trivia['title'] }} ({{ $trivia->questions->count() }})
                                 <div class="flex flex-row"><span class="font-normal">Author: </span><span class="font-semibold">&nbsp;{{ $trivia->user->username }}</span></div>
                             </div>
                             <div class="flex flex-col justify-center px-4 w-2/6">
@@ -68,7 +68,7 @@
                         </div>
                         <div class="md:hidden flex flex-row mx-2 py-4 border-b border-b-slate-300">
                             <div class="raleway flex flex-col justify-center px-4 w-4/6">
-                                <span class="font-semibold ">{{ $trivia['title'] }}</span>
+                                <span class="font-semibold ">{{ $trivia['title'] }} ({{ $trivia->questions->count() }})</span>
                                 <div class="flex flex-row"><span class="font-normal">Author: </span><span class="font-semibold">&nbsp;{{ $trivia->user->username }}</span></div>
                                 <span>{{ Str::limit($trivia['description'], 50, '...') }}</span>
                             </div>

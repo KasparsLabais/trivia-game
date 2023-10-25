@@ -129,6 +129,30 @@ class TriviaController
         $gameToken = $request->get('gameToken');
         $gameInstance = GameApi::getGameInstance($gameToken);
 
+        if ($gameInstance['gameInstance']['user_id'] != Auth::user()->id) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'You are not the owner of this game instance',
+                'data' => []
+            ]);
+        }
+
+        if ($gameInstance['gameInstance']['status'] != 'created') {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Game instance is not in correct status',
+                'data' => []
+            ]);
+        }
+
+        if($gameInstance['gameInstance']->playerInstances->count() == 0) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => "You can't start game without players",
+                'data' => []
+            ]);
+        }
+
         $remoteData = json_decode($gameInstance['gameInstance']['remote_data'], true);
         $remoteData['current_question'] = 1;
 
