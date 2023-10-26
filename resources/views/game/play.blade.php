@@ -56,11 +56,14 @@
 
     <script>
 
+        let timeLimitTimer = null;
+
         GameApi.joinRoom('{{ $gameInstance['token'] }}');
         let currentQuestion = '{{ $remoteData['current_question'] }}';
 
         function loadQuestion()
         {
+            clearInterval(timeLimitTimer);
             fetch('/trv/trivia/{{ $gameInstance['token'] }}/question', {'method': 'GET', 'headers': {'Content-Type': 'application/json'}})
                 .then(response => response.json())
                 .then(data => {
@@ -118,6 +121,7 @@
             let answerHolder = document.querySelector('.answer-holder');
             answerHolder.innerHTML = '<div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-64 w-64"></div>';
 
+            clearInterval(timeLimitTimer);
             fetch('/trv/trivia/{{ $gameInstance['token'] }}/answer', {'method' : 'POST', 'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'answer_id': id, 'question_id': currentQuestion})})
                 .then(response => response.json())
                 .then(data => {
@@ -179,7 +183,7 @@
 
         function triggerTimer(initialTime)
         {
-            initialTime = 20;//just for debuging
+            //initialTime = 10;//just for debuging
             let timerHolder = document.getElementById('timer-settings');
 
             //remove all classes from timer holder
@@ -229,11 +233,17 @@
             }
 
             if (timeLeft <= 0) {
-                //alert('done');
+
+                @if(Auth::user()->id != $gameInstance['user_id'])
+                let answerHolder = document.querySelector('.answer-holder');
+                answerHolder.innerHTML = "<div class='w-full fira-sans text-4xl text-center'><h1>TIME'S UP!</h1></div>";
+                @endif
+
+                clearInterval(timeLimitTimer);
                 return;
             }
 
-            setTimeout(() => {
+            timeLimitTimer = setTimeout(() => {
                 updateTimer(timeLeft - 1, initialTime, timerHolder);
             }, 1000);
         }
