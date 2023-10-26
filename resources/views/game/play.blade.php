@@ -182,8 +182,11 @@
             initialTime = 20;//just for debuging
             let timerHolder = document.getElementById('timer-settings');
 
-            timerHolder.classList.remove('hidden')
+            //remove all classes from timer holder
+            timerHolder.classList = [];
             timerHolder.classList.add('bg-lime-300');
+
+
             timerHolder.style.width = '100%';
             timerHolder.style.height = '8.5px';
 
