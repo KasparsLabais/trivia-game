@@ -56,8 +56,8 @@
                         <div class="flex flex-row w-3/6">
                             <label class="raleway font-normal text-base" for="time_limit_enabled">Time Limit Enabled:</label>
                             <select class="raleway font-normal text-base capitalize" name="time_limit_enabled" id="time_limit_enabled">
-                                <option value="1" @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 1 ) selected="selected" @endif>True</option>
-                                <option value="0" @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 0 ) selected="selected" @endif>False</option>
+                                <option value="1" @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 1 ) selected="selected" @endif>True</option>
+                                <option value="0" @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 0 ) selected="selected" @endif>False</option>
                             </select>
                         </div>
                         <div class="flex flex-row w-3/6">
