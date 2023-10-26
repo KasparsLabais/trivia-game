@@ -196,7 +196,9 @@ class TriviaController
             }
         }
 
+        $settingsResponse = GameApi::getGameInstanceSettings($token);
         $response = [
+            'settings' => $settingsResponse['gameInstanceSetting'],
             'question' => $question['question'],
             'question_id' => $remoteData['current_question'],
             'total_questions' => Questions::where('trivia_id', $remoteData['trivia_id'])->count(),

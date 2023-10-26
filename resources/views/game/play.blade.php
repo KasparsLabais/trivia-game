@@ -1,5 +1,6 @@
 @extends('game-api::layout')
 @section('body')
+
     <div class="flex flex-row justify-center">
         <div class="flex flex-col w-full px-4 md:px-none md:w-1/2">
             <div>
@@ -14,6 +15,8 @@
                     Your Points: <x-points points="{{ $playerInstance['points']  }}"></x-points>
                 @endif
             </h2>
+            <div id="timer-settings" class="hidden bg-lime-300" style="width: 100%; height: 8.5px;">
+            </div>
             <div class="shadow-md">
                 <div class="bg-slate-100 px-6 py-6">
                     <h1 id="question-holder" class="fira-sans text-xl text-center">Waiting For Question...</h1>
@@ -86,6 +89,20 @@
                             answerButtonHolderDiv.appendChild(answerButton);
                             answerHolder.appendChild(answerButtonHolderDiv);
                         });
+
+                        data.data.settings.forEach(setting => {
+                            if (setting.key == 'time_limit_enabled') {
+                                if (setting.value == 1) {
+                                    let timeLimitForQuestion = data.data.settings.find(setting => setting.key == 'time_per_question');
+                                    if(typeof (timeLimitForQuestion) == 'undefined') {
+                                        triggerTimer(60);
+                                    } else {
+                                        triggerTimer(timeLimitForQuestion.value)
+                                    }
+                                }
+                            }
+                        });
+
                     } else {
                         let questionHolder = document.getElementById('question-holder');
                         questionHolder.innerHTML = data.data.question;
@@ -158,6 +175,64 @@
                         answerHolder.classList.add('bg-violet-500');
                     }
                 })
+        }
+
+        function triggerTimer(initialTime)
+        {
+            initialTime = 20;//just for debuging
+            let timerHolder = document.getElementById('timer-settings');
+
+            timerHolder.classList.remove('hidden')
+            timerHolder.classList.add('bg-lime-300');
+            timerHolder.style.width = '100%';
+            timerHolder.style.height = '8.5px';
+
+            updateTimer(initialTime, initialTime, timerHolder);
+        }
+
+        function updateTimer(timeLeft, initialTime, timerHolder)
+        {
+            let timeLeftPercentage = (timeLeft / initialTime) * 100;
+            timerHolder.style.width = timeLeftPercentage + '%';
+
+            if (timeLeftPercentage < 75) {
+                timerHolder.classList.remove('bg-lime-300');
+                timerHolder.classList.add('bg-amber-200');
+            }
+
+            if (timeLeftPercentage < 55) {
+                timerHolder.classList.remove('bg-amber-200');
+                timerHolder.classList.add('bg-amber-300');
+            }
+
+            if (timeLeftPercentage < 30) {
+                timerHolder.classList.remove('bg-amber-300');
+                timerHolder.classList.add('bg-amber-400');
+            }
+
+            if (timeLeftPercentage < 20) {
+                timerHolder.classList.remove('bg-amber-400');
+                timerHolder.classList.add('bg-red-400');
+            }
+
+            if (timeLeftPercentage < 10) {
+                timerHolder.classList.remove('bg-rose-400');
+                timerHolder.classList.add('bg-rose-500');
+            }
+
+            if (timeLeftPercentage < 5) {
+                timerHolder.classList.remove('bg-rose-500');
+                timerHolder.classList.add('bg-rose-600');
+            }
+
+            if (timeLeft <= 0) {
+                //alert('done');
+                return;
+            }
+
+            setTimeout(() => {
+                updateTimer(timeLeft - 1, initialTime, timerHolder);
+            }, 1000);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
