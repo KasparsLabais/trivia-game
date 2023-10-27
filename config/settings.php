@@ -8,5 +8,5 @@ return [
     'description' => 'Trivia Game',
     'creators_name' => 'Kaspars Labais',
     'creators_url' => 'https://github.com/KasparsLabais',
-    'image_url' => '/vendor/trivia-game/images/trivia-logo.png'
+    'image_url' => '/vendor/trivia-game/images/trivia-logo-alt.png',
 ];
