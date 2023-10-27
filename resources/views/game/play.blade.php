@@ -33,18 +33,22 @@
                 @endif
             </div>
             @if(Auth::user()->id == $gameInstance['user_id'])
-                <h2 class="fire-sans font-normal text-lg">Players that have submitted answer:</h2>
+                <h2 class="fire-sans font-normal text-lg">Players:</h2>
             @endif
             <div id="answered-players-holder" class="flex flex-row">
                 @if(Auth::user()->id == $gameInstance['user_id'])
-                    @foreach($answeredUsers as $user)
-                        <div class="px-1 py-1">
-                            <div class="flex flex-col bg-slate-100 shadow-md py-2 px-2 rounded">
+                    @foreach($gameInstance->playerInstances as $player)
+                        <div class="px-1 py-1 users-holder" id="user-holder-{{ $player->user->id }}">
+                            <div class="relative flex flex-col bg-slate-100 shadow-md py-2 px-2 rounded">
                                 <div class="flex flex-row justify-center">
-                                    <img src="@if(is_null($user->user->avatar)) /images/default-avatar.jpg @else{{$user->user->avatar}}@endif" class="w-14 h-14 rounded-full shadow-md border-2 border-slate-500" alt="avatar" />
+                                    <img src="@if(is_null($player->user->avatar)) /images/default-avatar.jpg @else{{$player->user->avatar}}@endif" class="opacity-30 w-14 h-14 rounded-full shadow-md border-2 border-slate-500" alt="avatar" />
                                 </div>
                                 <div class="flex flex-row justify-center">
-                                    <div class="raleway font-semibold">{{ $user->user->username }}</div>
+                                    <div class="username-div raleway font-semibold text-slate-300">{{ $player->user->username }}</div>
+                                </div>
+
+                                <div class="answered-label hidden bg-rose-600 font-semibold fira-sans text-slate-100 text-sm absolute top-0 right-0 py-1 px-1 rounded">
+                                    Answered
                                 </div>
                             </div>
                         </div>
@@ -63,7 +67,10 @@
 
         function loadQuestion()
         {
+
+            clearAnsweredUsersDivs();
             clearInterval(timeLimitTimer);
+
             fetch('/trv/trivia/{{ $gameInstance['token'] }}/question', {'method': 'GET', 'headers': {'Content-Type': 'application/json'}})
                 .then(response => response.json())
                 .then(data => {
@@ -72,8 +79,8 @@
                         let questionHolder = document.getElementById('question-holder');
                         currentQuestion = data.data.question_id;
                         questionHolder.innerHTML = data.data.question;
+
                         let answerHolder = document.querySelector('.answer-holder');
-                        //clear answers holder before adding new answers
                         answerHolder.innerHTML = '';
 
                         data.data.answers.forEach(answer => {
@@ -127,7 +134,7 @@
                 .then(data => {
                     if (data.success) {
                         GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
-                        GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'username' : '{{ Auth::user()->username }}', 'avatar': @if(is_null(Auth::user()->avatar)) '/images/default-avatar.jpg' @else '{{Auth::user()->avatar}}' @endif}, 'action': 'playerAnsweredEvent'});
+                        GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'id': {{ Auth::user()->id }},'username' : '{{ Auth::user()->username }}', 'avatar': @if(is_null(Auth::user()->avatar)) '/images/default-avatar.jpg' @else '{{Auth::user()->avatar}}' @endif}, 'action': 'playerAnsweredEvent'});
 
                         if (data.data.correct) {
                             answerHolder.innerHTML = '<h1>Correct!</h1>';
@@ -141,8 +148,8 @@
 
         function nextQuestion()
         {
-            let playerHolder = document.getElementById('answered-players-holder');
-            playerHolder.innerHTML = '';
+            //let playerHolder = document.getElementById('answered-players-holder');
+            //playerHolder.innerHTML = '';
 
             fetch('/trv/trivia/{{ $gameInstance['token'] }}/next', {'method': 'POST', 'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})
                 .then(response => response.json())
@@ -253,6 +260,24 @@
         });
 
         document.addEventListener('playerAnsweredEvent', (e) => {
+
+            console.log(e.detail);
+            //find user holder with id user-holder- e.detail.id and change image opacity
+            let userHolder = document.getElementById('user-holder-' + e.detail.id);
+            userHolder.querySelector('img').classList.add('opacity-100');
+            userHolder.querySelector('img').classList.remove('opacity-30');
+
+            //change for user text color from text-slate-100 to text-slate-700
+            userHolder.querySelector('.username-div').classList.remove('text-slate-100');
+            userHolder.querySelector('.username-div').classList.add('text-slate-700');
+
+            //remove class hidden from answered-label for user holder
+            userHolder.querySelector('.answered-label').classList.remove('hidden');
+
+
+
+
+            /*
             console.log('playerAnsweredEvent',e.detail);
             let playerHolder = document.getElementById('answered-players-holder');
 
@@ -281,6 +306,7 @@
             playerDivHolder.appendChild(playerDiv);
 
             playerHolder.appendChild(playerDivHolder);
+            */
         });
 
         document.addEventListener('nextQuestionEvent', (e) => {
@@ -297,6 +323,21 @@
             console.log('gameOverEvent', e.detail);
             window.location.href = '/trv/trivia/{{ $gameInstance['token'] }}/results';
         });
+
+        function clearAnsweredUsersDivs()
+        {
+            let userHolders = document.querySelectorAll('.users-holder');
+            userHolders.forEach(userHolder => {
+
+                userHolder.querySelector('img').classList.remove('opacity-100');
+                userHolder.querySelector('img').classList.add('opacity-30');
+
+                userHolder.querySelector('.username-div').classList.remove('text-slate-700');
+                userHolder.querySelector('.username-div').classList.add('text-slate-100');
+
+                userHolder.querySelector('.answered-label').classList.add('hidden');
+            });
+        }
 
     </script>
 @endsection
