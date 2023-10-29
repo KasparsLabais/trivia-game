@@ -5,7 +5,18 @@
             <h1 class="fira-sans font-semibold text-2xl">Trivia's by categories</h1>
             <hr>
         </div>
-        <div class="flex flex-col bg-slate-200">
+        <div>
+            <!-- navigation between categories and open trivia's -->
+            <div class="flex flex-row">
+                <div id="all-categories-nav" onclick="selectedBox('categories')" class="bg-slate-300 px-2 py-2 shadow-md">
+                    All Categories
+                </div>
+                <div id="open-trivias-nav" onclick="selectedBox('opentrivias')" class="bg-slate-100 px-2 py-2 shadow-md">
+                    Join Open Trivia's
+                </div>
+            </div>
+        </div>
+        <div id="category-holder" class="flex flex-col bg-slate-200">
             @foreach($categories as $cat)
             <div class="">
                 <div class="flex flex-row justify-between bg-slate-300 fira-sans shadow-md border-b @if($cat->availableTrivia->count() == 0) border-b-slate-400 @else border-b-2 border-b-lime-500 @endif">
@@ -113,6 +124,76 @@
             </div>
             @endforeach
         </div>
+        <div id="open-trivias-holder" class="hidden flex flex-col bg-slate-300">
+            @foreach($openTrivias as $trivia)
+                <div>
+                    <div class="py-4 px-2 flex flex-row justify-between bg-slate-300 fira-sans shadow-md border-b rounded border-b-slate-400">
+                        <span class="flex flex-col px-4 w-3/6">
+                            <span class="font-semibold">{{ $trivia->trivia->title }}</span>
+                            <span class="hidden md:flex">{{ $trivia->trivia->description }}</span>
+                            <span class="flex md:hidden">{{ Str::limit($trivia->trivia->description, 30, '...') }}</span>
+                        </span>
+                        <div class="flex flex-col">
+                            <span>Date Created: {{ $trivia->created_at->format('d/m/Y') }}</span>
+                            <span>Time: {{ $trivia->created_at->format('H:i') }}</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row justify-between py-4 border-b border-b-slate-300 bg-slate-200 px-2 fira-sans font-normal">
+                        <div class="flex flex-row w-full md:w-5/6">
+                            <div class="hidden md:flex">
+                                <div class="px-4 flex flex-col justify-center">
+                                    <div>
+                                        Created By: <span class="font-semibold">{{ $trivia->user->username }}</span>
+                                    </div>
+                                </div>
+                                <div class="px-4 flex flex-col justify-center">
+                                    <div>
+                                        Difficulty: <span class="font-semibold capitalize @if($trivia['difficulty'] == 'medium') text-amber-700 @elseif($trivia['difficulty'] == 'hard') text-red-700 @else text-lime-600 @endif">{{ $trivia->trivia->difficulty }}</span>
+                                    </div>
+                                </div>
+                                <div class="px-4 flex flex-col justify-center">
+                                    <div>
+                                        <span class="font-semibold">{{ $trivia->trivia->questions->count() }}</span> Questions
+                                    </div>
+                                </div>
+                                <div class="px-4 flex flex-col justify-center">
+                                    <div>
+                                        <span class="font-semibold">{{ $trivia->gameInstance->playerInstances->count() }}</span> Players
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex md:hidden">
+                                <div class="px-4 flex flex-col justify-center w-2/6">
+                                    <div>
+                                        Created By: <span class="font-semibold">{{ $trivia->user->username }}</span>
+                                    </div>
+                                </div>
+                                <div class="px-4 flex flex-col justify-center w-2/6">
+                                    <div>
+                                        Difficulty: <span class="font-semibold capitalize @if($trivia['difficulty'] == 'medium') text-amber-700 @elseif($trivia['difficulty'] == 'hard') text-red-700 @else text-lime-600 @endif">{{ $trivia->trivia->difficulty }}</span>
+                                    </div>
+                                </div>
+                                <div class="px-4 flex flex-col justify-center w-2/6">
+                                    <div>
+                                        <span class="font-semibold">{{ $trivia->trivia->questions->count() }}</span> Questions
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold">{{ $trivia->gameInstance->playerInstances->count() }}</span> Players
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-row w-full md:w-1/6">
+                            @if(Auth::check())
+                                <a href="/join/{{ $trivia->gameInstance->token }}" class="text-center w-full py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold">Join</a>
+                            @else
+                                <span>You Need To Login To Play</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
     </div>
 
     @if(Auth::check())
@@ -206,6 +287,29 @@
                         alert(data.message);
                     }
                 });
+        }
+
+        function selectedBox(box) {
+            if (box == 'categories') {
+                document.getElementById('category-holder').classList.remove('hidden');
+                document.getElementById('open-trivias-holder').classList.add('hidden');
+
+                document.getElementById('all-categories-nav').classList.add('bg-slate-300');
+                document.getElementById('all-categories-nav').classList.remove('bg-slate-100');
+
+                document.getElementById('open-trivias-nav').classList.add('bg-slate-100');
+                document.getElementById('open-trivias-nav').classList.remove('bg-slate-300');
+
+            } else {
+                document.getElementById('category-holder').classList.add('hidden');
+                document.getElementById('open-trivias-holder').classList.remove('hidden');
+
+                document.getElementById('all-categories-nav').classList.add('bg-slate-100');
+                document.getElementById('all-categories-nav').classList.remove('bg-slate-300');
+
+                document.getElementById('open-trivias-nav').classList.add('bg-slate-300');
+                document.getElementById('open-trivias-nav').classList.remove('bg-slate-100');
+            }
         }
 
     </script>

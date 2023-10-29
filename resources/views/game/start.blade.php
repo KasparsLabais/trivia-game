@@ -66,6 +66,34 @@
                         </div>
                     </div>
                 </div>
+                <div class="border-b border-b-slate-300 pb-4">
+                    <div>
+                        <span>Trivia Accessibility</span>
+                    </div>
+                    <div class="flex flex-row justify-between w-full">
+                        <div class="flex flex-row w-full">
+                            <div class="w-full flex flex-row shadow-inner rounded bg-slate-300 py-2 px-2">
+                                <div class="px-1 w-1/3">
+                                    <div onclick="changeAccessibility('private')" data-accessibility="private" class="accessibility-setting text-center px-2 py-2 rounded font-semibold  shadow @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == 'private' OR GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == '' ) bg-lime-500 text-gray-100 @else bg-slate-300 text-gray-400 hover:bg-lime-500 hover:text-gray-100 @endif">
+                                        Only By Link
+                                    </div>
+                                </div>
+                                <div class="px-1 w-1/3">
+                                    <div onclick="changeAccessibility('public')" data-accessibility="public" class="accessibility-setting text-center px-2 py-2 rounded font-semibold shadow @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == 'public') bg-lime-500 text-gray-100 @else bg-slate-300 text-gray-400 hover:bg-lime-500 hover:text-gray-100 @endif">
+                                        Open Access
+                                    </div>
+                                </div>
+                                <!--
+                                <div class="px-1 w-1/3">
+                                    <div class="text-center bg-slate-300 px-2 py-2 rounded font-semibold text-gray-400 shadow">
+                                        Password Protected
+                                    </div>
+                                </div>
+                                -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 @endif
             </div>
             <div class="bg-slate-300 px-6 py-8">
@@ -129,6 +157,35 @@
                     break;
             }
         }
+
+        const changeAccessibility = (accessibility) => {
+            console.log('change accessibility', accessibility);
+            fetch('/trv/trivia/{{ $gameInstance['token'] }}/accessibility', {'method' : 'POST', 'body': JSON.stringify({'accessibility':accessibility}), 'headers' : {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if(data.success) {
+                        let accessibilitySettings = document.getElementsByClassName('accessibility-setting');
+                        for(let i = 0; i < accessibilitySettings.length; i++) {
+                            accessibilitySettings[i].classList.remove('bg-lime-500');
+                            accessibilitySettings[i].classList.remove('text-gray-100');
+                            accessibilitySettings[i].classList.remove('hover:bg-lime-500');
+                            accessibilitySettings[i].classList.remove('hover:text-gray-100');
+                            accessibilitySettings[i].classList.add('bg-slate-300');
+                            accessibilitySettings[i].classList.add('text-gray-400');
+                        }
+                        let accessibilitySetting = document.querySelector('[data-accessibility="' + accessibility + '"]');
+                        accessibilitySetting.classList.remove('bg-slate-300');
+                        accessibilitySetting.classList.remove('text-gray-400');
+                        accessibilitySetting.classList.add('bg-lime-500');
+                        accessibilitySetting.classList.add('text-gray-100');
+                        accessibilitySetting.classList.add('hover:bg-lime-500');
+                        accessibilitySetting.classList.add('hover:text-gray-100');
+                    }
+                })
+                .catch(error => console.log(error));
+        }
+
 
         $('document').ready(function() {
             $('#time_limit_enabled').change(function() {

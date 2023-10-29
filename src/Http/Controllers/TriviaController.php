@@ -12,6 +12,7 @@ use PartyGames\TriviaGame\Models\SubmittedAnswers;
 use PartyGames\TriviaGame\Models\Trivia;
 use PartyGames\TriviaGame\Models\Answers;
 use PartyGames\TriviaGame\Models\Ratings;
+use PartyGames\TriviaGame\Models\OpenTrivias;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -26,7 +27,9 @@ class TriviaController
         } else {
             $usersTrivias = [];
         }
-        return view('trivia-game::pages.index')->with(['categories' => $categories, 'usersTrivias' => $usersTrivias]);
+
+        $openTrivias = OpenTrivias::where('status', 1)->orderBy('created_at', 'desc')->get();
+        return view('trivia-game::pages.index')->with(['categories' => $categories, 'usersTrivias' => $usersTrivias, 'openTrivias' => $openTrivias]);
     }
 
     public function createGame(Request $request)
@@ -571,6 +574,62 @@ class TriviaController
             'success' => true,
             'message' => 'Trivia rated successfully',
             'data' => $rating
+        ]);
+    }
+
+    public function changeAccessibility($token, Request $request)
+    {
+
+        $game = GameApi::getGameInstance($token);
+        $gameInstance = $game['gameInstance'];
+
+        if ($gameInstance['user_id'] != Auth::user()->id) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'You are not the owner of this game instance',
+                'payload' => []
+            ]);
+        }
+
+        $remoteData = json_decode($gameInstance['remote_data'], true);
+
+        switch ($request->get('accessibility')) {
+            case 'public':
+                $remoteData['accessibility'] = 'public';
+                $openTrivia = OpenTrivias::firstOrCreate(
+                    ['trivia_id' => $remoteData['trivia_id'], 'game_instance_id' => $gameInstance['id'], 'user_id' => Auth::user()->id, 'status' => 1]
+                );
+
+                GameApi::addOrUpdateGameInstanceSetting($token, 'accessibility', 'public');
+                break;
+            case 'private':
+                $openTrivia = OpenTrivias::where('trivia_id', $remoteData['trivia_id'])->where('game_instance_id', $gameInstance['id'])->where('user_id', Auth::user()->id)->where('status', 1)->first();
+                if ($openTrivia) {
+                    $openTrivia->status = 0;
+                    $openTrivia->closed_at = date('Y-m-d H:i:s');
+                    $openTrivia->save();
+                }
+                $remoteData['accessibility'] = 'private';
+                GameApi::addOrUpdateGameInstanceSetting($token, 'accessibility', 'private');
+                break;
+            case 'password':
+                $remoteData['accessibility'] = 'password';
+                $gameInstance['password'] = $request->get('password');
+
+                GameApi::addOrUpdateGameInstanceSetting($token, 'accessibility', 'password');
+                break;
+        }
+
+        $gameInstance['remote_data'] = $remoteData;
+        GameApi::updateGameInstanceRemoteData($token, $remoteData);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Accessibility changed successfully',
+            'payload' => [
+                'gameInstance' => $gameInstance,
+                'newAccessibility' => $request->get('accessibility')
+            ]
         ]);
     }
 }
