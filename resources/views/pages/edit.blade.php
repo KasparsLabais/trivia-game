@@ -148,15 +148,21 @@
                 })
             }).then(response => response.json())
             .then(data => {
+                document.querySelector('#question').value = '';
                 console.log(data);
                 if (data.success) {
                     let questionHolder = document.querySelector('#question-holder');
                     let question = data.payload;
 
                     //add question to questionsList
+                    console.log("QUESTION LIST", questionsList);
                     questionsList[question.id] = question;
+                    questionsList[question.id]['answers'] = [];
+                    console.log("QUESTION LIST New", questionsList);
+
 
                     let questionDiv = document.createElement('div');
+                    questionDiv.setAttribute('id', 'question-' + question.id);
                     questionDiv.classList.add('flex', 'flex-col', 'bg-slate-200', 'shadow', 'rounded', 'mt-4');
 
                     let questionHeader = document.createElement('div');
