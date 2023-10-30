@@ -54,7 +54,7 @@
                     </div>
                     <div class="flex flex-row justify-between w-full">
                         <div class="flex flex-row w-3/6">
-                            <label class="raleway font-normal text-base" for="time_limit_enabled">Time Limit Enabled:</label>
+                            <label class="raleway font-normal text-base" for="time_limit_enabled">Enabled:</label>
                             <select class="raleway font-normal text-base capitalize" name="time_limit_enabled" id="time_limit_enabled">
                                 <option value="1" @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 1 ) selected="selected" @endif>True</option>
                                 <option value="0" @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 0 ) selected="selected" @endif>False</option>
@@ -63,6 +63,24 @@
                         <div class="flex flex-row w-3/6">
                             <label class="raleway font-normal text-base w-4/6" for="time_per_question">Time Per Question (s):</label>
                             <input type="number" step="1" min="0" class="text-center raleway font-normal text-base capitalize w-1/6" value="{{ GameApi::getGameInstanceSettings($gameInstance['token'], 'time_per_question') }}" name="time_per_question" id="time_per_question" />
+                        </div>
+                    </div>
+                </div>
+                <div class="border-b border-b-slate-300 pb-4">
+                    <div>
+                        <span>Player Limit</span>
+                    </div>
+                    <div class="flex flex-row justify-between w-full">
+                        <div class="flex flex-row w-3/6">
+                            <label class="raleway font-normal text-base" for="player_limit_enabled">Enabled:</label>
+                            <select onchange="changePlayerLimit()" class="raleway font-normal text-base capitalize" name="player_limit_enabled" id="player_limit_enabled">
+                                <option value="1" @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'player_limit_enabled') == 1 ) selected="selected" @endif>True</option>
+                                <option value="0" @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'player_limit_enabled') == 0 ) selected="selected" @endif>False</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-row w-3/6">
+                            <label class="raleway font-normal text-base w-4/6" for="time_per_question">Player Limit:</label>
+                            <input type="number" step="1" min="0" class="text-center raleway font-normal text-base capitalize w-1/6" value="{{ GameApi::getGameInstanceSettings($gameInstance['token'], 'player_limit') }}" name="player_limit" id="player_limit" />
                         </div>
                     </div>
                 </div>
@@ -184,6 +202,23 @@
                     }
                 })
                 .catch(error => console.log(error));
+        }
+
+
+        const changePlayerLimit = () => {
+
+            let status = document.getElementById('player_limit_enabled').value;
+            let playerLimit = document.getElementById('player_limit').value;
+
+            if (status == 1 && playerLimit <= 0) {
+                GameApi.triggerAlertNotification('{{ $gameInstance['token'] }}', 'player', 'error', 'Player limit must be greater than 0', {{ Auth::user()->id }} );
+                return;
+            }
+
+            playerLimit = (status == 1) ? playerLimit : 0;
+
+            GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'player_limit_enabled', status);
+            GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'player_limit', playerLimit);
         }
 
 

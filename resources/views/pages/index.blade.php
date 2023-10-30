@@ -158,7 +158,7 @@
                                 </div>
                                 <div class="px-4 flex flex-col justify-center">
                                     <div>
-                                        <span class="font-semibold">{{ $trivia->gameInstance->playerInstances->count() }}</span> Players
+                                        <span class="font-semibold">{{ $trivia->gameInstance->playerInstances->count() }} / @if((int)GameApi::getGameInstanceSettings($trivia->gameInstance->token, 'player_limit_enabled') == 1 ) {{ GameApi::getGameInstanceSettings($trivia->gameInstance->token, 'player_limit') }} @else &infin; @endif</span> Players
                                     </div>
                                 </div>
                             </div>
@@ -178,7 +178,7 @@
                                         <span class="font-semibold">{{ $trivia->trivia->questions->count() }}</span> Questions
                                     </div>
                                     <div>
-                                        <span class="font-semibold">{{ $trivia->gameInstance->playerInstances->count() }}</span> Players
+                                        <span class="font-semibold">{{ $trivia->gameInstance->playerInstances->count() }} / @if((int)GameApi::getGameInstanceSettings($trivia->gameInstance->token, 'player_limit_enabled') == 1 ) {{ GameApi::getGameInstanceSettings($trivia->gameInstance->token, 'player_limit') }} @else &infin; @endif </span> Players
                                     </div>
                                 </div>
                             </div>
