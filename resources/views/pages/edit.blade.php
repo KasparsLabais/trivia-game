@@ -43,6 +43,14 @@
                                 </select>
                             </div>
 
+                            <div class="flex flex-col px-2 py-2">
+                                <label class="raleway font-semibold text-md" for="is_active">Private: </label>
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="private" id="private">
+                                    <option value="0" @if($trivia['private'] == 0) selected="selected" @endif>0</option>
+                                    <option value="1" @if($trivia['private'] == 1) selected="selected" @endif>1</option>
+                                </select>
+                            </div>
+
                         </div>
                         <div class="flex flex-row px-2">
                             <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold">Save</button>

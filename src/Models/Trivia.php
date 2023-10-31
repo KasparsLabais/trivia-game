@@ -18,7 +18,8 @@ class Trivia extends Model
         'category_id',
         'difficulty',
         'type',
-        'user_id'
+        'user_id',
+        'private'
     ];
 
     public function questions()

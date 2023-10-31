@@ -65,6 +65,7 @@
                                 <th class="px-2 py-2">Difficulty</th>
                                 <th class="px-2 py-2">Category</th>
                                 <th class="px-2 py-2">Active</th>
+                                <th class="px-2 py-2">Private</th>
                                 <th class="px-2 py-2">Actions</th>
                             </tr>
                             @foreach($trivias as $trv)
@@ -74,6 +75,7 @@
                                     <td class="text-center">{{ Str::limit($trv['difficulty'], 50, '...') }}</td>
                                     <td class="text-center">{{ $trv->category['name'] }}</td>
                                     <td class="text-center">{{ $trv['is_active'] }}</td>
+                                    <td class="text-center">{{ $trv['private'] }}</td>
                                     <td class="flex flex-row justify-around">
                                         <a class="inline-block py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" href="/trv/management/trivia/{{ $trv['id'] }}">Edit</a>
                                         <button class="py-2 px-4 shadow-md bg-red-500 text-slate-100 font-semibold">Delete</button>

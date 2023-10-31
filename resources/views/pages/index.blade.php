@@ -55,7 +55,7 @@
                     @foreach($cat->availableTrivia as $trivia)
                         <div class="hidden md:flex flex-row mx-2 py-4 border-b border-b-slate-300">
                             <div class="fire-sans font-semibold flex flex-col justify-center px-4 w-1/6">
-                                {{ $trivia['title'] }}
+                                <span>{{ $trivia['title'] }} @if($trivia['private']) - <span class="text-rose-600">Private</span> @endif </span>
                                 <div class="font-normal fira-sans flex flex-row">
                                     @for( $i = 1; $i <= 5; $i++)
                                         <svg @if(Auth::check()) onclick="rateTrivia({{ $trivia->id }}, {{ $i }})" @endif xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="@if($i <= ($trivia->getRating())['rating'] && ($trivia->getRating())['rating'] != 0 ) fill-amber-500 stroke-amber-500 @endif w-6 h-6">
@@ -90,7 +90,7 @@
                         </div>
                         <div class="md:hidden flex flex-row mx-2 py-4 border-b border-b-slate-300">
                             <div class="raleway flex flex-col justify-center px-4 w-3/6">
-                                <span class="font-semibold ">{{ $trivia['title'] }} ({{ $trivia->questions->count() }})</span>
+                                <span class="font-semibold ">{{ $trivia['title'] }} ({{ $trivia->questions->count() }})   @if($trivia['private']) <span class="text-rose-600">Private</span> @endif </span>
                                 <div class="font-normal fira-sans flex flex-row">
                                     @for( $i = 0; $i < 5; $i++)
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="@if($i <= ($trivia->getRating())['rating'] && ($trivia->getRating())['rating'] != 0 ) fill-amber-500 stroke-amber-500 @endif w-6 h-6">

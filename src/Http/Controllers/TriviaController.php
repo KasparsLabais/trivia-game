@@ -412,6 +412,7 @@ class TriviaController
         $trivia->category_id = $request->category;
         $trivia->difficulty = $request->difficulty;
         $trivia->is_active = (int)$request->is_active;
+        $trivia->private = (int)$request->private;
         $trivia->save();
 
         return redirect()->back();
