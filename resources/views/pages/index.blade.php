@@ -80,7 +80,7 @@
                             <div class="flex flex-col justify-center px-4 w-2/6">
 
                                 @if(Auth::check())
-                                    <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame({{ $trivia['id'] }})">Play</button>
+                                    <x-btn-primary is-a-link="{{ false  }}" onClick="startTriviaGame({{ $trivia['id'] }})" type="submit" link="">Play</x-btn-primary>
                                 @else
                                     <div>
                                         <span class="">You Need To Login To Play</span>
@@ -109,7 +109,7 @@
                                     <span  class="font-semibold">{{ $trivia->questions->count() }}</span> Questions
                                 </div>
                                 @if(Auth::check())
-                                    <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame({{ $trivia['id'] }})">Play</button>
+                                    <x-btn-primary is-a-link="{{ false  }}" onClick="startTriviaGame({{ $trivia['id'] }})" type="submit" link="">Play</x-btn-primary>
                                 @else
                                     <div>
                                         <div>
@@ -185,7 +185,7 @@
                         </div>
                         <div class="flex flex-row w-full md:w-1/6">
                             @if(Auth::check())
-                                <a href="/join/{{ $trivia->gameInstance->token }}" class="text-center w-full py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold">Join</a>
+                                <x-btn-primary is-a-link="{{ true  }}"  link="/join/{{ $trivia->gameInstance->token }}">Join</x-btn-primary>
                             @else
                                 <span>You Need To Login To Play</span>
                             @endif
