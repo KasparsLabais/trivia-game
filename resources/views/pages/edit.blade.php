@@ -6,7 +6,6 @@
                 <h1 class="fira-sans font-semibold text-2xl">{{ $trivia['title'] }}</h1>
                 <hr>
                 <div class="bg-slate-100 rounded shadow">
-
                     <form action="" method="POST" class="flex flex-col px-2 py-4 bg-slate-200 shadow">
                         {{ csrf_field() }}
                         <div class="flex flex-row">

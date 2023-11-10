@@ -79,8 +79,6 @@
                                     <td class="flex flex-row justify-around">
                                         <a class="inline-block py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" href="/trv/management/trivia/{{ $trv['id'] }}">Edit</a>
                                         <button class="py-2 px-4 shadow-md bg-red-500 text-slate-100 font-semibold">Delete</button>
-
-                                        <x-btn-alternative isALink="{{ false }}" type="button" onClick="">Disabled</x-btn-alternative>
                                     </td>
                                 </tr>
                             @endforeach
