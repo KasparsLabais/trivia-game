@@ -50,7 +50,7 @@
                     </div>
                     <div id="trivia-holder-{{$cat['id']}}" class="hidden flex flex-col transition-all duration-200">
 
-                        @if($cat->availableTrivia->count() > 0)
+                        @if($cat->availableTrivia->count() > 0 && Auth::check())
                         <div class="flex flex-row mx-2 py-4 px-4 border-b border-b-slate-300">
                             <div>
                                 <x-btn-alternative isALink="{{ false }}" onClick="openRandomTriviaModal({{ $cat['id'] }}, '{{ $cat['name'] }}')" type="button">Play Random Quiz</x-btn-alternative>
@@ -356,6 +356,11 @@
             difficultyInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2');
 
             //create options for difficulty input
+
+            let anyOption = document.createElement('option');
+            anyOption.setAttribute('value', 'any');
+            anyOption.innerText = 'Any Difficulty';
+
             let easyOption = document.createElement('option');
             easyOption.setAttribute('value', 'easy');
             easyOption.innerText = 'Easy';
@@ -369,6 +374,7 @@
             hardOption.innerText = 'Hard';
 
             //append options to difficulty input
+            difficultyInput.appendChild(anyOption);
             difficultyInput.appendChild(easyOption);
             difficultyInput.appendChild(mediumOption);
             difficultyInput.appendChild(hardOption);
@@ -392,6 +398,13 @@
             categoryInput.setAttribute('id', 'category');
             categoryInput.setAttribute('value', categoryId);
 
+            //create input for csrf token for submit form
+            let csrfInput = document.createElement('input');
+            csrfInput.setAttribute('type', 'hidden');
+            csrfInput.setAttribute('name', '_token');
+            csrfInput.setAttribute('id', '_token');
+            csrfInput.setAttribute('value', '{{ csrf_token() }}');
+
             //create submit button
             let submitButton = document.createElement('button');
             submitButton.setAttribute('type', 'submit');
@@ -399,17 +412,10 @@
             submitButton.innerText = 'Create Trivia';
 
             triviaInfoDiv.appendChild(submitButton);
-            //append inputs to form
-            //form.appendChild(titleInput);
-            //form.appendChild(descriptionInput);
-            //form.appendChild(difficultyInput);
+
             form.appendChild(categoryInput);
-            //form.appendChild(questionCountInput);
-
+            form.appendChild(csrfInput);
             form.appendChild(triviaInfoDiv);
-            //form.appendChild(triviaOptionDiv);
-
-            //form.appendChild(submitButton);
 
             GameApi.openModal('game-modal', title, form);
         }

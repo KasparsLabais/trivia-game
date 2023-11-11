@@ -17,12 +17,21 @@ class OpenTrivias extends Model
         'trivia_id',
         'game_instance_id',
         'status',
-        'closed_at'
+        'closed_at',
+        'is_temporary'
     ];
 
     public function trivia()
     {
+        if($this->is_temporary == true) {
+            return $this->belongsTo(TmpTrivia::class, 'trivia_id', 'id');
+        }
         return $this->belongsTo(Trivia::class, 'trivia_id', 'id');
+    }
+
+    public function tmpTrivia()
+    {
+        return $this->belongsTo(TmpTrivia::class, 'trivia_id', 'id');
     }
 
     public function user()

@@ -6,6 +6,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use PartyGames\GameApi\GameApi;
 use PartyGames\GameApi\Models\Game;
+use PartyGames\TriviaGame\Models\TmpTrivia;
+use PartyGames\TriviaGame\Models\TmpQuestions;
 use PartyGames\TriviaGame\Models\Categories;
 use PartyGames\TriviaGame\Models\Questions;
 use PartyGames\TriviaGame\Models\SubmittedAnswers;
@@ -37,6 +39,7 @@ class TriviaController
         $trivia = Trivia::find($request->get('trivia_id'));
         $remoteData = [
             'trivia_id' => $trivia->id,
+            'is_temporary' => 0,
         ];
 
         $response = GameApi::createGameInstance(config('settings.token'), $trivia->title, $remoteData);
@@ -69,7 +72,14 @@ class TriviaController
         $remoteData = json_decode($response['gameInstance']['remote_data'], true);
 
         if ($gameInstance['status'] == 'created') {
-            $trivia = Trivia::find($remoteData['trivia_id']);
+
+            // check if this is not temporary trivia game
+            if($remoteData['is_temporary'] == 1) {
+                $trivia = TmpTrivia::find($remoteData['trivia_id']);
+            } else {
+                $trivia = Trivia::find($remoteData['trivia_id']);
+            }
+
             return view('trivia-game::game.start')->with(['gameInstance' => $gameInstance, 'trivia' => $trivia]);
         }
 
@@ -78,11 +88,16 @@ class TriviaController
             //return view('trivia-game::game.results')->with(['gameInstance' => $gameInstance]);
         }
 
-        $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
-        $answeredUsers = SubmittedAnswers::where('game_instance_id', $gameInstance['id'])->where('question_id', $question['id'])->get();
-//dd($gameInstance);
+        if ($remoteData['is_temporary'] == 1) {
+            $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+            $answeredUsers = SubmittedAnswers::where('game_instance_id', $gameInstance['id'])->where('question_id', $question['original_question_id'])->get();
+        } else {
+            $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+            $answeredUsers = SubmittedAnswers::where('game_instance_id', $gameInstance['id'])->where('question_id', $question['id'])->get();
+        }
+
         $returnObject = [
-            'totalQuestions' => Questions::where('trivia_id', $remoteData['trivia_id'])->count(),
+            'totalQuestions' => ($remoteData['is_temporary'] == 1) ? TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->count() : Questions::where('trivia_id', $remoteData['trivia_id'])->count(),
             'gameInstance' => $gameInstance,
             'remoteData' => $remoteData,
             'answeredUsers' => $answeredUsers,
@@ -180,7 +195,11 @@ class TriviaController
 
         $remoteData = json_decode($data['gameInstance']['remote_data'], true);
 
-        $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+        if ($remoteData['is_temporary']) {
+            $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+        } else {
+            $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+        }
         $question->load('answers');
 
         if (isset($playerInstance['playerInstance']['remote_data'])) {
@@ -228,9 +247,17 @@ class TriviaController
         $remoteData = json_decode($data['gameInstance']['remote_data'], true);
 
         //first step is to check if user have not already answered this question
-        $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+
+        if ($remoteData['is_temporary']) {
+            $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+            $questionId = $question['original_question_id'];
+        } else {
+            $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+            $questionId = $question['id'];
+        }
+
         $haveAnswered = SubmittedAnswers::where('game_instance_id', $data['gameInstance']['id'])
-            ->where('question_id', $question['id'])
+            ->where('question_id', $questionId)
             ->where('user_id', Auth::user()->id)->first();
 
         if ($haveAnswered) {
@@ -243,7 +270,7 @@ class TriviaController
 
         SubmittedAnswers::create([
             'game_instance_id' => $data['gameInstance']['id'],
-            'question_id' => $question['id'],
+            'question_id' => $questionId,
             'answer_id' => $request->get('answer_id'),
             'user_id' => Auth::user()->id
         ]);
@@ -298,8 +325,14 @@ class TriviaController
 
         $currentQuestion = $remoteData['current_question'];
 
+        if ($remoteData['is_temporary']) {
+            $questionCount = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->count();
+        } else {
+            $questionCount = Questions::where('trivia_id', $remoteData['trivia_id'])->count();
+        }
+
         //step 1 check if current question isn't last available question
-        if ($currentQuestion == Questions::where('trivia_id', $remoteData['trivia_id'])->count()) {
+        if ($currentQuestion >= $questionCount) {
             //if it is last question then end game
             GameApi::changeGameInstanceStatus($token, 'completed');
             return new JsonResponse([
@@ -339,12 +372,17 @@ class TriviaController
         }
 
         $remoteData = json_decode($data['gameInstance']['remote_data'], true);
-
         $currentQuestion = $remoteData['current_question'];
 
-        $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $currentQuestion)->first();
-        $correctAnswer = Answers::where('question_id', $question['id'])->where('is_correct', 1)->first();
+        if ($remoteData['is_temporary']) {
+            $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('order_nr', $currentQuestion)->first();
+            $questionId = $question['original_question_id'];
+        } else {
+            $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $currentQuestion)->first();
+            $questionId = $question['id'];
+        }
 
+        $correctAnswer = Answers::where('question_id', $questionId)->where('is_correct', 1)->first();
         return new JsonResponse([
             'success' => true,
             'message' => 'Correct answer fetched successfully',
@@ -598,7 +636,7 @@ class TriviaController
             case 'public':
                 $remoteData['accessibility'] = 'public';
                 $openTrivia = OpenTrivias::firstOrCreate(
-                    ['trivia_id' => $remoteData['trivia_id'], 'game_instance_id' => $gameInstance['id'], 'user_id' => Auth::user()->id, 'status' => 1]
+                    ['trivia_id' => $remoteData['trivia_id'], 'game_instance_id' => $gameInstance['id'], 'user_id' => Auth::user()->id, 'status' => 1, 'is_temporary' => $remoteData['is_temporary']]
                 );
 
                 GameApi::addOrUpdateGameInstanceSetting($token, 'accessibility', 'public');
@@ -632,5 +670,82 @@ class TriviaController
                 'newAccessibility' => $request->get('accessibility')
             ]
         ]);
+    }
+
+    public function createRandomTrivia(Request $request)
+    {
+
+        $title = $request->get('title');
+        $description = $request->get('description');
+        $category = $request->get('category');
+        $difficulty = $request->get('difficulty');
+        $questionCount = $request->get('question_count');
+        //    protected $fillable = ['title', 'category_id', 'difficulty', 'private', 'question_count'];
+
+        $questions = [];
+        $allTriviasForProvidedCategory = Trivia::where('category_id', $category)->where(function($q) use ($difficulty){
+            if ($difficulty != 'any')
+            {
+                $q->where('difficulty', $difficulty);
+            }
+        })->where(function($q) {
+            $q->where('private', 0)->orWhere('user_id', Auth::user()->id);
+        })->get();
+
+        foreach ($allTriviasForProvidedCategory as $trivia) {
+            $tmpQuestions = Questions::where('trivia_id', $trivia->id)->get();
+            foreach ($tmpQuestions as $tmpQuestion) {
+                $questions[] = $tmpQuestion;
+            }
+        }
+
+        //select from array random questions to match question count or less if there is not enough questions, provided by user
+        $tmpQuestions = array_rand($questions, ( count($questions) < $questionCount ) ? count($questions) : $questionCount);
+        $tmpTrivia = TmpTrivia::create([
+            'title' => $title,
+            'description' => $description,
+            'category_id' => $category,
+            'difficulty' => $difficulty,
+            'question_count' => count($tmpQuestions)
+        ]);
+
+        $tmpOrderNr = 1;
+        foreach ($tmpQuestions as $tmpQuestionId) {
+            //var_dump($tmpQuestionId);die();
+            //find question in $questions object by searching matching key
+            $question = $questions[$tmpQuestionId];
+            $tmpQuestion = TmpQuestions::create([
+                'question' => $question->question,
+                'order_nr' => $tmpOrderNr,
+                'original_question_id' => $question->id,
+                'tmp_trivia_id' => $tmpTrivia->id
+            ]);
+            $tmpOrderNr++;
+        }
+
+        $remoteData = [
+            'trivia_id' => $tmpTrivia->id,
+            'is_temporary' => 1,
+        ];
+        $response = GameApi::createGameInstance(config('settings.token'), $tmpTrivia->title, $remoteData);
+
+        if ($response['status'] == false) {
+            //TODO: need to setup some action for this case
+        }
+        return redirect()->to('/trv/trivia/' . $response['gameInstance']['token'] . '/processing');
+    }
+
+    public function processingTmpTriviaGame($token)
+    {
+        $data = GameApi::getGameInstance($token);
+        $remoteData = json_decode($data['gameInstance']['remote_data'], true);
+
+        if ($remoteData['is_temporary'] == 0) {
+            return redirect()->to('/trv/trivia/' . $token);
+        }
+
+        $tmpTrivia = TmpTrivia::find($remoteData['trivia_id']);
+        return view('trivia-game::pages.processing')->with(['tmpTrivia' => $tmpTrivia, 'token' => $token, 'gameInstance' => $data['gameInstance'], 'remoteData' => $remoteData]);
+
     }
 }

@@ -31,9 +31,11 @@ Route::group(['middleware' => ['web']], function() {
     Route::post('/' . config('settings.prefix') . '/end', 'TriviaController@endGame');
 
     Route::post('/' . config('settings.prefix') . '/trivia/rating', 'TriviaController@rateTrivia');
+    Route::post('/' . config('settings.prefix') . '/trivia/random', 'TriviaController@createRandomTrivia');
 
     Route::get('/' . config('settings.prefix') . '/trivia/{token}', 'TriviaController@game');
 
+    Route::get('/' . config('settings.prefix') . '/trivia/{token}/processing', 'TriviaController@processingTmpTriviaGame');
     Route::get('/' . config('settings.prefix') . '/trivia/{token}/question', 'TriviaController@getQuestion');
     Route::post('/' . config('settings.prefix') . '/trivia/{token}/answer', 'TriviaController@submitAnswer');
     Route::post('/' . config('settings.prefix') . '/trivia/{token}/next', 'TriviaController@nextQuestion');
