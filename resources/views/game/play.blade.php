@@ -61,8 +61,6 @@
     <script>
 
         let timeLimitTimer = null;
-
-        GameApi.joinRoom('{{ $gameInstance['token'] }}');
         let currentQuestion = '{{ $remoteData['current_question'] }}';
 
         function loadQuestion()
@@ -322,6 +320,11 @@
         document.addEventListener('gameOverEvent', (e) => {
             console.log('gameOverEvent', e.detail);
             window.location.href = '/trv/trivia/{{ $gameInstance['token'] }}/results';
+        });
+
+        document.addEventListener('userconnected', (e) => {
+            console.log('event userconnected', e.detail);
+            GameApi.joinRoom('{{ $gameInstance['token'] }}');
         });
 
         function clearAnsweredUsersDivs()

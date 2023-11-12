@@ -397,6 +397,11 @@ class TriviaController
         $gameInstance = GameApi::getGameInstance($token);
         $winners = GameApi::getWinners($gameInstance['gameInstance']['id']);
 
+        $accessibility = GameApi::getGameInstanceSettings($token, 'accessibility');
+        if ($accessibility == 'public') {
+            OpenTrivias::where('game_instance_id', $gameInstance['gameInstance']['id'])->update(['status' => 0, 'closed_at' => date('Y-m-d H:i:s')]);
+        }
+
         return view('trivia-game::game.results')->with(['gameInstance' => $gameInstance['gameInstance'], 'winners' => $winners['response']]);
     }
 
