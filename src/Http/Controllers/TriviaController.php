@@ -925,7 +925,7 @@ class TriviaController
                 $hasResult = false;
                 break;
             }
-            $amount = $amount - 10;
+            $amount = $amount - 5;
         }
         /*
         $url = 'https://opentdb.com/api.php?amount=40&category=' . $categoryId . '&difficulty=' . $difficulty . '&type=multiple';
