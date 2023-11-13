@@ -762,4 +762,192 @@ class TriviaController
         return view('trivia-game::pages.processing')->with(['tmpTrivia' => $tmpTrivia, 'token' => $token, 'gameInstance' => $data['gameInstance'], 'remoteData' => $remoteData]);
 
     }
+
+    public function createTriviaFromApi(Request $request)
+    {
+        $category = $request->get('category');
+        $openDbCatId = $this->getOpenDBCorrespondingCategoryId($category);
+
+        $trivia = Trivia::create([
+            'title' => $request->get('title'),
+            'category_id' => $category,
+            'description' => $request->get('description'),
+            'difficulty' => $request->get('difficulty'),
+            'type' => 'boolean', //just for now
+            'user_id' => Auth::user()->id,
+            'is_active' => 1,
+        ]);
+
+        $questions = $this->getOpenTriviaDbResults($openDbCatId, $request->get('difficulty'));
+        $orderNr = 1;
+
+        foreach ($questions as $question) {
+
+            //check if question is not already in database
+            $questionInDb = Questions::where('question', $question['question'])->first();
+            if($questionInDb) {
+                continue;
+            }
+
+            if($orderNr > 30) {
+                //for now as we want from results only create quiz with 30 questions
+                continue;
+            }
+            //before inserting question to database convert all special characters to html entities
+
+
+            $newQuestion = Questions::create([
+                'trivia_id' => $trivia->id,
+                'question' => html_entity_decode($question['question']),
+                'order_nr' => $orderNr,
+            ]);
+
+            $answers[] = [
+                'answer' => $question['correct_answer'],
+                'is_correct' => 1
+            ];
+
+            foreach ($question['incorrect_answers'] as $incorrectAnswer) {
+                $answers[] = [
+                    'answer' => $incorrectAnswer,
+                    'is_correct' => 0
+                ];
+            }
+
+
+            shuffle($answers);
+            foreach ($answers as $answer) {
+                Answers::create([
+                    'question_id' => $newQuestion->id,
+                    'answer' => html_entity_decode($answer['answer']),
+                    'is_correct' => $answer['is_correct'],
+                ]);
+            }
+
+            $answers = [];
+            $orderNr++;
+        }
+
+        return redirect()->back();
+    }
+
+    private function getOpenDBCorrespondingCategoryId($categoryId)
+    {
+
+
+        switch ($categoryId) {
+            case 1: //General Knowledge
+                return 9;
+                break;
+            case 2: //Entertainment: Books
+                return 10;
+                break;
+            case 3: //Entertainment: Film
+                return rand(0,1) == 0 ?  11 : 14; //11 - film, 14 - tv
+                break;
+            case 4: //Entertainment: Music
+                return 12;
+                break;
+            case 5: //Entertainment: Musicals & Theatres
+                return 13;
+                break;
+            case 7: //Entertainment: Video Games
+                return 15;
+                break;
+            case 8: //Entertainment: Anime & Manga
+                return 31;
+                break;
+            case 9: //Entertainment: Cartoon & Animations & Comics
+                return rand(0,1) == 0 ? 32 : 29; //32 - cartoon, 29 - comics
+                break;
+            case 10: //Entertainment: Celebrities
+                return 26;
+                break;
+            case 11: //Animals
+                return 27;
+                break;
+            case 12: //Geography
+                return 22;
+                break;
+            case 13: //History
+                return 23;
+                break;
+            case 14: // Science: Computers & Gadgets
+                return rand(0,1) == 0 ? 18 : 30; //18 - science: computers, 30 - science: gadgets
+                break;
+            case 15: //Science: Mathematics
+                return 19;
+                break;
+            case 16: //Entertainment: Board Games
+                return 16;
+                break;
+            case 17: //Science: Nature
+                return 17;
+                break;
+            case 18: //Sports
+                return 21;
+                break;
+            case 19: //Mythology
+                return 20;
+                break;
+            case 20: //Politics
+                return 24;
+                break;
+            case 21: //Vehicles
+                return 28;
+                break;
+            case 22:
+                return 25;
+                break;
+        }
+
+        return 9; //General Knowledge
+    }
+
+    private function getOpenTriviaDbResults($categoryId, $difficulty)
+    {
+        //https://opentdb.com/api.php?amount=10&category=11&difficulty=easy&type=multiple
+
+        $url = 'https://opentdb.com/api.php?amount=40&category=' . $categoryId . '&difficulty=' . $difficulty . '&type=multiple';
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $jsonResponse = json_decode($response, true);
+        return $jsonResponse['results'];
+
+        //response example
+        /*
+         * "response_code": 0,
+        "results": [
+        {
+            "category": "Entertainment: Japanese Anime & Manga",
+            "type": "multiple",
+            "difficulty": "medium",
+            "question": "Ikki Kurogane is known by what nickname at the beginning of &quot;Chivalry of a Failed Knight&quot;?",
+            "correct_answer": "Worst One",
+            "incorrect_answers": [
+            "Another One",
+            "Blazer",
+            "Princess"
+        ]
+        },
+        {
+            "category": "History",
+            "type": "multiple",
+            "difficulty": "easy",
+            "question": "What does the United States of America celebrate during the 4th of July?",
+            "correct_answer": "The signing of the Declaration of Independence",
+            "incorrect_answers": [
+                "The anniversary of the Battle of Gettysburg",
+                "The crossing of the Delaware River",
+                "The ratification of the Constitution"
+            ]
+        }
+        ]
+         */
+    }
 }

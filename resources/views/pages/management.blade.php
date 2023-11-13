@@ -1,5 +1,111 @@
 @extends('game-api::layout')
 @section('body')
+
+
+    <script type="application/javascript">
+
+        function openTriviaCreatorFromApiModal(){
+
+            let title = 'Create New Trivia From API';
+
+            //Create the form
+            let form = document.createElement('form');
+            form.setAttribute('method', 'POST');
+            form.setAttribute('action', '/trv/management/api-trivia');
+            form.setAttribute('id', 'trivia-from-api-form');
+            form.setAttribute('class', 'flex flex-row flex-wrap justify-center w-full');
+
+            let triviaInfoDiv = document.createElement('div');
+            triviaInfoDiv.setAttribute('class', 'flex flex-col w-full md:w-4/6 px-2');
+
+            //need a field for trivia title
+            let titleField = document.createElement('input');
+            titleField.setAttribute('type', 'text');
+            titleField.setAttribute('name', 'title');
+            titleField.setAttribute('id', 'title');
+            titleField.setAttribute('placeholder', 'Title');
+            titleField.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2');
+
+            //need a field for trivia description
+            let descriptionField = document.createElement('input');
+            descriptionField.setAttribute('type', 'text');
+            descriptionField.setAttribute('name', 'description');
+            descriptionField.setAttribute('id', 'description');
+            descriptionField.setAttribute('placeholder', 'Description');
+            descriptionField.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2');
+
+            let categoryField = document.createElement('select');
+            categoryField.setAttribute('name', 'category');
+            categoryField.setAttribute('id', 'category');
+            categoryField.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2');
+
+            //need category options
+            @foreach($categories as $cat)
+            let categoryOption{{$cat['id']}} = document.createElement('option');
+            categoryOption{{$cat['id']}}.setAttribute('value', "{{ $cat['id'] }}");
+            categoryOption{{$cat['id']}}.innerHTML = "{{ $cat['name'] }}";
+            categoryField.appendChild(categoryOption{{$cat['id']}});
+            @endforeach
+
+            //need a field for trivia difficulty
+            let difficultyField = document.createElement('select');
+            difficultyField.setAttribute('name', 'difficulty');
+            difficultyField.setAttribute('id', 'difficulty');
+            difficultyField.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2');
+
+            //need difficulty options
+            let easyOption = document.createElement('option');
+            easyOption.setAttribute('value', 'easy');
+            easyOption.innerHTML = 'Easy';
+            difficultyField.appendChild(easyOption);
+
+            let mediumOption = document.createElement('option');
+            mediumOption.setAttribute('value', 'medium');
+            mediumOption.innerHTML = 'Medium';
+            difficultyField.appendChild(mediumOption);
+
+            let hardOption = document.createElement('option');
+            hardOption.setAttribute('value', 'hard');
+            hardOption.innerHTML = 'Hard';
+            difficultyField.appendChild(hardOption);
+
+
+            //need a submit button
+            let submitButton = document.createElement('button');
+            submitButton.setAttribute('type', 'submit');
+            submitButton.setAttribute('class', 'py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold');
+            submitButton.innerHTML = 'Create Trivia From API';
+
+
+            //append all the fields to the form
+
+            triviaInfoDiv.appendChild(titleField);
+            triviaInfoDiv.appendChild(descriptionField);
+            triviaInfoDiv.appendChild(categoryField);
+            triviaInfoDiv.appendChild(difficultyField);
+            triviaInfoDiv.appendChild(submitButton);
+
+            let csrfInput = document.createElement('input');
+            csrfInput.setAttribute('type', 'hidden');
+            csrfInput.setAttribute('name', '_token');
+            csrfInput.setAttribute('id', '_token');
+            csrfInput.setAttribute('value', '{{ csrf_token() }}');
+
+
+            form.appendChild(triviaInfoDiv);
+            form.appendChild(csrfInput);
+            //form.appendChild(descriptionField);
+            //form.appendChild(categoryField);
+            //form.appendChild(difficultyField);
+            //form.appendChild(submitButton);
+
+            GameApi.openModal('game-modal', title, form);
+        }
+
+
+    </script>
+
+
     <div class="flex flex-row justify-center">
         <div class="flex flex-col mt-2 px-12  w-2/3">
             <div>
@@ -55,6 +161,9 @@
                                 </div>
                             </form>
                         </div>
+                        <div>
+                            <button onclick="openTriviaCreatorFromApiModal()" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold">Create Trivia From API</button>
+                        </div>
                     </div>
                     <div class="flex flex-col px-2 mt-4">
                         <h2 class="raleway">Trivia's</h2>
@@ -88,4 +197,7 @@
             </div>
         </div>
     </div>
+
+
+
 @endsection
