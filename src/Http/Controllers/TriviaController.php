@@ -335,6 +335,15 @@ class TriviaController
         if ($currentQuestion >= $questionCount) {
             //if it is last question then end game
             GameApi::changeGameInstanceStatus($token, 'completed');
+
+            if ($remoteData['is_temporary']) {
+                if ($questionCount > 20) {
+                    GameApi::giveUsersGameCurrency($token, $remoteData['trivia_id'], 'tmp_trivia_id');
+                }
+            } else {
+                GameApi::giveUsersGameCurrency($token, $remoteData['trivia_id'], 'trivia_id');
+            }
+
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Game ended successfully',
