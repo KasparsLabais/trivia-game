@@ -908,13 +908,37 @@ class TriviaController
     {
         //https://opentdb.com/api.php?amount=10&category=11&difficulty=easy&type=multiple
 
+        $amount = 50;
+        $hasResult = false;
+
+        while(false) {
+            $url = 'https://opentdb.com/api.php?amount=' . $amount . '&category=' . $categoryId . '&difficulty=' . $difficulty;
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setup($ch, CURLOPT_TIMEOUT, 30);
+
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $jsonResponse = json_decode($response, true);
+            if($jsonResponse['response_code'] == 0) {
+                $hasResult = true;
+                break;
+            }
+            $amount = $amount - 10;
+        }
+        /*
         $url = 'https://opentdb.com/api.php?amount=40&category=' . $categoryId . '&difficulty=' . $difficulty . '&type=multiple';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
+        curl_setup($ch, CURLOPT_TIMEOUT, 30);
 
         $response = curl_exec($ch);
         curl_close($ch);
+        */
 
         $jsonResponse = json_decode($response, true);
         return $jsonResponse['results'];
