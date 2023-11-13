@@ -784,7 +784,7 @@ class TriviaController
         foreach ($questions as $question) {
 
             //check if question is not already in database
-            $questionInDb = Questions::where('question', $question['question'])->first();
+            $questionInDb = Questions::where('question',html_entity_decode($question['question']))->first();
             if($questionInDb) {
                 continue;
             }
@@ -927,50 +927,8 @@ class TriviaController
             }
             $amount = $amount - 5;
         }
-        /*
-        $url = 'https://opentdb.com/api.php?amount=40&category=' . $categoryId . '&difficulty=' . $difficulty . '&type=multiple';
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
-        curl_setup($ch, CURLOPT_TIMEOUT, 30);
-
-        $response = curl_exec($ch);
-        curl_close($ch);
-        */
 
         $jsonResponse = json_decode($response, true);
         return $jsonResponse['results'];
-
-        //response example
-        /*
-         * "response_code": 0,
-        "results": [
-        {
-            "category": "Entertainment: Japanese Anime & Manga",
-            "type": "multiple",
-            "difficulty": "medium",
-            "question": "Ikki Kurogane is known by what nickname at the beginning of &quot;Chivalry of a Failed Knight&quot;?",
-            "correct_answer": "Worst One",
-            "incorrect_answers": [
-            "Another One",
-            "Blazer",
-            "Princess"
-        ]
-        },
-        {
-            "category": "History",
-            "type": "multiple",
-            "difficulty": "easy",
-            "question": "What does the United States of America celebrate during the 4th of July?",
-            "correct_answer": "The signing of the Declaration of Independence",
-            "incorrect_answers": [
-                "The anniversary of the Battle of Gettysburg",
-                "The crossing of the Delaware River",
-                "The ratification of the Constitution"
-            ]
-        }
-        ]
-         */
     }
 }
