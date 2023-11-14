@@ -206,7 +206,7 @@
     @if(Auth::check())
 
     <x-section title="Your Trivia's">
-        <x-card title="All Your Trivia's">
+        <x-card title="All Your Trivia's" addHeader="{{ true }}">
             <div class="flex flex-row raleway py-2 px-2">
                 <div>Total Trivia's: <span class="pr-4 pl-2">{{ $usersTrivias->count() }}</span></div>
                 <div>Active Trivia's: <span class="pr-4 pl-2">{{ $usersTrivias->where('is_active', 1)->count() }}</span></div>

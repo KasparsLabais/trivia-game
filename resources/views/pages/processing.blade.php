@@ -2,7 +2,7 @@
 @section('body')
 
     <x-section title="Preparing Your Game">
-        <x-card title="{{ $tmpTrivia['title'] }}">
+        <x-card title="{{ $tmpTrivia['title'] }}" addHeader="{{ true }}">
             <h1>Your game will be ready in a moment...</h1>
         </x-card>
     </x-section>
