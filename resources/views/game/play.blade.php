@@ -124,20 +124,38 @@
 
         function answerQuestion(id) {
             let answerHolder = document.querySelector('.answer-holder');
-            answerHolder.innerHTML = '<div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-64 w-64"></div>';
+            //answerHolder.innerHTML = '<div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-64 w-64"></div>';
 
             clearInterval(timeLimitTimer);
             fetch('/trv/trivia/{{ $gameInstance['token'] }}/answer', {'method' : 'POST', 'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'answer_id': id, 'question_id': currentQuestion})})
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+
+                        //disable all buttons and mark selected button with bg-yellow-600
+                        let answerButtons = document.querySelectorAll('.answer-holder button');
+                        answerButtons.forEach(answerButton => {
+                            answerButton.setAttribute('disabled', 'disabled');
+                            answerButton.classList.remove('bg-lime-500');
+                            answerButton.classList.add('bg-slate-300');
+                            answerButton.classList.remove('text-slate-100');
+                            answerButton.classList.add('text-slate-700');
+                        });
+
+                        //find selected button and mark it with bg-yellow-600
+                        let selectedAnswerButton = document.querySelector('.answer-holder div[answer-id="' + id + '"] button');
+                        selectedAnswerButton.classList.remove('bg-lime-500');
+                        selectedAnswerButton.classList.remove('bg-slate-300');
+                        selectedAnswerButton.classList.add('bg-yellow-500');
+
+
                         GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
                         GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'id': {{ Auth::user()->id }},'username' : '{{ Auth::user()->username }}', 'avatar': @if(is_null(Auth::user()->avatar)) '/images/default-avatar.jpg' @else '{{Auth::user()->avatar}}' @endif}, 'action': 'playerAnsweredEvent'});
 
                         if (data.data.correct) {
-                            answerHolder.innerHTML = '<h1>Correct!</h1>';
+                            //answerHolder.innerHTML = '<h1>Correct!</h1>';
                         } else {
-                            answerHolder.innerHTML = '<h1>Incorrect!</h1>';
+                            //answerHolder.innerHTML = '<h1>Incorrect!</h1>';
                         }
                     }
                 })
@@ -182,6 +200,8 @@
                         let answerHolder = document.querySelector('.answer-holder .flex[answer-id="' + data.data.answer.id + '"] button');
                         answerHolder.classList.remove('bg-lime-500');
                         answerHolder.classList.add('bg-violet-500');
+
+                        GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'answer-id': data.data.answer.id}, 'action': 'showCorrectAnswer'});
                     }
                 })
         }
@@ -271,40 +291,6 @@
 
             //remove class hidden from answered-label for user holder
             userHolder.querySelector('.answered-label').classList.remove('hidden');
-
-
-
-
-            /*
-            console.log('playerAnsweredEvent',e.detail);
-            let playerHolder = document.getElementById('answered-players-holder');
-
-            let playerDivHolder = document.createElement('div');
-            playerDivHolder.classList.add('px-1', 'py-1', 'md:w-1/6', 'w-3/6');
-
-            let playerDiv = document.createElement('div');
-            playerDiv.classList.add('flex', 'flex-col', 'py-2', 'px-2', 'rounded', 'bg-slate-100', 'shadow-md');
-
-            let playerImageDiv = document.createElement('div');
-            playerImageDiv.classList.add('flex', 'flex-row', 'justify-center');
-
-            let playerImage = document.createElement('img');
-            playerImage.classList.add('w-14', 'h-14', 'rounded-full', 'shadow-md', 'border-2', 'border-slate-500');
-            playerImage.setAttribute('src', e.detail.avatar);
-
-            playerImageDiv.appendChild(playerImage);
-
-            let playerNicknameDiv = document.createElement('div');
-            playerNicknameDiv.classList.add('flex', 'flex-row', 'justify-center', 'raleway', 'font-semibold');
-            playerNicknameDiv.innerHTML = e.detail.username;
-
-            playerDiv.appendChild(playerImageDiv);
-            playerDiv.appendChild(playerNicknameDiv);
-
-            playerDivHolder.appendChild(playerDiv);
-
-            playerHolder.appendChild(playerDivHolder);
-            */
         });
 
         document.addEventListener('nextQuestionEvent', (e) => {
@@ -325,6 +311,17 @@
         document.addEventListener('userconnected', (e) => {
             console.log('event userconnected', e.detail);
             GameApi.joinRoom('{{ $gameInstance['token'] }}');
+        });
+
+        document.addEventListener('showCorrectAnswer', (e) => {
+            console.log('showCorrectAnswer', e.detail);
+            let answerHolder = document.querySelector('.answer-holder div[answer-id="' + e.detail['answer-id'] + '"] button');
+            answerHolder.classList.remove('bg-lime-500');
+            answerHolder.classList.remove('bg-slate-300');
+            answerHolder.classList.remove('bg-yellow-500');
+            answerHolder.classList.add('bg-lime-500');
+
+            GameApi.getPlayerPoints('{{ $gameInstance['token'] }}')
         });
 
         function clearAnsweredUsersDivs()
