@@ -690,14 +690,18 @@ class TriviaController
     {
 
         $title = $request->get('title');
-        $description = $request->get('description');
+        $description = !is_null($request->get('description')) ? $request->get('description') : '';
         $category = $request->get('category');
         $difficulty = $request->get('difficulty');
         $questionCount = $request->get('question_count');
         //    protected $fillable = ['title', 'category_id', 'difficulty', 'private', 'question_count'];
 
         $questions = [];
-        $allTriviasForProvidedCategory = Trivia::where('category_id', $category)->where(function($q) use ($difficulty){
+        $allTriviasForProvidedCategory = Trivia::where(function($q) use( $category) {
+            if($category != 23) {
+                $q->where('category_id', $category);
+            }
+        })->where(function($q) use ($difficulty){
             if ($difficulty != 'any')
             {
                 $q->where('difficulty', $difficulty);

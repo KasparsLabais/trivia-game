@@ -203,6 +203,22 @@
         </div>
     </x-section>
 
+    <x-section title="">
+        <x-card title="Play Random" addHeader="{{ true }}">
+            @if(Auth::check())
+                <div class="flex flex-row mx-2 py-4 px-4">
+                    <div>
+                        <x-btn-alternative isALink="{{ false }}" onClick="openRandomTriviaModal(23, 'Every')" type="button">Play Random Quiz</x-btn-alternative>
+                        <p>We will auto generate trivia from all available questions in all available category</p>
+                    </div>
+                </div>
+            @else
+                <span>You Need To Login To Play</span>
+            @endif
+        </x-card>
+    </x-section>
+
+
     @if(Auth::check())
 
     <x-section title="Your Trivia's">
