@@ -46,7 +46,7 @@
                 <div class="flex flex-row justify-center" id="qrcode"></div>
                 <span class="flex flex-row justify-center my-4">OR</span>
                 <h2 class="fira-sans flex flex-row justify-center"><span>https://is-a.gay/join/{{ $gameInstance['token'] }}</span></h2>
-                @if(Auth::user()->id == $gameInstance['user_id'])
+                @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
                 <span class="fira-sans font-semibold text-xl my-2">Settings:</span>
                 <div class="border-b border-b-slate-300 pb-4">
                     <div>
@@ -115,7 +115,7 @@
                 @endif
             </div>
             <div class="bg-slate-300 px-6 py-8">
-                @if(Auth::user()->id == $gameInstance['user_id'])
+                @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
                     <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame()">Start Game</button>
                 @else
                     <h2 class="text-center">Wait for game to start!</h2>
@@ -211,7 +211,7 @@
             let playerLimit = document.getElementById('player_limit').value;
 
             if (status == 1 && playerLimit <= 0) {
-                GameApi.triggerAlertNotification('{{ $gameInstance['token'] }}', 'player', 'error', 'Player limit must be greater than 0', {{ Auth::user()->id }} );
+                GameApi.triggerAlertNotification('{{ $gameInstance['token'] }}', 'player', 'error', 'Player limit must be greater than 0', window.id );
                 return;
             }
 

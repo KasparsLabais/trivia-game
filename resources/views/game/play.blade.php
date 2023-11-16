@@ -9,7 +9,7 @@
             </div>
             <hr class="my-4">
             <h2 class="fire-sans font-normal text-lg">
-                @if(Auth::user()->id == $gameInstance['user_id'])
+                @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
                     Game Host: {{ Auth::user()->username }}
                 @else
                     Your Points: <x-points points="{{ $playerInstance['points']  }}"></x-points>
@@ -27,18 +27,18 @@
                 </div>
             </div>
             <div class="py-4">
-                @if(Auth::user()->id == $gameInstance['user_id'])
+                @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
                     <button class="py-2 px-4 shadow-md bg-cyan-500 text-slate-100 font-semibold" onclick="showCorrectAnswer()">Show Correct Answer</button>
                     <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="nextQuestion()">Next Question</button>
                 @endif
             </div>
-            @if(Auth::user()->id == $gameInstance['user_id'])
+            @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
                 <h2 class="fire-sans font-normal text-lg">Players:</h2>
             @endif
             <div id="answered-players-holder" class="flex flex-row">
-                @if(Auth::user()->id == $gameInstance['user_id'])
+                @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
                     @foreach($gameInstance->playerInstances as $player)
-                        <div class="px-1 py-1 users-holder" id="user-holder-{{ $player->user->id }}">
+                        <div class="px-1 py-1 users-holder" id="user-holder-@if($player->user_type == 'guest'){{$player->user->tmp_user_id}}@else{{ $player->user->id }}@endif">
                             <div class="relative flex flex-col bg-slate-100 shadow-md py-2 px-2 rounded">
                                 <div class="flex flex-row justify-center">
                                     <img src="@if(is_null($player->user->avatar)) /images/default-avatar.jpg @else{{$player->user->avatar}}@endif" class="opacity-30 w-14 h-14 rounded-full shadow-md border-2 border-slate-500" alt="avatar" />
@@ -90,7 +90,10 @@
                             let answerButton = document.createElement('button');
                             answerButton.classList.add('py-2', 'px-4', 'shadow-md', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'mb-2', 'w-full');
                             answerButton.innerHTML = answer.answer;
-                            @if(Auth::user()->id != $gameInstance['user_id'])
+
+                            @if(Auth::check() && (Auth::user()->id != $gameInstance['user_id']))
+                            answerButton.setAttribute('onclick', 'answerQuestion(' + answer.id + ')');
+                            @else
                             answerButton.setAttribute('onclick', 'answerQuestion(' + answer.id + ')');
                             @endif
 
@@ -150,7 +153,7 @@
 
 
                         GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
-                        GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'id': {{ Auth::user()->id }},'username' : '{{ Auth::user()->username }}', 'avatar': @if(is_null(Auth::user()->avatar)) '/images/default-avatar.jpg' @else '{{Auth::user()->avatar}}' @endif}, 'action': 'playerAnsweredEvent'});
+                        GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'id': window.id,'username' : window.username, 'avatar': @if(!Auth::check() || is_null(Auth::user()->avatar)) '/images/default-avatar.jpg' @else '{{Auth::user()->avatar}}' @endif}, 'action': 'playerAnsweredEvent'});
 
                         if (data.data.correct) {
                             //answerHolder.innerHTML = '<h1>Correct!</h1>';
@@ -259,7 +262,11 @@
 
             if (timeLeft <= 0) {
 
-                @if(Auth::user()->id != $gameInstance['user_id'])
+
+                @if(Auth::check() && (Auth::user()->id != $gameInstance['user_id']))
+                let answerHolder = document.querySelector('.answer-holder');
+                answerHolder.innerHTML = "<div class='w-full fira-sans text-4xl text-center'><h1>TIME'S UP!</h1></div>";
+                @else
                 let answerHolder = document.querySelector('.answer-holder');
                 answerHolder.innerHTML = "<div class='w-full fira-sans text-4xl text-center'><h1>TIME'S UP!</h1></div>";
                 @endif

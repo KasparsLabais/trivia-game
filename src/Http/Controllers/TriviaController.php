@@ -4,6 +4,7 @@ namespace PartyGames\TriviaGame\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use PartyGames\GameApi\GameApi;
 use PartyGames\GameApi\Models\Game;
 use PartyGames\TriviaGame\Models\TmpTrivia;
@@ -62,7 +63,19 @@ class TriviaController
     public function game($gameToken)
     {
         $response = GameApi::getGameInstance($gameToken);
-        $playerInstance = GameApi::getPlayerInstance($response['gameInstance']['id'], Auth::user()->id);
+
+        if(Auth::check()) {
+            $userId = Auth::user()->id;
+        } else {
+            if(Session::get('tmp-user-id') != null) {
+                $userId = Session::get('tmp-user-id');
+            } else {
+                return redirect()->to('/trv/trivia');
+            }
+        }
+
+        $playerInstance = GameApi::getPlayerInstance($response['gameInstance']['id'], $userId);
+
         //if game instance is not found redirect to /trv/trivia
         if ($response['status'] == false) {
             return redirect()->route('trv.trivia');
@@ -191,8 +204,22 @@ class TriviaController
         //$triviaId = $request->get('triviaId');
         //$currentQuestion = $request->get('currentQuestion');
         $data = GameApi::getGameInstance($token);
-        $playerInstance = GameApi::getPlayerInstance($data['gameInstance']['id'], Auth::user()->id);
 
+        if(Auth::check()) {
+            $userId = Auth::user()->id;
+        } else {
+            if(Session::get('tmp-user-id') != null) {
+                $userId = Session::get('tmp-user-id');
+            } else {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'You are not logged in',
+                    'data' => NULL
+                ]);
+            }
+        }
+
+        $playerInstance = GameApi::getPlayerInstance($data['gameInstance']['id'], $userId);
         $remoteData = json_decode($data['gameInstance']['remote_data'], true);
 
         if ($remoteData['is_temporary']) {
@@ -246,6 +273,19 @@ class TriviaController
         $data = GameApi::getGameInstance($token);
         $remoteData = json_decode($data['gameInstance']['remote_data'], true);
 
+        if(Auth::check()) {
+            $userId = Auth::user()->id;
+        } else {
+            if(Session::get('tmp-user-id') != null) {
+                $userId = Session::get('tmp-user-id');
+            } else {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'You are not logged in',
+                    'data' => NULL
+                ]);
+            }
+        }
         //first step is to check if user have not already answered this question
 
         if ($remoteData['is_temporary']) {
@@ -258,7 +298,7 @@ class TriviaController
 
         $haveAnswered = SubmittedAnswers::where('game_instance_id', $data['gameInstance']['id'])
             ->where('question_id', $questionId)
-            ->where('user_id', Auth::user()->id)->first();
+            ->where('user_id', $userId)->first();
 
         if ($haveAnswered) {
             return new JsonResponse([
@@ -272,12 +312,12 @@ class TriviaController
             'game_instance_id' => $data['gameInstance']['id'],
             'question_id' => $questionId,
             'answer_id' => $request->get('answer_id'),
-            'user_id' => Auth::user()->id
+            'user_id' => $userId
         ]);
 
         $answer = Answers::find($request->get('answer_id'));
 
-        $playerInstance = (GameApi::getPlayerInstance($data['gameInstance']['id'], Auth::user()->id))['playerInstance'];
+        $playerInstance = (GameApi::getPlayerInstance($data['gameInstance']['id'], $userId))['playerInstance'];
         $playerRemoteData = json_decode($playerInstance['remote_data'], true);
 
         if (is_null($playerRemoteData)) {
