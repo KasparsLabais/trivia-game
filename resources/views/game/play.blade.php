@@ -40,7 +40,8 @@
                     @foreach($gameInstance->playerInstances as $player)
                         <div class="px-1 py-1 users-holder" id="user-holder-@if($player->user_type == 'guest'){{$player->user->tmp_user_id}}@else{{ $player->user->id }}@endif">
                             <div class="relative flex flex-col bg-slate-100 shadow-md py-2 px-2 rounded">
-                                <div class="flex flex-row justify-center">
+                                <div class="flex flex-row justify-center relative">
+                                    @if(!is_null($player->user->iconFlair)) <img src="{{ $player->user->iconFlair->icon_url }}" class="w-6 h-6 opacity-30 absolute right-0"/> @endif
                                     <img src="@if(is_null($player->user->avatar)) /images/default-avatar.jpg @else{{$player->user->avatar}}@endif" class="opacity-30 w-14 h-14 rounded-full shadow-md border-2 border-slate-500" alt="avatar" />
                                 </div>
                                 <div class="flex flex-row justify-center">
