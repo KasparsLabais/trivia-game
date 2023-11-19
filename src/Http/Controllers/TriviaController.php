@@ -505,6 +505,7 @@ class TriviaController
         $trivia->difficulty = $request->difficulty;
         $trivia->is_active = (int)$request->is_active;
         $trivia->private = (int)$request->private;
+        $trivia->is_premium = (int)$request->is_premium;
         $trivia->save();
 
         return redirect()->back();
