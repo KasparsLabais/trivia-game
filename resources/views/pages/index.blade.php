@@ -87,7 +87,11 @@
                                 <div class="flex flex-col justify-center px-4 w-2/6">
 
                                     @if(Auth::check())
-                                        <x-btn-primary isALink="{{ false  }}" onClick="startTriviaGame({{ $trivia['id'] }})" type="submit" link="">Play</x-btn-primary>
+                                        @if($trivia->is_premium && (Auth::user()->id != $trivia->user_id) )
+                                            <x-btn-premium isALink="{{ true  }}" onClick="" type="submit" link="/premium">Get Premium</x-btn-premium>
+                                        @else
+                                            <x-btn-primary isALink="{{ false  }}" onClick="startTriviaGame({{ $trivia['id'] }})" type="submit" link="">Play</x-btn-primary>
+                                        @endif
                                     @else
                                         <div>
                                             <span class="">You Need To Login To Play</span>
@@ -116,7 +120,11 @@
                                         <span  class="font-semibold">{{ $trivia->questions->count() }}</span> Questions
                                     </div>
                                     @if(Auth::check())
-                                        <x-btn-primary isALink="{{ false  }}" onClick="startTriviaGame({{ $trivia['id'] }})" type="submit" link="">Play</x-btn-primary>
+                                        @if($trivia->is_premium && (Auth::user()->id != $trivia->user_id) )
+                                            <x-btn-premium isALink="{{ true  }}" onClick="" type="submit" link="/premium">Get Premium</x-btn-premium>
+                                        @else
+                                            <x-btn-primary isALink="{{ false  }}" onClick="startTriviaGame({{ $trivia['id'] }})" type="submit" link="">Play</x-btn-primary>
+                                        @endif
                                     @else
                                         <div>
                                             <div>

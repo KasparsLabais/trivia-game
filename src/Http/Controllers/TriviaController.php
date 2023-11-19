@@ -37,7 +37,18 @@ class TriviaController
 
     public function createGame(Request $request)
     {
-        $trivia = Trivia::find($request->get('trivia_id'));
+        $trivia = Trivia::where('id', $request->get('trivia_id'))->where(function($q) {
+            $q->where('user_id', Auth::user()->id)->orWhere('is_premium', 0);
+        })->first();
+
+        if(!$trivia) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Trivia not found',
+                'data' => NULL
+            ]);
+        }
+
         $remoteData = [
             'trivia_id' => $trivia->id,
             'is_temporary' => 0,
@@ -749,6 +760,8 @@ class TriviaController
             }
         })->where(function($q) {
             $q->where('private', 0)->orWhere('user_id', Auth::user()->id);
+        })->where(function($q) {
+            $q->where('is_premium', 0)->orWhere('user_id', Auth::user()->id);
         })->get();
 
         foreach ($allTriviasForProvidedCategory as $trivia) {
