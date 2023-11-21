@@ -104,7 +104,12 @@ class TriviaController
                 $trivia = Trivia::find($remoteData['trivia_id']);
             }
 
-            return view('trivia-game::game.start')->with(['gameInstance' => $gameInstance, 'trivia' => $trivia]);
+
+            if (Auth::check() && Auth::user()->id == $gameInstance['user_id']) {
+                return view('trivia-game::game.start')->with(['gameInstance' => $gameInstance, 'trivia' => $trivia]);
+            }
+
+            return view('trivia-game::game.start-player')->with(['gameInstance' => $gameInstance, 'trivia' => $trivia]);
         }
 
         if ($gameInstance['status'] == 'completed') {
