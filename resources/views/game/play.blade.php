@@ -1,63 +1,33 @@
 @extends('game-api::layout')
 @section('body')
 
-    <div class="flex flex-row justify-center">
-        <div class="flex flex-col w-full px-4 md:px-none md:w-1/2">
-            <div>
-                <h1 class="fira-sans text-xl">{{ $gameInstance['title'] }}</h1>
-                <div>Question <span id="current-question-number">{{ $remoteData['current_question'] }}</span> / {{ $totalQuestions }}</div>
-            </div>
-            <hr class="my-4">
-            <h2 class="fire-sans font-normal text-lg">
-                @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
-                    Game Host: {{ Auth::user()->username }}
-                @else
-                    Your Points: <x-points points="{{ $playerInstance['points']  }}"></x-points>
-                @endif
-            </h2>
-            <div id="timer-settings" class="hidden bg-lime-300" style="width: 100%; height: 8.5px;">
-            </div>
-            <div class="shadow-md">
-                <div class="bg-slate-100 px-6 py-6">
-                    <h1 id="question-holder" class="fira-sans text-xl text-center">Waiting For Question...</h1>
-                </div>
-                <div class="bg-slate-200 px-2 py-2 md:px-6 md:py-8">
-                    <div class="answer-holder flex flex-wrap justify-between">
-                    </div>
-                </div>
-            </div>
-            <div class="py-4">
-                @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
-                    <button class="py-2 px-4 shadow-md bg-cyan-500 text-slate-100 font-semibold" onclick="showCorrectAnswer()">Show Correct Answer</button>
-                    <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="nextQuestion()">Next Question</button>
-                @endif
-            </div>
-            @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
-                <h2 class="fire-sans font-normal text-lg">Players:</h2>
-            @endif
-            <div id="answered-players-holder" class="flex flex-row">
-                @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
-                    @foreach($gameInstance->playerInstances as $player)
-                        <div class="px-1 py-1 users-holder" id="user-holder-@if($player->user_type == 'guest'){{$player->user->tmp_user_id}}@else{{ $player->user->id }}@endif">
-                            <div class="relative flex flex-col bg-slate-100 shadow-md py-2 px-2 rounded">
-                                <div class="flex flex-row justify-center relative">
-                                    @if(!is_null($player->user->iconFlair)) <img src="{{ $player->user->iconFlair->icon_url }}" class="w-6 h-6 opacity-30 absolute right-0"/> @endif
-                                    <img src="@if(is_null($player->user->avatar)) /images/default-avatar.jpg @else{{$player->user->avatar}}@endif" class="opacity-30 w-14 h-14 rounded-full shadow-md border-2 border-slate-500" alt="avatar" />
-                                </div>
-                                <div class="flex flex-row justify-center">
-                                    <div class="username-div raleway font-semibold text-slate-300">{{ $player->user->username }}</div>
-                                </div>
-
-                                <div class="answered-label hidden bg-rose-600 font-semibold fira-sans text-slate-100 text-sm absolute top-0 right-0 py-1 px-1 rounded">
-                                    Answered
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                @endif
-            </div>
+    <div id="timer-holder" class="hidden flex flex-col relative">
+        <div id="timer-settings" class="flex flex-row justify-center bg-lime-300" style="width: 100%; height: 24.5px;">
+        </div>
+        <div class="w-full flex flex-row justify-center">
+            <span id="timer-countdown-holder" class="bg-zinc-800 rounded-md text-xl text-slate-300 font-semibold">0</span>
         </div>
     </div>
+
+
+    <x-section title="">
+        <div class="flex flex-col py-4 px-2">
+            <h1 id="question-holder" class="josefin-sans text-yellow-400 text-5xl text-center">Waiting For Question...</h1>
+            <div>
+                <p class="px-4 z-20 text-slate-400 text-center text-xl">Question <span id="current-question-number">{{ $remoteData['current_question'] }}</span> / {{ $totalQuestions }}</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col py-2 px-2 answer-holder">
+        </div>
+
+        <div class="flex flex-col justify-center w-24 h-24 bg-sky-700 rounded-full shadow-md text-center absolute bottom-2 right-2">
+            <span class="josefin-sans font-semibold text-3xl text-slate-200"><x-points points="{{ $playerInstance['points']  }}"></x-points></span>
+            <span class="raleway text-slate-200 font-semibold">Points</span>
+        </div>
+
+    </x-section>
+
 
     <script>
 
@@ -66,10 +36,7 @@
 
         function loadQuestion()
         {
-
-            clearAnsweredUsersDivs();
             clearInterval(timeLimitTimer);
-
             fetch('/trv/trivia/{{ $gameInstance['token'] }}/question', {'method': 'GET', 'headers': {'Content-Type': 'application/json'}})
                 .then(response => response.json())
                 .then(data => {
@@ -84,6 +51,27 @@
 
                         data.data.answers.forEach(answer => {
 
+                            /*
+                                        <div class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold mb-2 w-full h-20 flex flex-col justify-center text-center text-2xl">
+                <span class="text-slate-100" id="answer-a">Answer A</span>
+            </div>
+                             */
+                            let answerButtonHolderDiv = document.createElement('button');
+                            answerButtonHolderDiv.classList.add('py-2', 'px-4', 'shadow-md', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'mb-2', 'w-full', 'h-24', 'flex', 'flex-col', 'justify-center', 'text-center', 'text-2xl');
+                            answerButtonHolderDiv.setAttribute('answer-id', answer.id);
+
+                            let answerSpan = document.createElement('span');
+                            answerSpan.classList.add('text-slate-100', 'w-full');
+                            answerSpan.innerHTML = answer.answer;
+
+                            answerButtonHolderDiv.appendChild(answerSpan);
+                            answerButtonHolderDiv.setAttribute('onclick', 'answerQuestion(' + answer.id + ')');
+
+
+
+
+                            //return
+                            /*
                             let answerButtonHolderDiv = document.createElement('div');
                             answerButtonHolderDiv.classList.add('flex', 'flex-col', 'justify-center', 'px-2', 'md:w-2/4', 'w-full');
                             answerButtonHolderDiv.setAttribute('answer-id', answer.id);
@@ -97,8 +85,7 @@
                             @else
                             answerButton.setAttribute('onclick', 'answerQuestion(' + answer.id + ')');
                             @endif
-
-                            answerButtonHolderDiv.appendChild(answerButton);
+                            */
                             answerHolder.appendChild(answerButtonHolderDiv);
                         });
 
@@ -147,158 +134,91 @@
                         });
 
                         //find selected button and mark it with bg-yellow-600
-                        let selectedAnswerButton = document.querySelector('.answer-holder div[answer-id="' + id + '"] button');
+                        let selectedAnswerButton = document.querySelector('.answer-holder button[answer-id="' + id + '"]');
                         selectedAnswerButton.classList.remove('bg-lime-500');
                         selectedAnswerButton.classList.remove('bg-slate-300');
                         selectedAnswerButton.classList.add('bg-yellow-500');
 
-
                         GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
                         GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'id': window.id,'username' : window.username, 'avatar': @if(!Auth::check() || is_null(Auth::user()->avatar)) '/images/default-avatar.jpg' @else '{{Auth::user()->avatar}}' @endif}, 'action': 'playerAnsweredEvent'});
-
-                        if (data.data.correct) {
-                            //answerHolder.innerHTML = '<h1>Correct!</h1>';
-                        } else {
-                            //answerHolder.innerHTML = '<h1>Incorrect!</h1>';
-                        }
                     }
                 })
                 .catch(error => console.log(error));
-        }
-
-        function nextQuestion()
-        {
-            //let playerHolder = document.getElementById('answered-players-holder');
-            //playerHolder.innerHTML = '';
-
-            fetch('/trv/trivia/{{ $gameInstance['token'] }}/next', {'method': 'POST', 'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    if (data.success) {
-                        switch (data.data.event) {
-                            case 'gameOverEvent':
-                                GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {}, 'action': 'gameOverEvent'});
-                                break;
-                            case 'nextQuestionEvent':
-                                GameApi.updateGameInstance('{{ $gameInstance['token'] }}', data.data.gameInstance)
-                                GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'question': data.data.question}, 'action': 'nextQuestionEvent'});
-                                break;
-                        }
-                    }
-                })
-                .catch(error => console.log(error));
-
-            //currentQuestion+=1;
-            //GameApi.notifyRoom('{{ $gameInstance['token'] }}', {data: {'question': currentQuestion}, 'action': 'nextQuestionEvent'});
-        }
-
-
-        function showCorrectAnswer() {
-
-            fetch('/trv/trivia/{{ $gameInstance['token'] }}/correct', {'question' : currentQuestion})
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    if(data.success) {
-                        let answerHolder = document.querySelector('.answer-holder .flex[answer-id="' + data.data.answer.id + '"] button');
-                        answerHolder.classList.remove('bg-lime-500');
-                        answerHolder.classList.add('bg-violet-500');
-
-                        GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'answer-id': data.data.answer.id}, 'action': 'showCorrectAnswer'});
-                    }
-                })
         }
 
         function triggerTimer(initialTime)
         {
             //initialTime = 10;//just for debuging
-            let timerHolder = document.getElementById('timer-settings');
+            let timerHolder = document.getElementById('timer-holder');
+            let timerBarHolder = document.getElementById('timer-settings');
+            let timerCountdownHolder = document.getElementById('timer-countdown-holder');
+            timerCountdownHolder.innerHTML = initialTime;
 
+            timerHolder.classList.remove('hidden');
             //remove all classes from timer holder
-            timerHolder.classList = [];
-            timerHolder.classList.add('bg-lime-300');
+            timerBarHolder.classList = [];
+            timerBarHolder.classList.add('bg-lime-300');
 
 
-            timerHolder.style.width = '100%';
-            timerHolder.style.height = '8.5px';
+            timerBarHolder.style.width = '100%';
+            timerBarHolder.style.height = '24.5px';
 
-            updateTimer(initialTime, initialTime, timerHolder);
+
+            updateTimer(initialTime, initialTime, timerBarHolder, timerCountdownHolder);
         }
 
-        function updateTimer(timeLeft, initialTime, timerHolder)
+        function updateTimer(timeLeft, initialTime, timerBarHolder, timerCountdownHolder)
         {
+            timerCountdownHolder.innerHTML = timeLeft;
+
             let timeLeftPercentage = (timeLeft / initialTime) * 100;
-            timerHolder.style.width = timeLeftPercentage + '%';
+            timerBarHolder.style.width = timeLeftPercentage + '%';
 
             if (timeLeftPercentage < 75) {
-                timerHolder.classList.remove('bg-lime-300');
-                timerHolder.classList.add('bg-amber-200');
+                timerBarHolder.classList.remove('bg-lime-300');
+                timerBarHolder.classList.add('bg-amber-200');
             }
 
             if (timeLeftPercentage < 55) {
-                timerHolder.classList.remove('bg-amber-200');
-                timerHolder.classList.add('bg-amber-300');
+                timerBarHolder.classList.remove('bg-amber-200');
+                timerBarHolder.classList.add('bg-amber-300');
             }
 
             if (timeLeftPercentage < 30) {
-                timerHolder.classList.remove('bg-amber-300');
-                timerHolder.classList.add('bg-amber-400');
+                timerBarHolder.classList.remove('bg-amber-300');
+                timerBarHolder.classList.add('bg-amber-400');
             }
 
             if (timeLeftPercentage < 20) {
-                timerHolder.classList.remove('bg-amber-400');
-                timerHolder.classList.add('bg-red-400');
+                timerBarHolder.classList.remove('bg-amber-400');
+                timerBarHolder.classList.add('bg-red-400');
             }
 
             if (timeLeftPercentage < 10) {
-                timerHolder.classList.remove('bg-rose-400');
-                timerHolder.classList.add('bg-rose-500');
+                timerBarHolder.classList.remove('bg-rose-400');
+                timerBarHolder.classList.add('bg-rose-500');
             }
 
             if (timeLeftPercentage < 5) {
-                timerHolder.classList.remove('bg-rose-500');
-                timerHolder.classList.add('bg-rose-600');
+                timerBarHolder.classList.remove('bg-rose-500');
+                timerBarHolder.classList.add('bg-rose-600');
             }
 
             if (timeLeft <= 0) {
-
-
-                @if(Auth::check() && (Auth::user()->id != $gameInstance['user_id']))
                 let answerHolder = document.querySelector('.answer-holder');
                 answerHolder.innerHTML = "<div class='w-full fira-sans text-4xl text-center'><h1>TIME'S UP!</h1></div>";
-                @else
-                let answerHolder = document.querySelector('.answer-holder');
-                answerHolder.innerHTML = "<div class='w-full fira-sans text-4xl text-center'><h1>TIME'S UP!</h1></div>";
-                @endif
 
                 clearInterval(timeLimitTimer);
                 return;
             }
 
             timeLimitTimer = setTimeout(() => {
-                updateTimer(timeLeft - 1, initialTime, timerHolder);
+                updateTimer(timeLeft - 1, initialTime, timerBarHolder, timerCountdownHolder);
             }, 1000);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             loadQuestion();
-        });
-
-        document.addEventListener('playerAnsweredEvent', (e) => {
-
-            console.log(e.detail);
-            //find user holder with id user-holder- e.detail.id and change image opacity
-            let userHolder = document.getElementById('user-holder-' + e.detail.id);
-            userHolder.querySelector('img').classList.add('opacity-100');
-            userHolder.querySelector('img').classList.remove('opacity-30');
-
-            //change for user text color from text-slate-100 to text-slate-700
-            userHolder.querySelector('.username-div').classList.remove('text-slate-100');
-            userHolder.querySelector('.username-div').classList.add('text-slate-700');
-
-            //remove class hidden from answered-label for user holder
-            userHolder.querySelector('.answered-label').classList.remove('hidden');
         });
 
         document.addEventListener('nextQuestionEvent', (e) => {
@@ -323,7 +243,7 @@
 
         document.addEventListener('showCorrectAnswer', (e) => {
             console.log('showCorrectAnswer', e.detail);
-            let answerHolder = document.querySelector('.answer-holder div[answer-id="' + e.detail['answer-id'] + '"] button');
+            let answerHolder = document.querySelector('.answer-holder button[answer-id="' + e.detail['answer-id'] + '"]');
             answerHolder.classList.remove('bg-lime-500');
             answerHolder.classList.remove('bg-slate-300');
             answerHolder.classList.remove('bg-yellow-500');
@@ -331,21 +251,6 @@
 
             GameApi.getPlayerPoints('{{ $gameInstance['token'] }}')
         });
-
-        function clearAnsweredUsersDivs()
-        {
-            let userHolders = document.querySelectorAll('.users-holder');
-            userHolders.forEach(userHolder => {
-
-                userHolder.querySelector('img').classList.remove('opacity-100');
-                userHolder.querySelector('img').classList.add('opacity-30');
-
-                userHolder.querySelector('.username-div').classList.remove('text-slate-700');
-                userHolder.querySelector('.username-div').classList.add('text-slate-100');
-
-                userHolder.querySelector('.answered-label').classList.add('hidden');
-            });
-        }
 
     </script>
 @endsection
