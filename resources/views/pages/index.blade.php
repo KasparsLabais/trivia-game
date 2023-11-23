@@ -22,7 +22,6 @@
         </x-section>
 
         <x-section title="">
-
             <div class="flex flex-col bg-zinc-700 py-4">
                 <h1 class="px-4 z-20 text-center josefin-sans text-yellow-400 font-semibold text-2xl">Select Trivia</h1>
                 <div class="flex flex-row py-4">
@@ -85,7 +84,6 @@
                     </div>
                 </div>
             </div>
-
             <div id="open-trivias-holder" class="hidden flex flex-col">
                 <div v-for="openTrivia in selectedOpenTriviasByCategoryAndDifficulty" class="mb-2">
                     <div class="py-4 px-2 flex flex-row justify-between bg-slate-300 fira-sans shadow-md border-b rounded border-b-slate-400">
@@ -156,40 +154,34 @@
 
             </div>
         </x-section>
+
+        @if(Auth::check())
+        <div class="fixed bottom-0 left-2 flex flex-row justify-center">
+
+            <div>
+                <button type="button" v-on:click="openRandomTriviaModal()" class="w-full text-center fira-sans py-4 px-2 md:px-6 shadow bg-yellow-500 text-zinc-900 font-semibold text-xl shadow-md shadow-zinc-900">Play Random Quiz</button>
+            </div>
+        </div>
+        @endif
     </div>
-
-
-    <x-section title="">
-        <x-card title="Play Random" addHeader="{{ true }}">
-            @if(Auth::check())
-                <div class="flex flex-row mx-2 py-4 px-4">
-                    <div>
-                        <x-btn-alternative isALink="{{ false }}" onClick="openRandomTriviaModal(23, 'Every')" type="button">Play Random Quiz</x-btn-alternative>
-                        <p>We will auto generate trivia from all available questions in all available category</p>
-                    </div>
-                </div>
-            @else
-                <span>You Need To Login To Play</span>
-            @endif
-        </x-card>
-    </x-section>
-
 
     @if(Auth::check())
 
-    <x-section title="Your Trivia's">
-        <x-card title="All Your Trivia's" addHeader="{{ true }}">
-            <div class="flex flex-row raleway py-2 px-2">
+    <x-section title="">
+        <div class="flex flex-col bg-zinc-700 py-4">
+            <h1 class="px-4 z-20 text-center josefin-sans text-yellow-400 font-semibold text-2xl">Your Quizes</h1>
+
+            <div class="flex flex-row raleway py-2 px-2 text-slate-200 font-semibold">
                 <div>Total Trivia's: <span class="pr-4 pl-2">{{ $usersTrivias->count() }}</span></div>
                 <div>Active Trivia's: <span class="pr-4 pl-2">{{ $usersTrivias->where('is_active', 1)->count() }}</span></div>
                 <div>Total Times Played: <span class="pr-4 pl-2">0</span></div>
             </div>
             <div class="flex flex-row py-2 px-2">
                 <div>
-                    <x-btn-alternative isALink="{{ true }}" link="/trv/management">Manage</x-btn-alternative>
+                    <x-btn-primary isALink="{{ true }}" link="/trv/management">Manage</x-btn-primary>
                 </div>
             </div>
-        </x-card>
+        </div>
     </x-section>
 
     @endif
@@ -293,6 +285,134 @@
                             window.location.href = '/trv/trivia/' + data.data.token;
                         })
                         .catch(error => console.log(error));
+                },
+                openRandomTriviaModal() {
+                    let title = 'Create Auto Generated Trivia';
+
+                    //create form for modal body to submit request to create trivia from all available questions in category
+                    let form = document.createElement('form');
+                    form.setAttribute('method', 'POST');
+                    form.setAttribute('action', '/trv/trivia/random');
+                    form.setAttribute('id', 'random-trivia-form');
+                    form.setAttribute('class', 'flex flex-row flex-wrap justify-center w-full');
+
+                    //create div to hold trivia title and description
+                    let triviaInfoDiv = document.createElement('div');
+                    triviaInfoDiv.setAttribute('class', 'flex flex-col w-full md:w-4/6 px-2');
+
+                    //create input for trivia title
+                    let titleInput = document.createElement('input');
+                    titleInput.setAttribute('type', 'text');
+                    titleInput.setAttribute('name', 'title');
+                    titleInput.setAttribute('id', 'title');
+                    titleInput.setAttribute('placeholder', 'Trivia Title');
+                    titleInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
+
+                    //create input for trivia description
+                    let descriptionInput = document.createElement('input');
+                    descriptionInput.setAttribute('type', 'text');
+                    descriptionInput.setAttribute('name', 'description');
+                    descriptionInput.setAttribute('id', 'description');
+                    descriptionInput.setAttribute('placeholder', 'Trivia Description');
+                    descriptionInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
+
+                    triviaInfoDiv.appendChild(titleInput);
+                    triviaInfoDiv.appendChild(descriptionInput);
+
+                    //create input for trivia category
+                    let categoryInput = document.createElement('select');
+                    categoryInput.setAttribute('name', 'category');
+                    categoryInput.setAttribute('id', 'category');
+                    categoryInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
+
+                    //create options for category input
+                    let anyCategoryOption = document.createElement('option');
+                    anyCategoryOption.setAttribute('value', '23');
+                    anyCategoryOption.innerText = 'Any Category';
+
+                    //append options to category input
+                    categoryInput.appendChild(anyCategoryOption);
+
+                    let categoryOptions = [
+                            @foreach($categories as $cat)
+                        {
+                            'id' : {{ $cat['id'] }},
+                            'name' : '{{ $cat['name'] }}',
+                        },
+                        @endforeach
+                    ];
+
+                    categoryOptions.forEach(category => {
+                        let option = document.createElement('option');
+                        option.setAttribute('value', category.id);
+                        option.innerText = category.name;
+                        categoryInput.appendChild(option);
+                    });
+
+                    triviaInfoDiv.appendChild(categoryInput);
+
+                    //create input for trivia difficulty
+                    let difficultyInput = document.createElement('select');
+                    difficultyInput.setAttribute('name', 'difficulty');
+                    difficultyInput.setAttribute('id', 'difficulty');
+                    difficultyInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
+
+                    //create options for difficulty input
+
+                    let anyOption = document.createElement('option');
+                    anyOption.setAttribute('value', 'any');
+                    anyOption.innerText = 'Any Difficulty';
+
+                    let easyOption = document.createElement('option');
+                    easyOption.setAttribute('value', 'easy');
+                    easyOption.innerText = 'Easy';
+
+                    let mediumOption = document.createElement('option');
+                    mediumOption.setAttribute('value', 'medium');
+                    mediumOption.innerText = 'Medium';
+
+                    let hardOption = document.createElement('option');
+                    hardOption.setAttribute('value', 'hard');
+                    hardOption.innerText = 'Hard';
+
+                    //append options to difficulty input
+                    difficultyInput.appendChild(anyOption);
+                    difficultyInput.appendChild(easyOption);
+                    difficultyInput.appendChild(mediumOption);
+                    difficultyInput.appendChild(hardOption);
+
+                    //add question count input
+                    let questionCountInput = document.createElement('input');
+                    questionCountInput.setAttribute('type', 'number');
+                    questionCountInput.setAttribute('name', 'question_count');
+                    questionCountInput.setAttribute('id', 'question_count');
+                    questionCountInput.setAttribute('placeholder', 'Number of Questions');
+                    questionCountInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
+
+
+                    triviaInfoDiv.appendChild(difficultyInput);
+                    triviaInfoDiv.appendChild(questionCountInput);
+
+                    //create input for csrf token for submit form
+                    let csrfInput = document.createElement('input');
+                    csrfInput.setAttribute('type', 'hidden');
+                    csrfInput.setAttribute('name', '_token');
+                    csrfInput.setAttribute('id', '_token');
+                    csrfInput.setAttribute('value', '{{ csrf_token() }}');
+
+                    //create submit button
+                    let submitButton = document.createElement('button');
+                    submitButton.setAttribute('type', 'submit');
+                    submitButton.setAttribute('class', 'py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold');
+                    submitButton.innerText = 'Create Trivia';
+
+                    triviaInfoDiv.appendChild(submitButton);
+
+                    //form.appendChild(categoryInput);
+                    form.appendChild(csrfInput);
+                    form.appendChild(triviaInfoDiv);
+
+                    GameApi.openModal('game-modal', title, form);
                 }
             },
             computed: {
@@ -371,42 +491,6 @@
     </script>
 
     <script>
-        function startTriviaGame(triviaId) {
-
-            //create POST fetch request to /trv/trivia with passing triviaID in post body
-            fetch('/trv/trivia', {
-                'method': 'POST',
-                'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN' : '{{ csrf_token() }}' },
-                'body': JSON.stringify({'trivia_id': triviaId})
-            })
-                .then(response => response.json())
-                .then(data => {
-
-                    if (data.status == false) {
-                        alert(data.message);
-                        return;
-                    }
-                    console.log(typeof GameApi)
-                    console.log(GameApi);
-                    GameApi.addGameInstance(data.data.token, data.data);
-
-                    console.log(data);
-                    window.location.href = '/trv/trivia/' + data.data.token;
-                })
-                .catch(error => console.log(error));
-
-            /*
-            fetch('/trv/trivia' + triviaId, {'method': 'POST', 'headers': {'Content-Type': 'application/json'}, 'data'})
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    alert('Trivia Started');
-                    //window.location.href = '/trv/' + triviaId;
-                })
-                .catch(error => console.log(error));
-
-             */
-        }
 
         function expandCategory(categoryId) {
 
@@ -464,6 +548,7 @@
             }
         }
 
+        /*
         function openRandomTriviaModal(categoryId, categoryName) {
             let title = 'Create Random Trivia - ' + categoryName + ' Category';
 
@@ -567,6 +652,7 @@
 
             GameApi.openModal('game-modal', title, form);
         }
+        */
 
 
         function switchVisibleSection(sectionName = 'categories')
