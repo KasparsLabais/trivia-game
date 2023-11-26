@@ -72,7 +72,7 @@
             </div>
             <div class="bg-slate-200 px-6 py-8">
                 <span class="fira-sans font-semibold text-xl my-2">Join:</span>
-                <div class="flex flex-row justify-center" id="qrcode"></div>
+
                 <span class="flex flex-row justify-center my-4">OR</span>
                 <h2 class="fira-sans flex flex-row justify-center"><span>https://is-a.gay/join/{{ $gameInstance['token'] }}</span></h2>
                 @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
@@ -157,7 +157,7 @@
     <script>
 
         var qrcode = new QRCode("qrcode", {
-            text: "https://is-a.gay/join/{{ $gameInstance['token'] }}",
+            text: "https://quizcrave.com/join/{{ $gameInstance['token'] }}",
             width: 128,
             height: 128,
             colorDark : "#000000",
@@ -277,6 +277,7 @@
                         questions: @json($questions->load('answers')),
                         playerInstances: @json($playerInstances),
                         gameInstanceSettings: @json($gameInstance['gameInstanceSettings']),
+                        pin: {{ $gameInstance['pin'] }},
                     },
                     selectedQuestionId: null,
                     pointsPerQuestion: 2,

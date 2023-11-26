@@ -54,6 +54,12 @@
 
     <div v-else class="text-center flex flex-col justify-center h-full">
         <!-- add some waiting animation here -->
-        <h1 class="text-4xl josefin-sans text-yellow-500 ">Waiting for first question to load!</h1>
+        <h1 class="text-4xl josefin-sans text-slate-200 ">Waiting for players!</h1>
+        <h2 class="text-6xl josefin-sans text-yellow-500">PIN: [[game.pin]]</h2>
+        <div class="flex flex-col justify-center px-4 py-4">
+            <div class="flex flex-row justify-center" id="qrcode"></div>
+            <span class="flex flex-row justify-center my-4 text-slate-200 text-xl">OR</span>
+            <h2 class="fira-sans flex flex-row justify-center text-slate-200 text-2xl"><span>https://quizcrave.com/join/{{ $gameInstance['token'] }}</span></h2>
+        </div>
     </div>
 </div>
