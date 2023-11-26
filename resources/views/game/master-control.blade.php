@@ -10,15 +10,18 @@
         </div>
 
         <div id="master-layout_center" class="w-6/12 bg-zinc-700">
-            <div class="h-1/2 bg-zinc-700">
+            <div class="bg-zinc-700 h-3/6">
                 @include('trivia-game::game.widgets.question')
             </div>
-            <div class="h-1/2  bg-zinc-600">
+            <div class="bg-zinc-600 h-3/6">
                 @include('trivia-game::game.widgets.players')
             </div>
         </div>
 
         <div id="master-layout_right" class="w-3/12 bg-slate-200">
+            <div>
+                @include('trivia-game::game.widgets.settings')
+            </div>
             <div>
                 @include('trivia-game::game.widgets.leaderboard')
             </div>
@@ -27,6 +30,9 @@
             </div>
         </div>
     </div>
+
+
+
 
 
     @include('trivia-game::game.partials.scripts')
@@ -189,9 +195,12 @@
             window.location.href = '/trv/trivia/' + e.detail.gameToken;
         });
 
+        /*
         document.addEventListener('playerJoined', (e) => {
             playerJoined(game);
         });
+
+         */
 
         const callbackGameInstanceUpdated = (gameToken, game, action) => {
             console.log('game instance updated');
@@ -204,35 +213,6 @@
                     break;
             }
         }
-
-        const changeAccessibility = (accessibility) => {
-            console.log('change accessibility', accessibility);
-            fetch('/trv/trivia/{{ $gameInstance['token'] }}/accessibility', {'method' : 'POST', 'body': JSON.stringify({'accessibility':accessibility}), 'headers' : {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    if(data.success) {
-                        let accessibilitySettings = document.getElementsByClassName('accessibility-setting');
-                        for(let i = 0; i < accessibilitySettings.length; i++) {
-                            accessibilitySettings[i].classList.remove('bg-lime-500');
-                            accessibilitySettings[i].classList.remove('text-gray-100');
-                            accessibilitySettings[i].classList.remove('hover:bg-lime-500');
-                            accessibilitySettings[i].classList.remove('hover:text-gray-100');
-                            accessibilitySettings[i].classList.add('bg-slate-300');
-                            accessibilitySettings[i].classList.add('text-gray-400');
-                        }
-                        let accessibilitySetting = document.querySelector('[data-accessibility="' + accessibility + '"]');
-                        accessibilitySetting.classList.remove('bg-slate-300');
-                        accessibilitySetting.classList.remove('text-gray-400');
-                        accessibilitySetting.classList.add('bg-lime-500');
-                        accessibilitySetting.classList.add('text-gray-100');
-                        accessibilitySetting.classList.add('hover:bg-lime-500');
-                        accessibilitySetting.classList.add('hover:text-gray-100');
-                    }
-                })
-                .catch(error => console.log(error));
-        }
-
 
         const changePlayerLimit = () => {
 
@@ -283,6 +263,13 @@
                     pointsPerQuestion: 2,
                     pointsPerIncorrectAnswer: 0,
                     bonusForSpeed: 2,
+                    settings: {
+                        timeLimitEnabled: @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 1 ) 1 @else 0 @endif,
+                        timePerQuestion: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'time_per_question')) {{ GameApi::getGameInstanceSettings($gameInstance['token'], 'time_per_question') }} @else 0 @endif,
+                        playerLimitEnabled: @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'player_limit_enabled') == 1 ) 1 @else 0 @endif,
+                        playerLimit: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'player_limit')) {{ GameApi::getGameInstanceSettings($gameInstance['token'], 'player_limit') }} @else 0 @endif,
+                        accessibility: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == 'private' OR GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == '' ) 'private' @else 'public' @endif,
+                    },
                 }
             },
             delimiters: ['[[', ']]'],
@@ -294,6 +281,29 @@
                 selectQuestion(questionId) {
                     this.selectedQuestionId = questionId;
                 },
+                changeAccessibility(accessibilityType)  {
+                    console.log('change accessibility', accessibilityType);
+                    fetch('/trv/trivia/{{ $gameInstance['token'] }}/accessibility', {'method' : 'POST', 'body': JSON.stringify({'accessibility':accessibilityType}), 'headers' : {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            if(data.success) {
+                                this.settings.accessibility = accessibilityType;
+                            }
+                        })
+                        .catch(error => console.log(error));
+                },
+                changePlayerLimit() {
+                    if (this.settings.playerLimitEnabled == 1 && this.settings.playerLimit <= 0) {
+                        GameApi.triggerAlertNotification('{{ $gameInstance['token'] }}', 'player', 'error', 'Player limit must be greater than 0', window.id );
+                        return;
+                    }
+
+                    playerLimit = (this.settings.playerLimitEnabled == 1) ? this.settings.playerLimit : 0;
+
+                    GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'player_limit_enabled', this.settings.playerLimitEnabled);
+                    GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'player_limit', playerLimit);
+                }
             },
             computed: {
                 selectedQuestion() {
@@ -302,10 +312,12 @@
                     }
                     return this.game.questions.find(question => question.id === this.selectedQuestionId);
                 },
-                //still in progress
                 playerCount() {
-                    return this.game.playerInstances.length;
+                    return Object.keys(this.game.playerInstances).length;
                 },
+
+
+                //still in progress
                 playerLimit() {
                     return this.game.gameInstanceSettings.player_limit;
                 },
