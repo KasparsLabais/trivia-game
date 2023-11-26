@@ -95,6 +95,29 @@ class TriviaController
         $gameInstance = $response['gameInstance'];
         $remoteData = json_decode($response['gameInstance']['remote_data'], true);
 
+
+        if (Auth::check() && Auth::user()->id == $gameInstance['user_id']) {
+
+            if($remoteData['is_temporary'] == 1) {
+                $trivia = TmpTrivia::find($remoteData['trivia_id']);
+            } else {
+                $trivia = Trivia::find($remoteData['trivia_id']);
+            }
+
+            $leaderboard = GameApi::getLeaderboard($gameToken);
+
+            $returnObject = [
+                'gameInstance' => $gameInstance,
+                'trivia' => $trivia,
+                'questions' => $trivia->questions,
+                'leaderboard' => $leaderboard,
+            ];
+
+            return view('trivia-game::game.master-control')->with($returnObject);
+        }
+
+
+
         if ($gameInstance['status'] == 'created') {
 
             // check if this is not temporary trivia game
@@ -102,11 +125,6 @@ class TriviaController
                 $trivia = TmpTrivia::find($remoteData['trivia_id']);
             } else {
                 $trivia = Trivia::find($remoteData['trivia_id']);
-            }
-
-
-            if (Auth::check() && Auth::user()->id == $gameInstance['user_id']) {
-                return view('trivia-game::game.start')->with(['gameInstance' => $gameInstance, 'trivia' => $trivia]);
             }
 
             return view('trivia-game::game.start-player')->with(['gameInstance' => $gameInstance, 'trivia' => $trivia]);
