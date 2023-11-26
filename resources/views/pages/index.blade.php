@@ -46,7 +46,7 @@
         <x-section title="">
             <div id="category-holder"  class="flex flex-col">
                 <div v-for="trivia in selectedTriviasByCategoryAndDifficulty">
-                    <div class="md:hidden flex flex-row mx-2 py-4 border-2 border-slate-300 bg-slate-300 mb-2">
+                    <div class="flex flex-row mx-2 py-4 border-2 border-slate-300 bg-slate-300 mb-2">
                         <div class="raleway flex flex-col justify-center px-4 w-3/6">
                             <span class="font-semibold ">[[ trivia.title ]] ([[ trivia.questions ]])  <span v-if="trivia.private" class="text-rose-600">Private</span> </span>
                             <div class="font-normal fira-sans flex flex-row">

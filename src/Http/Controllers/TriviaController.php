@@ -105,9 +105,21 @@ class TriviaController
             }
 
             $leaderboard = GameApi::getLeaderboard($gameToken);
+            $playerInstance = [];
+
+            foreach($gameInstance->playerInstances as $player) {
+                $player->load('user');
+                $player->user->load('iconFlair');
+
+                $playerInstance[$player->user_id] = $player;
+            }
+
+            //= $gameInstance->playerInstances->load('user')->load('iconFlair');
+//dd($playerInstance);
 
             $returnObject = [
                 'gameInstance' => $gameInstance,
+                'playerInstances' => $playerInstance,
                 'trivia' => $trivia,
                 'questions' => $trivia->questions,
                 'leaderboard' => $leaderboard,
