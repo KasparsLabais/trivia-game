@@ -36,6 +36,12 @@
                     Show Correct Answer
                 </button>
             </div>
+            <!-- button to show team that answered first and correctly -->
+            <div class="px-2">
+                <button class="py-2 px-4 shadow-md bg-violet-600 text-left text-slate-100 text-xl font-semibold mb-2 rounded" @click="showWinningTeam()">
+                    Show Winner
+                </button>
+            </div>
         </div>
     </div>
 

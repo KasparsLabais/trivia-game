@@ -174,42 +174,20 @@
                     GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'time_per_question', this.settings.timePerQuestion);
                 },
                 showCorrectAnswer() {
-
                     this.showCorrectAnswerEnabled = true;
-                    /*
-                    if (this.selectedQuestionId === null) {
-                        return null;
-                    }
 
                     let currentQuestion = this.selectedQuestion;
                     console.log('show correct answer', currentQuestion);
 
                     currentQuestion.answers.forEach((answer) => {
                         console.log(answer);
-                        let answerHolder = document.querySelector('.answer-holder button[answer-id="' + answer.id + '"]');
                         if (answer.is_correct) {
-                            answerHolder.classList.remove('bg-lime-600');
-                            answerHolder.classList.add('bg-violet-500');
-                        } else {
-                            //answerHolder.classList.remove('bg-lime-600');
-                            //answerHolder.classList.add('bg-slate-200');
+                            GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'answer-id': answer.id}, 'action': 'showCorrectAnswer'});
                         }
                     });
-                    */
-                    /*
-                    fetch('/trv/trivia/{{ $gameInstance['token'] }}/correct', {'question' : currentQuestion})
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log(data);
-                            if(data.success) {
-                                let answerHolder = document.querySelector('.answer-holder .flex[answer-id="' + data.data.answer.id + '"] button');
-                                answerHolder.classList.remove('bg-lime-500');
-                                answerHolder.classList.add('bg-violet-500');
+                },
+                showWinningTeam() {
 
-                                GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'answer-id': data.data.answer.id}, 'action': 'showCorrectAnswer'});
-                            }
-                        })
-                        */
                 }
             },
             computed: {
