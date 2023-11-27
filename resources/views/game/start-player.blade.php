@@ -40,10 +40,10 @@
                     @foreach($gameInstance['playerInstances'] as $player)
                         <div class="flex flex-row py-2 px-2 w-1/3">
                             <div class="flex flex-col bg-zinc-700 rounded-md shadow-zinc-700">
-                                <div style="background-image: url('@if(is_null($player->user->avatar)) /images/default-avatar.jpg @else{{$player->user->avatar}}@endif')" class="flex flex-row w-full justify-center relative bg-gray-600 h-16 bg-cover	bg-center bg-no-repeat">
+                                <div style="background-image: url('@if($player->user_type == 'guest' || is_null($player->user->avatar)) /images/default-avatar.jpg @else{{$player->user->avatar}}@endif')" class="flex flex-row w-full justify-center relative bg-gray-600 h-16 bg-cover	bg-center bg-no-repeat">
                                 </div>
                                 <div class="flex flex-col px-2 py-2">
-                                    <div class="raleway text-slate-200 font-bold">{{ $player->user->username }}</div>
+                                    <div class="raleway text-slate-200 font-bold">@if($player->user_type == 'guest') {{  $player->tmpUser->username }}  @else {{  $player->user->username }} @endif</div>
                                 </div>
                             </div>
                         </div>

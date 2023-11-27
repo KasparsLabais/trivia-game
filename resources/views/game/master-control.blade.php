@@ -90,17 +90,6 @@
             }
         }
 
-        $('document').ready(function() {
-            $('#time_limit_enabled').change(function() {
-                console.log('time limit enabled changed');
-                GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'time_limit_enabled', document.getElementById('time_limit_enabled').value);
-            });
-
-            $('#time_per_question').change(function() {
-                console.log('time per question changed');
-                GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'time_per_question', document.getElementById('time_per_question').value);
-            });
-        });
     </script>
 
 
@@ -117,11 +106,13 @@
                         playerInstances: @json($playerInstances),
                         gameInstanceSettings: @json($gameInstance['gameInstanceSettings']),
                         pin: {{ $gameInstance['pin'] }},
+                        gameStatus: 'created',
                     },
+                    selectedView: 'question',
                     selectedQuestionId: null,
-                    pointsPerQuestion: 2,
-                    pointsPerIncorrectAnswer: 0,
-                    bonusForSpeed: 2,
+                    pointsPerQuestion: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'points_per_question')) {{ GameApi::getGameInstanceSettings($gameInstance['token'], 'points_per_question') }} @else 2 @endif,
+                    pointsPerIncorrectAnswer: @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 1 ) 1 @else 0 @endif,
+                    bonusForSpeed: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'bonus_for_speed')) {{ GameApi::getGameInstanceSettings($gameInstance['token'], 'bonus_for_speed') }} @else 2 @endif,
                     showCorrectAnswerEnabled: false,
                     settings: {
                         timeLimitEnabled: @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 1 ) 1 @else 0 @endif,
@@ -141,6 +132,9 @@
                 selectQuestion(questionId) {
                     this.showCorrectAnswerEnabled = false;
                     this.selectedQuestionId = questionId;
+                },
+                deselectQuestion() {
+                    this.selectedQuestionId = null;
                 },
                 changeAccessibility(accessibilityType)  {
                     console.log('change accessibility', accessibilityType);
@@ -173,6 +167,14 @@
                     console.log('time per question changed');
                     GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'time_per_question', this.settings.timePerQuestion);
                 },
+                changePointsPerQuestions() {
+                    console.log('points per question changed');
+                    GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'points_per_question', this.pointsPerQuestion);
+                },
+                changeBonusForSpeed() {
+                    console.log('bonus for speed changed');
+                    GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'bonus_for_speed', this.bonusForSpeed);
+                },
                 showCorrectAnswer() {
                     this.showCorrectAnswerEnabled = true;
 
@@ -187,7 +189,32 @@
                     });
                 },
                 showWinningTeam() {
+                    this.selectedView = 'winner';
+                },
+                showQuestionView() {
+                    this.selectedView = 'question';
+                },
+                startQuestion() {
+                    console.log('start question');
 
+                    if (this.game.gameStatus == 'created') {
+                        this.changeTriviaToStarted();
+                    }
+
+                    GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {}, 'action': 'startQuestion'});
+                },
+                changeTriviaToStarted() {
+                    fetch('/trv/start', {'method': 'POST', 'headers': {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'gameToken': '{{ $gameInstance['token'] }}'})})
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            if(data.success) {
+                                GameApi.updateGameInstance('{{ $gameInstance['token'] }}', data.data.gameInstance, 'gameStarted');
+                            } else {
+                                alert(data.message);
+                            }
+                        })
+                        .catch(error => console.log(error));
                 }
             },
             computed: {
@@ -200,6 +227,13 @@
                 playerCount() {
                     return Object.keys(this.game.playerInstances).length;
                 },
+
+
+
+
+
+
+
 
 
                 //still in progress

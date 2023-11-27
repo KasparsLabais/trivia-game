@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use PartyGames\GameApi\GameApi;
 use PartyGames\GameApi\Models\Game;
+use PartyGames\GameApi\Models\TmpUsers;
 use PartyGames\TriviaGame\Models\TmpTrivia;
 use PartyGames\TriviaGame\Models\TmpQuestions;
 use PartyGames\TriviaGame\Models\Categories;
@@ -108,14 +109,42 @@ class TriviaController
             $playerInstance = [];
 
             foreach($gameInstance->playerInstances as $player) {
-                $player->load('user');
-                $player->user->load('iconFlair');
 
-                $playerInstance[$player->user_id] = $player;
+                $tmpUser = [];
+
+                if($player->user_type == 'player') {
+                    $player->load('user')->load('iconFlair');
+                    $playerInstance[$player->user_id] = $player;
+
+                    $tmpUser = [
+                        'id' => $player->id,
+                        'user_id' => $player->user_id,
+                        'username' => $player->user->name,
+                        'avatar' => $player->user->avatar,
+                        'icon_flair' => '',
+                        'points' => $player->points,
+                        'user_type' => $player->user_type,
+                        'remote_data' => json_decode($player->remote_data, true),
+                    ];
+                } else {
+                    $player->load('tmpUser');
+                //    $playerInstance[$player->user_id] = $player;
+                    $tmpUser = [
+                        'id' => $player->id,
+                        'user_id' => $player->user_id,
+                        'tmp_user_id' => $player->tmpUser->id,
+                        'username' => $player->tmpUser->username,
+                        'avatar' => '/images/default-avatar.jpg',
+                        'icon_flair' => '',
+                        'points' => $player->points,
+                        'user_type' => $player->user_type,
+                        'remote_data' => json_decode($player->remote_data, true),
+                    ];
+                }
+
+                $playerInstance[$player->user_id] = $tmpUser;
             }
 
-            //= $gameInstance->playerInstances->load('user')->load('iconFlair');
-//dd($playerInstance);
 
             $returnObject = [
                 'gameInstance' => $gameInstance,
@@ -139,7 +168,16 @@ class TriviaController
                 $trivia = Trivia::find($remoteData['trivia_id']);
             }
 
-            return view('trivia-game::game.start-player')->with(['gameInstance' => $gameInstance, 'trivia' => $trivia]);
+            //$tmpPlayer =
+
+            if (Auth::check()) {
+                $playerInstance['playerInstance']['user'] = Auth::user();
+            } else {
+                $playerInstance['playerInstance']['user'] = TmpUsers::where('tmp_user_id',Session::get('tmp-user-id'))->first();
+            }
+
+            $trivia->load('category');
+            return view('trivia-game::game.player-control')->with(['gameInstance' => $gameInstance, 'trivia' => $trivia, 'player' => $playerInstance['playerInstance']]);
         }
 
         if ($gameInstance['status'] == 'completed') {
