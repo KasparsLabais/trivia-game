@@ -33,131 +33,7 @@
 
 
 
-
-
     @include('trivia-game::game.partials.scripts')
-    <div class="flex flex-row justify-center px-4 md:px-none">
-        <div class="flex flex-col">
-            <div class="bg-slate-200 px-6 py-8">
-                <h1 class="fira-sans font-semibold text-2xl border-b border-slate-300 my-2">{{ $trivia['title'] }} (PIN: {{ $gameInstance['pin'] }} )</h1>
-                <p class="fira-sans font-normal mb-4">{{ $trivia['description'] }}</p>
-                <div class="flex flex-row justify-between">
-                    <div>
-                        <span class="raleway font-normal text-base">Category:</span>
-                        <span class="raleway font-normal text-base capitalize">{{ $trivia->category->name }}</span>
-                    </div>
-                    <div>
-                        <span class="raleway font-normal text-base">Difficulty:</span>
-                        <span class="raleway font-normal text-base capitalize @if($trivia['difficulty'] == 'medium') text-amber-700 @elseif($trivia['difficulty'] == 'hard') text-red-700 @else text-lime-600	 @endif">{{ $trivia['difficulty'] }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-slate-100 px-6 py-8">
-                <span class="fira-sans font-semibold text-xl my-2">Joined Players:</span>
-                <div id="player-holder">
-                    @foreach($gameInstance['playerInstances'] as $player)
-                        @if($player['user_id'] == $gameInstance['user_id'])
-                            <div class="flex flex-row py-2">
-                                <img src="@if(is_null($player->user->avatar)) /images/default-avatar.jpg @else{{$player->user->avatar}}@endif" class="w-14 h-14 rounded-full shadow-md border-2 border-slate-500" alt="avatar" />
-                                <div class="flex flex-col px-2">
-                                    <div class="raleway">{{ $player->user->username }}</div>
-                                    <div class="raleway">Host</div>
-                                </div>
-                            </div>
-                        @else
-                            <div class="flex flex-row py-2">
-                                <img src="@if(is_null($player->user->avatar)) /images/default-avatar.jpg @else{{$player->user->avatar}}@endif" class="w-14 h-14 rounded-full shadow-md border-2 border-slate-500" alt="avatar" />
-                                <div class="flex flex-col px-2">
-                                    <div class="raleway">{{ $player->user->username }}</div>
-                                    <div class="raleway">(Player)</div>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
-            <div class="bg-slate-200 px-6 py-8">
-                <span class="fira-sans font-semibold text-xl my-2">Join:</span>
-
-                <span class="flex flex-row justify-center my-4">OR</span>
-                <h2 class="fira-sans flex flex-row justify-center"><span>https://is-a.gay/join/{{ $gameInstance['token'] }}</span></h2>
-                @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
-                    <span class="fira-sans font-semibold text-xl my-2">Settings:</span>
-                    <div class="border-b border-b-slate-300 pb-4">
-                        <div>
-                            <span>Time Settings</span>
-                        </div>
-                        <div class="flex flex-row justify-between w-full">
-                            <div class="flex flex-row w-3/6">
-                                <label class="raleway font-normal text-base" for="time_limit_enabled">Enabled:</label>
-                                <select class="raleway font-normal text-base capitalize" name="time_limit_enabled" id="time_limit_enabled">
-                                    <option value="1" @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 1 ) selected="selected" @endif>True</option>
-                                    <option value="0" @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 0 ) selected="selected" @endif>False</option>
-                                </select>
-                            </div>
-                            <div class="flex flex-row w-3/6">
-                                <label class="raleway font-normal text-base w-4/6" for="time_per_question">Time Per Question (s):</label>
-                                <input type="number" step="1" min="0" class="text-center raleway font-normal text-base capitalize w-1/6" value="{{ GameApi::getGameInstanceSettings($gameInstance['token'], 'time_per_question') }}" name="time_per_question" id="time_per_question" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="border-b border-b-slate-300 pb-4">
-                        <div>
-                            <span>Player Limit</span>
-                        </div>
-                        <div class="flex flex-row justify-between w-full">
-                            <div class="flex flex-row w-3/6">
-                                <label class="raleway font-normal text-base" for="player_limit_enabled">Enabled:</label>
-                                <select onchange="changePlayerLimit()" class="raleway font-normal text-base capitalize" name="player_limit_enabled" id="player_limit_enabled">
-                                    <option value="1" @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'player_limit_enabled') == 1 ) selected="selected" @endif>True</option>
-                                    <option value="0" @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'player_limit_enabled') == 0 ) selected="selected" @endif>False</option>
-                                </select>
-                            </div>
-                            <div class="flex flex-row w-3/6">
-                                <label class="raleway font-normal text-base w-4/6" for="time_per_question">Player Limit:</label>
-                                <input type="number" step="1" min="0" class="text-center raleway font-normal text-base capitalize w-1/6" value="{{ GameApi::getGameInstanceSettings($gameInstance['token'], 'player_limit') }}" name="player_limit" id="player_limit" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="border-b border-b-slate-300 pb-4">
-                        <div>
-                            <span>Trivia Accessibility</span>
-                        </div>
-                        <div class="flex flex-row justify-between w-full">
-                            <div class="flex flex-row w-full">
-                                <div class="w-full flex flex-row shadow-inner rounded bg-slate-300 py-2 px-2">
-                                    <div class="px-1 w-1/3">
-                                        <div onclick="changeAccessibility('private')" data-accessibility="private" class="accessibility-setting text-center px-2 py-2 rounded font-semibold  shadow @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == 'private' OR GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == '' ) bg-lime-500 text-gray-100 @else bg-slate-300 text-gray-400 hover:bg-lime-500 hover:text-gray-100 @endif">
-                                            Only By Link
-                                        </div>
-                                    </div>
-                                    <div class="px-1 w-1/3">
-                                        <div onclick="changeAccessibility('public')" data-accessibility="public" class="accessibility-setting text-center px-2 py-2 rounded font-semibold shadow @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == 'public') bg-lime-500 text-gray-100 @else bg-slate-300 text-gray-400 hover:bg-lime-500 hover:text-gray-100 @endif">
-                                            Open Access
-                                        </div>
-                                    </div>
-                                    <!--
-                                    <div class="px-1 w-1/3">
-                                        <div class="text-center bg-slate-300 px-2 py-2 rounded font-semibold text-gray-400 shadow">
-                                            Password Protected
-                                        </div>
-                                    </div>
-                                    -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-            </div>
-            <div class="bg-slate-300 px-6 py-8">
-                @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
-                    <button class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="startTriviaGame()">Start Game</button>
-                @else
-                    <h2 class="text-center">Wait for game to start!</h2>
-                @endif
-            </div>
-        </div>
-    </div>
 
     <script src="/vendor/trivia-game/js/qrcode.min.js"></script>
     <script>
@@ -171,7 +47,7 @@
             correctLevel : QRCode.CorrectLevel.H
         });
 
-        GameApi.joinRoom('{{ $gameInstance['token'] }}');
+
 
         const startTriviaGame = () => {
             GameApi.updateGameInstanceSettings('{{ $gameInstance['token'] }}', 'time_limit_enabled', document.getElementById('time_limit_enabled').value);
@@ -214,23 +90,6 @@
             }
         }
 
-        const changePlayerLimit = () => {
-
-            let status = document.getElementById('player_limit_enabled').value;
-            let playerLimit = document.getElementById('player_limit').value;
-
-            if (status == 1 && playerLimit <= 0) {
-                GameApi.triggerAlertNotification('{{ $gameInstance['token'] }}', 'player', 'error', 'Player limit must be greater than 0', window.id );
-                return;
-            }
-
-            playerLimit = (status == 1) ? playerLimit : 0;
-
-            GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'player_limit_enabled', status);
-            GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'player_limit', playerLimit);
-        }
-
-
         $('document').ready(function() {
             $('#time_limit_enabled').change(function() {
                 console.log('time limit enabled changed');
@@ -263,6 +122,7 @@
                     pointsPerQuestion: 2,
                     pointsPerIncorrectAnswer: 0,
                     bonusForSpeed: 2,
+                    showCorrectAnswerEnabled: false,
                     settings: {
                         timeLimitEnabled: @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 1 ) 1 @else 0 @endif,
                         timePerQuestion: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'time_per_question')) {{ GameApi::getGameInstanceSettings($gameInstance['token'], 'time_per_question') }} @else 0 @endif,
@@ -279,6 +139,7 @@
                     this.game.playerInstances = game.playerInstances;
                 },
                 selectQuestion(questionId) {
+                    this.showCorrectAnswerEnabled = false;
                     this.selectedQuestionId = questionId;
                 },
                 changeAccessibility(accessibilityType)  {
@@ -303,6 +164,52 @@
 
                     GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'player_limit_enabled', this.settings.playerLimitEnabled);
                     GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'player_limit', playerLimit);
+                },
+                changeTimeLimitEnabled() {
+                    console.log('time limit enabled changed');
+                    GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'time_limit_enabled', this.settings.timeLimitEnabled);
+                },
+                changeTimeLimit() {
+                    console.log('time per question changed');
+                    GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'time_per_question', this.settings.timePerQuestion);
+                },
+                showCorrectAnswer() {
+
+                    this.showCorrectAnswerEnabled = true;
+                    /*
+                    if (this.selectedQuestionId === null) {
+                        return null;
+                    }
+
+                    let currentQuestion = this.selectedQuestion;
+                    console.log('show correct answer', currentQuestion);
+
+                    currentQuestion.answers.forEach((answer) => {
+                        console.log(answer);
+                        let answerHolder = document.querySelector('.answer-holder button[answer-id="' + answer.id + '"]');
+                        if (answer.is_correct) {
+                            answerHolder.classList.remove('bg-lime-600');
+                            answerHolder.classList.add('bg-violet-500');
+                        } else {
+                            //answerHolder.classList.remove('bg-lime-600');
+                            //answerHolder.classList.add('bg-slate-200');
+                        }
+                    });
+                    */
+                    /*
+                    fetch('/trv/trivia/{{ $gameInstance['token'] }}/correct', {'question' : currentQuestion})
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            if(data.success) {
+                                let answerHolder = document.querySelector('.answer-holder .flex[answer-id="' + data.data.answer.id + '"] button');
+                                answerHolder.classList.remove('bg-lime-500');
+                                answerHolder.classList.add('bg-violet-500');
+
+                                GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'answer-id': data.data.answer.id}, 'action': 'showCorrectAnswer'});
+                            }
+                        })
+                        */
                 }
             },
             computed: {
@@ -400,8 +307,7 @@
                     this.playerJoined(game);
                 });
 
-
-
+                GameApi.joinRoom('{{ $gameInstance['token'] }}');
                 //GameApi.registerCallbackGameInstanceUpdated(callbackGameInstanceUpdated);
                 //GameApi.registerCallbackPlayerJoined(this.playerJoined);
             }

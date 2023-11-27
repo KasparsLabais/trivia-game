@@ -9,14 +9,14 @@
             <div class="flex flex-row justify-between w-full">
                 <div class="flex flex-row w-3/6">
                     <label class="raleway font-normal text-base" for="time_limit_enabled">Enabled:</label>
-                    <select class="raleway font-normal text-base capitalize" name="time_limit_enabled" id="time_limit_enabled" v-model="settings.timeLimitEnabled">
+                    <select v-on:change="changeTimeLimitEnabled()" class="raleway font-normal text-base capitalize" name="time_limit_enabled" id="time_limit_enabled" v-model="settings.timeLimitEnabled">
                         <option value="1">True</option>
                         <option value="0">False</option>
                     </select>
                 </div>
                 <div class="flex flex-row w-3/6">
                     <label class="raleway font-normal text-base w-4/6" for="time_per_question">Time (s):</label>
-                    <input type="number" step="1" min="0" class="text-center raleway font-normal text-base capitalize w-2/6" v-model="settings.timePerQuestion" name="time_per_question" id="time_per_question" />
+                    <input v-on:change="changeTimeLimit()" type="number" step="1" min="0" class="text-center raleway font-normal text-base capitalize w-2/6" v-model="settings.timePerQuestion" name="time_per_question" id="time_per_question" />
                 </div>
             </div>
         </div>
@@ -35,7 +35,7 @@
                 </div>
                 <div class="flex flex-row w-3/6">
                     <label class="raleway font-normal text-base w-4/6" for="time_per_question">Player Limit:</label>
-                    <input type="number" step="1" min="0" class="text-center raleway font-normal text-base capitalize w-2/6" v-model="settings.playerLimit" name="player_limit" id="player_limit" />
+                    <input v-on:change="changePlayerLimit()" type="number" step="1" min="0" class="text-center raleway font-normal text-base capitalize w-2/6" v-model="settings.playerLimit" name="player_limit" id="player_limit" />
                 </div>
             </div>
         </div>
