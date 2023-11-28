@@ -32,9 +32,6 @@
     </div>
 
 
-
-    @include('trivia-game::game.partials.scripts')
-
     <script src="/vendor/trivia-game/js/qrcode.min.js"></script>
     <script>
 
@@ -64,12 +61,6 @@
                 })
                 .catch(error => console.log(error));
         }
-
-        //TODO: Convert callbackGameInstanceUpdated to event listener
-        document.addEventListener('gameStarted', (e) => {
-            console.log(e);
-            window.location.href = '/trv/trivia/' + e.detail.gameToken;
-        });
 
         /*
         document.addEventListener('playerJoined', (e) => {
@@ -106,7 +97,7 @@
                         playerInstances: @json($playerInstances),
                         gameInstanceSettings: @json($gameInstance['gameInstanceSettings']),
                         pin: {{ $gameInstance['pin'] }},
-                        gameStatus: 'created',
+                        gameStatus: '{{ $gameInstance['status'] }}',
                     },
                     selectedView: 'question',
                     selectedQuestionId: null,
@@ -125,9 +116,23 @@
             },
             delimiters: ['[[', ']]'],
             methods: {
-                playerJoined(game) {
-                    console.log('player joined', game);
-                    this.game.playerInstances = game.playerInstances;
+                playerJoined(player) {
+                    console.log('player joined', player);
+                    /*
+                    {
+                        "username": "BobTheBuilder",
+                        "id": 2,
+                        "avatar": "/images/default-avatar.jpg"
+                    }
+                    */
+                    this.game.playerInstances[player.id] = {
+                        'id' : player.id,
+                        'username' : player.username,
+                        'avatar' : player.avatar,
+                        'icon_flair' : ''
+                    };
+                    console.log(this.game.playerInstances);
+                    //this.game.playerInstances = game.playerInstances;
                 },
                 selectQuestion(questionId) {
                     this.showCorrectAnswerEnabled = false;
@@ -184,7 +189,7 @@
                     currentQuestion.answers.forEach((answer) => {
                         console.log(answer);
                         if (answer.is_correct) {
-                            GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'answer-id': answer.id}, 'action': 'showCorrectAnswer'});
+                            GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'answer_id': answer.id}, 'action': 'showCorrectAnswer'});
                         }
                     });
                 },
@@ -201,7 +206,22 @@
                         this.changeTriviaToStarted();
                     }
 
-                    GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {}, 'action': 'startQuestion'});
+
+                    $question = {
+                        'id': this.selectedQuestion.id,
+                        'question': this.selectedQuestion.question,
+                        'answers' : [],
+                    };
+
+                    this.selectedQuestion.answers.forEach((answer) => {
+                        $question['answers'].push({
+                            'id': answer.id,
+                            'answer': answer.answer,
+                            'is_correct' : 0
+                        });
+                    });
+
+                    GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: $question, 'action': 'startQuestion'});
                 },
                 changeTriviaToStarted() {
                     fetch('/trv/start', {'method': 'POST', 'headers': {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'gameToken': '{{ $gameInstance['token'] }}'})})
@@ -227,7 +247,9 @@
                 playerCount() {
                     return Object.keys(this.game.playerInstances).length;
                 },
-
+                playerInstances() {
+                    return this.game.playerInstances;
+                },
 
 
 
@@ -261,9 +283,7 @@
                 questions() {
                     return this.game.questions;
                 },
-                playerInstances() {
-                    return this.game.playerInstances;
-                },
+
                 trivia() {
                     return this.game.trivia;
                 },
@@ -316,7 +336,8 @@
             mounted() {
 
                 document.addEventListener('playerJoined', (e) => {
-                    this.playerJoined(game);
+                    console.log('Player Joined Event', e.detail);
+                    this.playerJoined(e.detail.player);
                 });
 
                 GameApi.joinRoom('{{ $gameInstance['token'] }}');

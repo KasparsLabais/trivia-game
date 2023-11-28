@@ -113,15 +113,16 @@ class TriviaController
                 $tmpUser = [];
 
                 if($player->user_type == 'player') {
-                    $player->load('user')->load('iconFlair');
+                    $player->load('user');
+                    $player->user->load('iconFlair');
                     $playerInstance[$player->user_id] = $player;
 
                     $tmpUser = [
                         'id' => $player->id,
                         'user_id' => $player->user_id,
-                        'username' => $player->user->name,
-                        'avatar' => $player->user->avatar,
-                        'icon_flair' => '',
+                        'username' => $player->user->username,
+                        'avatar' => ($player->user->avatar) ?: '/images/default-avatar.jpg',
+                        'icon_flair' => $player->user->iconFlair->icon_url,
                         'points' => $player->points,
                         'user_type' => $player->user_type,
                         'remote_data' => json_decode($player->remote_data, true),
@@ -159,7 +160,7 @@ class TriviaController
 
 
 
-        if ($gameInstance['status'] == 'created') {
+        if ($gameInstance['status'] == 'created' || $gameInstance['status'] == 'started') {
 
             // check if this is not temporary trivia game
             if($remoteData['is_temporary'] == 1) {

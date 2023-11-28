@@ -66,10 +66,25 @@
             <x-section title="">
                 <div class="flex flex-col py-4 px-2">
                     <h1 v-if="questionLoaded == 0" id="question-holder" class="josefin-sans text-yellow-400 text-5xl text-center">Waiting For Question...</h1>
-                    <h1 v-else id="question-holder" class="josefin-sans text-yellow-400 text-5xl text-center">[[ question.question ]]</h1>
+                    <h1 v-else id="question-holder" class="josefin-sans text-yellow-400 text-4xl text-center">[[ question.question ]]</h1>
                 </div>
 
-                <div class="flex flex-col py-2 px-2 answer-holder">
+                <div v-if="questionLoaded == 0" class="flex text-slate-200 text-xl text-center flex-col py-2 px-2 justify-center">
+                    <!-- todo: change different quotes for waiting -->
+                    <p>Give A moment and you will receive a question!</p>
+                </div>
+                <div v-else class="flex flex-col py-2 px-2 answer-holder">
+                    <button v-for="(answer, index) in answers" @click="answerQuestion(answer.id)"  v-bind:["answer-id"]="answer.id"  class="py-2 px-2 shadow-md text-left text-slate-100 text-3xl font-semibold mb-2 w-full rounded bg-lime-600 h-24 flex flex-col justify-center text-center" :class="{'bg-violet-600' : answer.is_correct }">
+                        <span class="flex flex-row w-full josefin-sans">
+                            <span v-if="index == 0" class="text-zinc-700">A)</span>
+                            <span v-if="index == 1" class="text-zinc-700">B)</span>
+                            <span v-if="index == 2" class="text-zinc-700">C)</span>
+                            <span v-if="index == 3" class="text-zinc-700">D)</span>
+                            <span v-if="index == 4" class="text-zinc-700">E)</span>
+                            <span v-if="index == 5" class="text-zinc-700">F)</span>
+                            [[ answer.answer ]]
+                        </span>
+                    </button>
                 </div>
 
                 <div class="flex flex-col justify-center w-24 h-24 bg-sky-700 rounded-full shadow-md text-center absolute bottom-2 right-2">
@@ -103,10 +118,13 @@
 
 
         //TODO: Convert callbackGameInstanceUpdated to event listener
+        /*
         document.addEventListener('gameStarted', (e) => {
             console.log(e);
             window.location.href = '/trv/trivia/' + e.detail.gameToken;
         });
+
+         */
 
         document.addEventListener('playerJoined', (e) => {
             playerJoinedUserView(game);
@@ -135,20 +153,87 @@
         createApp({
             data() {
                 return {
-                    currentView: 'game_created',
+                    currentView: @if($gameInstance['status'] == 'created') 'game_created' @else 'game_started' @endif,
                     gameInstance: @json($gameInstance),
                     trivia: @json($trivia),
                     player: @json($player),
                     questionLoaded: 0,
                     question: null,
                     answers: [],
+                    lastAnsweredQuestionId: null,
+                    lastAnsweredAnswerId: null,
                 }
             },
             delimiters: ['[[', ']]'],
             methods: {
                 changeView(view) {
                     this.currentView = view;
+                },
+                answerQuestion(answerId) {
+
+                    if (this.question.id == this.lastAnsweredQuestionId) {
+                        return;
+                    }
+
+                    //clearInterval(timeLimitTimer);
+                    fetch('/trv/trivia/{{ $gameInstance['token'] }}/answer', {'method' : 'POST', 'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'answer_id': answerId, 'question_id': this.question.id})})
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+
+                                this.lastAnsweredQuestionId = this.question.id;
+                                this.lastAnsweredAnswerId = answerId;
+
+                                //disable all buttons and mark selected button with bg-yellow-600
+                                let answerButtons = document.querySelectorAll('.answer-holder button');
+                                answerButtons.forEach(answerButton => {
+                                    answerButton.setAttribute('disabled', 'disabled');
+                                    answerButton.classList.remove('bg-lime-500');
+                                    answerButton.classList.add('bg-slate-300');
+                                    answerButton.classList.remove('text-slate-100');
+                                    answerButton.classList.add('text-slate-700');
+                                });
+
+                                //find selected button and mark it with bg-yellow-600
+                                let selectedAnswerButton = document.querySelector('.answer-holder button[answer-id="' + id + '"]');
+                                selectedAnswerButton.classList.remove('bg-lime-500');
+                                selectedAnswerButton.classList.remove('bg-slate-300');
+                                selectedAnswerButton.classList.add('bg-yellow-500');
+
+                                GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
+                                GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'id': window.id,'username' : window.username, 'avatar': @if(!Auth::check() || is_null(Auth::user()->avatar)) '/images/default-avatar.jpg' @else '{{Auth::user()->avatar}}' @endif}, 'action': 'playerAnsweredEvent'});
+                            }
+                        })
+                        .catch(error => console.log(error));
                 }
+            },
+            mounted() {
+                document.addEventListener('gameStarted', (e) => {
+                    console.log(e);
+                    this.gameInstance.status = 'started';
+                    this.changeView('game_started');
+                    //window.location.href = '/trv/trivia/' + e.detail.gameToken;
+                });
+
+                document.addEventListener('startQuestion', (e) => {
+                    console.log(e);
+                    this.questionLoaded = 1;
+                    this.question = {
+                        'id' : e.detail.id,
+                        'question' : e.detail.question,
+                    }
+                    this.answers = e.detail.answers;
+                });
+
+                document.addEventListener("showCorrectAnswer", (e) => {
+                    console.log(e);
+                    //update this.asnwers with correct answer where id == e.detail['answer_id']
+                    this.answers.forEach(answer => {
+                        if (answer.id == e.detail['answer_id']) {
+                            answer.is_correct = 1;
+                        }
+                    });
+                });
             }
         }).mount('#player-app');
 
