@@ -74,7 +74,7 @@
                     <p>Give A moment and you will receive a question!</p>
                 </div>
                 <div v-else class="flex flex-col py-2 px-2 answer-holder">
-                    <button v-for="(answer, index) in answers" @click="answerQuestion(answer.id)"  v-bind:["answer-id"]="answer.id"  class="py-2 px-2 shadow-md text-left text-slate-100 text-3xl font-semibold mb-2 w-full rounded bg-lime-600 h-24 flex flex-col justify-center text-center" :class="{'bg-violet-600' : answer.is_correct }">
+                    <button v-for="(answer, index) in answers" @click="answerQuestion(answer.id, index)"  v-bind:["answer-id"]="answer.id"  class="py-2 px-2 shadow-md text-left text-slate-100 text-3xl font-semibold mb-2 w-full rounded bg-lime-600 h-24 flex flex-col justify-center text-center" :class="{'bg-violet-600' : answer.is_correct, 'bg-amber-500' : !answer.is_correct && lastAnsweredAnswerId == answer.id,  }">
                         <span class="flex flex-row w-full josefin-sans">
                             <span v-if="index == 0" class="text-zinc-700">A)</span>
                             <span v-if="index == 1" class="text-zinc-700">B)</span>
@@ -162,6 +162,7 @@
                     answers: [],
                     lastAnsweredQuestionId: null,
                     lastAnsweredAnswerId: null,
+                    answerSelected: null,
                 }
             },
             delimiters: ['[[', ']]'],
@@ -169,7 +170,7 @@
                 changeView(view) {
                     this.currentView = view;
                 },
-                answerQuestion(answerId) {
+                answerQuestion(answerId, index) {
 
                     if (this.question.id == this.lastAnsweredQuestionId) {
                         return;
@@ -184,6 +185,7 @@
                                 this.lastAnsweredQuestionId = this.question.id;
                                 this.lastAnsweredAnswerId = answerId;
 
+                                /*
                                 //disable all buttons and mark selected button with bg-yellow-600
                                 let answerButtons = document.querySelectorAll('.answer-holder button');
                                 answerButtons.forEach(answerButton => {
@@ -199,9 +201,11 @@
                                 selectedAnswerButton.classList.remove('bg-lime-500');
                                 selectedAnswerButton.classList.remove('bg-slate-300');
                                 selectedAnswerButton.classList.add('bg-yellow-500');
+                                 */
+
 
                                 GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
-                                GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'id': window.id,'username' : window.username, 'avatar': @if(!Auth::check() || is_null(Auth::user()->avatar)) '/images/default-avatar.jpg' @else '{{Auth::user()->avatar}}' @endif}, 'action': 'playerAnsweredEvent'});
+                                GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'indexId' : index, 'questionId': this.question.id, 'id': window.id,'username' : window.username, 'answerid' : answerId }, 'action': 'playerAnsweredEvent'});
                             }
                         })
                         .catch(error => console.log(error));
@@ -217,7 +221,10 @@
 
                 document.addEventListener('startQuestion', (e) => {
                     console.log(e);
+
                     this.questionLoaded = 1;
+                    this.lastAnsweredAnswerId = null;
+
                     this.question = {
                         'id' : e.detail.id,
                         'question' : e.detail.question,

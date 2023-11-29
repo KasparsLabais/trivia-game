@@ -371,14 +371,16 @@ class TriviaController
                 ]);
             }
         }
+
+        $questionId = $request->get('question_id');
         //first step is to check if user have not already answered this question
 
         if ($remoteData['is_temporary']) {
-            $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
-            $questionId = $question['original_question_id'];
+            $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('original_question_id', $questionId)->first();
+            //$questionId = $question['original_question_id'];
         } else {
-            $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
-            $questionId = $question['id'];
+            $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('id', $questionId)->first();
+            //$questionId = $question['id'];
         }
 
         $haveAnswered = SubmittedAnswers::where('game_instance_id', $data['gameInstance']['id'])
@@ -411,8 +413,17 @@ class TriviaController
 
         if ($answer->is_correct == 1) {
             $isCorrect = true;
-            GameApi::updatePlayerInstanceScore($playerInstance['id'], $playerInstance['points'] + 1);
-            $playerInstance['points'] = $playerInstance['points'] + 1;
+
+            $pointsPerQuestion = (GameApi::getGameInstanceSettings($token, 'points_per_question') == '') ? 2 : GameApi::getGameInstanceSettings($token, 'points_per_question');
+            $totalPointsGiven = $playerInstance['points'] * $pointsPerQuestion;
+
+            if (GameApi::isFirstAnsweredCorrectlyToQuestion( $data['gameInstance']['id'], $questionId, $request->get('answer_id'), $userId)) {
+                $bonusPointsForSpeed = (GameApi::getGameInstanceSettings($token, 'bonus_for_speed') == '') ? 2 : GameApi::getGameInstanceSettings($token, 'bonus_for_speed');
+                $totalPointsGiven = $totalPointsGiven + $bonusPointsForSpeed;
+            }
+
+            GameApi::updatePlayerInstanceScore($playerInstance['id'], $playerInstance['points'] + $totalPointsGiven);
+            $playerInstance['points'] = $playerInstance['points'] + $totalPointsGiven;
         } else {
             $isCorrect = false;
         }

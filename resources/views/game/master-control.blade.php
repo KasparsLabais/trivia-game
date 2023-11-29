@@ -62,19 +62,9 @@
                 .catch(error => console.log(error));
         }
 
-        /*
-        document.addEventListener('playerJoined', (e) => {
-            playerJoined(game);
-        });
-
-         */
-
         const callbackGameInstanceUpdated = (gameToken, game, action) => {
             console.log('game instance updated');
             switch (action) {
-                case 'playerJoined':
-                    //playerJoined(game);
-                    break;
                 case 'gameStarted':
                     //window.location.href = '/trv/trivia/' + gameToken;
                     break;
@@ -112,10 +102,74 @@
                         playerLimit: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'player_limit')) {{ GameApi::getGameInstanceSettings($gameInstance['token'], 'player_limit') }} @else 0 @endif,
                         accessibility: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == 'private' OR GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == '' ) 'private' @else 'public' @endif,
                     },
+                    answeredQuestions: [],
                 }
             },
             delimiters: ['[[', ']]'],
             methods: {
+                getGivenAnswer (userId) {
+                    let givenAnswer = "";
+                    if (this.answeredQuestions[this.selectedQuestionId] == undefined) {
+                        return givenAnswer;
+                    }
+                    this.answeredQuestions[this.selectedQuestionId].forEach((player) => {
+                        if (player.id == userId) {
+
+                            switch (player.index) {
+                                case 0:
+                                    givenAnswer = 'A';
+                                    break;
+                                case 1:
+                                    givenAnswer = 'B';
+                                    break;
+                                case 2:
+                                    givenAnswer = 'C';
+                                    break;
+                                case 3:
+                                    givenAnswer = 'D';
+                                    break;
+                                case 4:
+                                    givenAnswer = 'E';
+                                    break;
+                                case 5:
+                                    givenAnswer = 'F';
+                                    break;
+                            }
+                        }
+                    });
+
+                    return givenAnswer;
+                },
+                playerAnswered (data) {
+                    console.log('player answered', data);
+                    let player = this.game.playerInstances[data.id];
+
+                    //check if this.answeredQuestions contains key with question id
+                    if (this.answeredQuestions[data.questionId] == undefined) {
+                        this.answeredQuestions[data.questionId] = [];
+                    }
+
+                    //check if provided answerId is correct
+                    let isCorrect = false;
+
+                    //get question by questionId
+                    this.selectedQuestion.answers.forEach((answer) => {
+                        if (answer.id == data.answerid && answer.is_correct) {
+                            isCorrect = true;
+                        }
+                    });
+
+                    this.answeredQuestions[data.questionId].push({
+                        'id' : data.id,
+                        'username': player.username,
+                        'answerId': data.answerid,
+                        'isCorrect': isCorrect,
+                        'index': data.indexId
+                    });
+
+                    console.log(this.answeredQuestions);
+
+                },
                 playerJoined(player) {
                     console.log('player joined', player);
                     /*
@@ -137,6 +191,10 @@
                 selectQuestion(questionId) {
                     this.showCorrectAnswerEnabled = false;
                     this.selectedQuestionId = questionId;
+
+                    Object.keys(this.game.playerInstances).forEach((key) => {
+                        //this.game.playerInstances[key].answerGiven = false;
+                    });
                 },
                 deselectQuestion() {
                     this.selectedQuestionId = null;
@@ -206,7 +264,6 @@
                         this.changeTriviaToStarted();
                     }
 
-
                     $question = {
                         'id': this.selectedQuestion.id,
                         'question': this.selectedQuestion.question,
@@ -242,6 +299,7 @@
                     if (this.selectedQuestionId === null) {
                         return null;
                     }
+                    ///set for all playerInstances answerGiven to false
                     return this.game.questions.find(question => question.id === this.selectedQuestionId);
                 },
                 playerCount() {
@@ -250,7 +308,26 @@
                 playerInstances() {
                     return this.game.playerInstances;
                 },
+                questionWinner() {
+                    //this.answeredQuestions[data.questionId]
+                    //return first correct answered player
+                    let winner =  {'username':'Winner not found'};
 
+                    if(this.answeredQuestions[this.selectedQuestionId] == undefined) {
+                        return winner;
+                    }
+
+                    this.answeredQuestions[this.selectedQuestionId].forEach((player) => {
+                        console.log('Player Data', player);
+                        if (player.isCorrect) {
+                            winner = player;
+                        }
+                    });
+
+                    console.log('Player Data', winner);
+
+                    return winner;
+                },
 
 
 
@@ -338,6 +415,11 @@
                 document.addEventListener('playerJoined', (e) => {
                     console.log('Player Joined Event', e.detail);
                     this.playerJoined(e.detail.player);
+                });
+
+                document.addEventListener('playerAnsweredEvent', (e) => {
+                    console.log('Player Answered Event', e.detail);
+                    this.playerAnswered(e.detail);
                 });
 
                 GameApi.joinRoom('{{ $gameInstance['token'] }}');

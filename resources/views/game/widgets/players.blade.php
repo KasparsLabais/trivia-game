@@ -21,7 +21,8 @@
                         <img v-bind:["src"]="player.icon_flair" class="w-6 h-6 absolute left-0"/>
                     </div>
                 </div>
-                <div class="w-2/4" v-bind:["id"]="'answer-holder-' + player.user_id">
+                <div class="flex flex-col justify-center w-2/4" v-bind:["id"]="'answer-holder-' + player.user_id">
+                    <p class="text-center text-3xl text-semibold josefin-sans ">[[ getGivenAnswer(player.user_id) ]]</p>
                 </div>
             </div>
 

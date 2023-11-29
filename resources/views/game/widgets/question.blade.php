@@ -51,7 +51,7 @@
                 <h1 class="text-4xl josefin-sans text-slate-200 text-center">WINNER</h1>
             </div>
             <div class="px-2 py-2 md:px-6 md:py-2">
-                <p class="text-yellow-500 josefin-sans text-center text-6xl">Winners Name</p>
+                <p class="text-yellow-500 josefin-sans text-center text-6xl">[[ questionWinner.username ]]</p>
             </div>
         </div>
     </div>
