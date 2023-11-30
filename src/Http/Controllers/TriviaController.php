@@ -1073,4 +1073,14 @@ class TriviaController
         $jsonResponse = json_decode($response, true);
         return $jsonResponse['results'];
     }
+
+    public function leaderboard($token) {
+        $leaderboard = GameApi::getLeaderboard($token);
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Leaderboard fetched successfully',
+            'data' => $leaderboard
+        ]);
+        //return view('trivia-game::pages.leaderboard')->with(['leaderboard' => $leaderboard]);
+    }
 }

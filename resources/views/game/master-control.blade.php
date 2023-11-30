@@ -84,7 +84,7 @@
                         gameInstance: @json($gameInstance),
                         trivia: @json($trivia),
                         questions: @json($questions->load('answers')),
-                        playerInstances: @json($playerInstances),
+                        playerInstances: @if(count($playerInstances) > 0) @json($playerInstances) @else {} @endif,
                         gameInstanceSettings: @json($gameInstance['gameInstanceSettings']),
                         pin: {{ $gameInstance['pin'] }},
                         gameStatus: '{{ $gameInstance['status'] }}',
@@ -104,7 +104,8 @@
                     },
                     answeredQuestions: [],
                     startedQuestions: [],
-                    leaderboard: @json($leaderboard),
+                    leaderboard: @if(count($leaderboard) > 0)  @json($leaderboard) @else [] @endif,
+                    triggerNr: 0,
                 }
             },
             delimiters: ['[[', ']]'],
@@ -181,13 +182,31 @@
                         "avatar": "/images/default-avatar.jpg"
                     }
                     */
+
                     this.game.playerInstances[player.id] = {
                         'id' : player.id,
                         'username' : player.username,
                         'avatar' : player.avatar,
                         'icon_flair' : ''
                     };
+
+                    this.leaderboard.push({
+                        'id' : player.id,
+                        'user_id': player.id,
+                        'username' : player.username,
+                        'points' : 0
+                    });
+                    this.triggerNr++;
+                    /*
+                    this.$set(this.game.playerInstances, player.id, {
+                        'id' : player.id,
+                        'username' : player.username,
+                        'avatar' : player.avatar,
+                        'icon_flair' : ''
+                    });
+                     */
                     console.log(this.game.playerInstances);
+
                     //this.game.playerInstances = game.playerInstances;
                 },
                 selectQuestion(questionId) {
@@ -301,6 +320,18 @@
                 },
                 hasBeenPlayed(questionId) {
                     return this.startedQuestions.includes(questionId);
+                },
+                updateLeaderboard() {
+                    console.log('update leaderboard');
+                    fetch('/trv/trivia/{{ $gameInstance['token'] }}/leaderboard', {'method' : 'GET', 'headers' : {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            if(data.success) {
+                                this.leaderboard = data.data;
+                            }
+                        })
+                        .catch(error => console.log(error));
                 },
             },
             computed: {

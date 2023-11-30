@@ -48,12 +48,12 @@
                 <div class="flex flex-row w-full">
                     <div class="w-full flex flex-row shadow-inner rounded bg-slate-300 py-2 px-2">
                         <div class="px-1 w-2/4">
-                            <div v-on:click="changeAccessibility('private')" class="accessibility-setting text-center px-2 py-2 rounded font-semibold  shadow" :class="{'bg-lime-500 text-gray-100' : settings.accessibility == 'private', 'bg-slate-300 text-gray-400 hover:bg-lime-500 hover:text-gray-100' : settings.accessibility != 'private'}">
+                            <div v-on:click="changeAccessibility('private')" class="accessibility-setting text-center px-2 py-2 rounded font-semibold  shadow" :class="{'bg-lime-600 text-gray-100' : settings.accessibility == 'private', 'bg-slate-300 text-gray-400 hover:bg-lime-500 hover:text-gray-100' : settings.accessibility != 'private'}">
                                 Private Access
                             </div>
                         </div>
                         <div class="px-1 w-2/4">
-                            <div v-on:click="changeAccessibility('public')" class="accessibility-setting text-center px-2 py-2 rounded font-semibold shadow" :class="{'bg-lime-500 text-gray-100' : settings.accessibility == 'public', 'bg-slate-300 text-gray-400 hover:bg-lime-500 hover:text-gray-100' : settings.accessibility != 'public'}">
+                            <div v-on:click="changeAccessibility('public')" class="accessibility-setting text-center px-2 py-2 rounded font-semibold shadow" :class="{'bg-lime-600 text-gray-100' : settings.accessibility == 'public', 'bg-slate-300 text-gray-400 hover:bg-lime-500 hover:text-gray-100' : settings.accessibility != 'public'}">
                                 Open Access
                             </div>
                         </div>
