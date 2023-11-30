@@ -146,7 +146,6 @@ class TriviaController
                 $playerInstance[$player->user_id] = $tmpUser;
             }
 
-
             $returnObject = [
                 'gameInstance' => $gameInstance,
                 'playerInstances' => $playerInstance,
@@ -414,8 +413,8 @@ class TriviaController
         if ($answer->is_correct == 1) {
             $isCorrect = true;
 
-            $pointsPerQuestion = (GameApi::getGameInstanceSettings($token, 'points_per_question') == '') ? 2 : GameApi::getGameInstanceSettings($token, 'points_per_question');
-            $totalPointsGiven = $playerInstance['points'] * $pointsPerQuestion;
+            $totalPointsGiven = (GameApi::getGameInstanceSettings($token, 'points_per_question') == '') ? 2 : GameApi::getGameInstanceSettings($token, 'points_per_question');
+            //$totalPointsGiven = $playerInstance['points'] * $pointsPerQuestion;
 
             if (GameApi::isFirstAnsweredCorrectlyToQuestion( $data['gameInstance']['id'], $questionId, $request->get('answer_id'), $userId)) {
                 $bonusPointsForSpeed = (GameApi::getGameInstanceSettings($token, 'bonus_for_speed') == '') ? 2 : GameApi::getGameInstanceSettings($token, 'bonus_for_speed');

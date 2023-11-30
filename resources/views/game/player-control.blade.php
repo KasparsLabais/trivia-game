@@ -52,7 +52,7 @@
             </x-section>
         </div>
 
-        <div v-else-if="currentView == 'game_started'">
+        <div v-else-if="currentView == 'question_view'">
 
             <div id="timer-holder" class="hidden flex flex-col relative">
                 <div id="timer-settings" class="flex flex-row justify-center bg-lime-300" style="width: 100%; height: 24.5px;">
@@ -88,16 +88,23 @@
                 </div>
 
                 <div class="flex flex-col justify-center w-24 h-24 bg-sky-700 rounded-full shadow-md text-center absolute bottom-2 right-2">
-                    <span class="josefin-sans font-semibold text-3xl text-slate-200">[[ player.points ]]</span>
+                    <span id="game-api-_points-holder" class="josefin-sans font-semibold text-3xl text-slate-200">[[ player.points ]]</span>
                     <span class="raleway text-slate-200 font-semibold">Points</span>
                 </div>
 
             </x-section>
-
         </div>
 
-
-
+        <div v-else-if="currentView == 'winners_view'" class="bg-zinc-900 h-screen flex flex-col justify-center">
+            <div>
+                <div class="py-2">
+                    <h1 class="text-4xl josefin-sans text-slate-200 text-center">WINNER</h1>
+                </div>
+                <div class="px-2 py-2 md:px-6 md:py-2">
+                    <p class="text-yellow-500 josefin-sans text-center text-6xl">[[ questionWinner ]]</p>
+                </div>
+            </div>
+        </div>
     </div>
 
 
@@ -153,7 +160,7 @@
         createApp({
             data() {
                 return {
-                    currentView: @if($gameInstance['status'] == 'created') 'game_created' @else 'game_started' @endif,
+                    currentView: @if($gameInstance['status'] == 'created') 'game_created' @else 'question_view' @endif,
                     gameInstance: @json($gameInstance),
                     trivia: @json($trivia),
                     player: @json($player),
@@ -163,6 +170,7 @@
                     lastAnsweredQuestionId: null,
                     lastAnsweredAnswerId: null,
                     answerSelected: null,
+                    questionWinner: null,
                 }
             },
             delimiters: ['[[', ']]'],
@@ -215,15 +223,18 @@
                 document.addEventListener('gameStarted', (e) => {
                     console.log(e);
                     this.gameInstance.status = 'started';
-                    this.changeView('game_started');
+                    this.changeView('question_view');
                     //window.location.href = '/trv/trivia/' + e.detail.gameToken;
                 });
 
                 document.addEventListener('startQuestion', (e) => {
                     console.log(e);
 
+                    this.questionWinner = '';
                     this.questionLoaded = 1;
                     this.lastAnsweredAnswerId = null;
+
+                    this.changeView('question_view');
 
                     this.question = {
                         'id' : e.detail.id,
@@ -234,12 +245,25 @@
 
                 document.addEventListener("showCorrectAnswer", (e) => {
                     console.log(e);
-                    //update this.asnwers with correct answer where id == e.detail['answer_id']
                     this.answers.forEach(answer => {
                         if (answer.id == e.detail['answer_id']) {
                             answer.is_correct = 1;
                         }
                     });
+                });
+                document.addEventListener('showWinningTeam', (e) => {
+                    console.log(e);
+                    this.changeView('winners_view');
+                    this.questionWinner = e.detail.winnerName;
+                });
+
+                document.addEventListener('updatePoints', (e) => {
+                    GameApi.getPlayerPoints('{{ $gameInstance['token'] }}');
+                });
+
+                document.addEventListener('updatePlayerPoints', (e) => {
+                    console.log(e);
+                    this.player.points = e.detail.points;
                 });
             }
         }).mount('#player-app');

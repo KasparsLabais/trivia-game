@@ -103,6 +103,8 @@
                         accessibility: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == 'private' OR GameApi::getGameInstanceSettings($gameInstance['token'], 'accessibility') == '' ) 'private' @else 'public' @endif,
                     },
                     answeredQuestions: [],
+                    startedQuestions: [],
+                    leaderboard: @json($leaderboard),
                 }
             },
             delimiters: ['[[', ']]'],
@@ -253,6 +255,8 @@
                 },
                 showWinningTeam() {
                     this.selectedView = 'winner';
+                    GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'winnerName': this.questionWinner.username}, 'action': 'showWinningTeam'});
+                    GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {}, 'action': 'updatePoints'});
                 },
                 showQuestionView() {
                     this.selectedView = 'question';
@@ -278,6 +282,8 @@
                         });
                     });
 
+                    this.startedQuestions.push(this.selectedQuestion.id);
+
                     GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: $question, 'action': 'startQuestion'});
                 },
                 changeTriviaToStarted() {
@@ -292,7 +298,10 @@
                             }
                         })
                         .catch(error => console.log(error));
-                }
+                },
+                hasBeenPlayed(questionId) {
+                    return this.startedQuestions.includes(questionId);
+                },
             },
             computed: {
                 selectedQuestion() {
@@ -328,13 +337,6 @@
 
                     return winner;
                 },
-
-
-
-
-
-
-
                 //still in progress
                 playerLimit() {
                     return this.game.gameInstanceSettings.player_limit;
