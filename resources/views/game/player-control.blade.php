@@ -3,7 +3,7 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
-    <div id="player-app">
+    <div id="player-app" style="top: -65px; ">
 
 
         <div v-if="currentView == 'game_created' " class="py-4">
@@ -54,11 +54,11 @@
 
         <div v-else-if="currentView == 'question_view'">
 
-            <div id="timer-holder" class="hidden flex flex-col relative">
-                <div id="timer-settings" class="flex flex-row justify-center bg-lime-300" style="width: 100%; height: 24.5px;">
+            <div id="timer-holder" v-class="{'hidden': timerMode }" class="flex flex-col relative">
+                <div id="timer-settings" class="flex flex-row justify-center" :class="[timerClass]"  v-bind:["style"]="'width:' + timerSize + '; height: 24.5px;'">
                 </div>
                 <div class="w-full flex flex-row justify-center">
-                    <span id="timer-countdown-holder" class="bg-zinc-800 rounded-md text-xl text-slate-300 font-semibold">0</span>
+                    <span id="timer-countdown-holder" class="bg-zinc-800 rounded-md text-xl text-slate-300 font-semibold">[[ timeLeft ]]</span>
                 </div>
             </div>
 
@@ -105,6 +105,13 @@
                 </div>
             </div>
         </div>
+
+        <div v-else-if="currentView == 'times_up'" class="bg-zinc-900 h-screen flex flex-col justify-center" style="margin-top: -65px;">
+            <div class='w-full josefin-sans font-bold  text-yellow-500 text-4xl text-center'>
+                <h1>TIME'S UP!</h1>
+            </div>
+        </div>
+
     </div>
 
 
@@ -125,37 +132,16 @@
 
 
         //TODO: Convert callbackGameInstanceUpdated to event listener
-        /*
-        document.addEventListener('gameStarted', (e) => {
-            console.log(e);
-            window.location.href = '/trv/trivia/' + e.detail.gameToken;
-        });
-
-         */
 
         document.addEventListener('playerJoined', (e) => {
             playerJoinedUserView(game);
         });
-
-        const callbackGameInstanceUpdated = (gameToken, game, action) => {
-            console.log('game instance updated');
-            switch (action) {
-                case 'playerJoined':
-                    //playerJoined(game);
-                    break;
-                case 'gameStarted':
-                    //window.location.href = '/trv/trivia/' + gameToken;
-                    break;
-            }
-        }
 
 
     </script>
 
     <script>
 
-        //"id":113,"user_id":"tCS8BRxmDRetKTy","game_instance_id":201,"points":0,"created_at":"2023-11-27T13:49:34.000000Z","updated_at":"2023-11-27T13:49:34.000000Z","status":"joined","remote_data":null,"user_type":"guest"},"message":"Player Instance found"},
-        //}
         const { createApp } = Vue;
         createApp({
             data() {
@@ -171,6 +157,12 @@
                     lastAnsweredAnswerId: null,
                     answerSelected: null,
                     questionWinner: null,
+                    timeLimitTimer: null,
+                    startTimer: 0,
+                    timeLeft: 0,
+                    timerClass: 'bg-lime-300',
+                    timerSize: '100%',
+                    timerMode: 0,
                 }
             },
             delimiters: ['[[', ']]'],
@@ -184,6 +176,8 @@
                         return;
                     }
 
+                    clearInterval(this.timeLimitTimer);
+
                     //clearInterval(timeLimitTimer);
                     fetch('/trv/trivia/{{ $gameInstance['token'] }}/answer', {'method' : 'POST', 'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'answer_id': answerId, 'question_id': this.question.id})})
                         .then(response => response.json())
@@ -193,30 +187,59 @@
                                 this.lastAnsweredQuestionId = this.question.id;
                                 this.lastAnsweredAnswerId = answerId;
 
-                                /*
-                                //disable all buttons and mark selected button with bg-yellow-600
-                                let answerButtons = document.querySelectorAll('.answer-holder button');
-                                answerButtons.forEach(answerButton => {
-                                    answerButton.setAttribute('disabled', 'disabled');
-                                    answerButton.classList.remove('bg-lime-500');
-                                    answerButton.classList.add('bg-slate-300');
-                                    answerButton.classList.remove('text-slate-100');
-                                    answerButton.classList.add('text-slate-700');
-                                });
-
-                                //find selected button and mark it with bg-yellow-600
-                                let selectedAnswerButton = document.querySelector('.answer-holder button[answer-id="' + id + '"]');
-                                selectedAnswerButton.classList.remove('bg-lime-500');
-                                selectedAnswerButton.classList.remove('bg-slate-300');
-                                selectedAnswerButton.classList.add('bg-yellow-500');
-                                 */
-
-
                                 GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
                                 GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'indexId' : index, 'questionId': this.question.id, 'id': window.id,'username' : window.username, 'answerid' : answerId }, 'action': 'playerAnsweredEvent'});
                             }
                         })
                         .catch(error => console.log(error));
+                },
+                triggerTimer(initialTime) {
+                    this.startTimer = initialTime;
+                    this.timeLeft = initialTime;
+
+                    this.timerClass = 'bg-lime-300';
+                    this.timerSize = '100%';
+
+                    this.updateTimer();
+                },
+                updateTimer() {
+                    let timeLeftPercentage = (this.timeLeft / this.startTimer) * 100;
+                    this.timerSize = timeLeftPercentage + '%';
+
+                    if (timeLeftPercentage < 75) {
+                        this.timerClass = 'bg-amber-200';
+                    }
+
+                    if (timeLeftPercentage < 55) {
+                        this.timerClass = 'bg-amber-300';
+                    }
+
+                    if (timeLeftPercentage < 30) {
+                        this.timerClass = 'bg-amber-400';
+                    }
+
+                    if (timeLeftPercentage < 20) {
+                        this.timerClass = 'bg-red-400';
+                    }
+
+                    if (timeLeftPercentage < 10) {
+                        this.timerClass = 'bg-rose-500';
+                    }
+
+                    if (timeLeftPercentage < 5) {
+                        this.timerClass = 'bg-rose-600';
+                    }
+
+                    if (this.timeLeft <= 0) {
+                        this.changeView('times_up');
+                        clearInterval(this.timeLimitTimer);
+                        return;
+                    }
+
+                    this.timeLimitTimer = setTimeout(() => {
+                        this.timeLeft = this.timeLeft - 1;
+                        this.updateTimer();
+                    }, 1000);
                 }
             },
             mounted() {
@@ -230,6 +253,7 @@
                 document.addEventListener('startQuestion', (e) => {
                     console.log(e);
 
+                    this.timerMode = 0;
                     this.questionWinner = '';
                     this.questionLoaded = 1;
                     this.lastAnsweredAnswerId = null;
@@ -241,6 +265,26 @@
                         'question' : e.detail.question,
                     }
                     this.answers = e.detail.answers;
+                });
+
+                document.addEventListener('startTimer', (e) => {
+                    console.log(e);
+                    clearInterval(this.timeLimitTimer);
+
+                    this.timerMode = 1;
+                    this.questionWinner = '';
+                    this.questionLoaded = 1;
+                    this.lastAnsweredAnswerId = null;
+
+                    this.changeView('question_view');
+
+                    this.question = {
+                        'id' : e.detail.questionData.id,
+                        'question' : e.detail.questionData.question,
+                    }
+
+                    this.answers = e.detail.questionData.answers;
+                    this.triggerTimer(e.detail.timeLimit);
                 });
 
                 document.addEventListener("showCorrectAnswer", (e) => {

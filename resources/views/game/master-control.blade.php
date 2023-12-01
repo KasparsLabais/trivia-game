@@ -287,14 +287,14 @@
                         this.changeTriviaToStarted();
                     }
 
-                    $question = {
+                    let question = {
                         'id': this.selectedQuestion.id,
                         'question': this.selectedQuestion.question,
                         'answers' : [],
                     };
 
                     this.selectedQuestion.answers.forEach((answer) => {
-                        $question['answers'].push({
+                        question['answers'].push({
                             'id': answer.id,
                             'answer': answer.answer,
                             'is_correct' : 0
@@ -303,7 +303,29 @@
 
                     this.startedQuestions.push(this.selectedQuestion.id);
 
-                    GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: $question, 'action': 'startQuestion'});
+                    GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: question, 'action': 'startQuestion'});
+                },
+                startTimer() {
+                    console.log('start timer');
+                    if (this.game.gameStatus == 'created') {
+                        this.changeTriviaToStarted();
+                    }
+
+                    let question = {
+                        'id': this.selectedQuestion.id,
+                        'question': this.selectedQuestion.question,
+                        'answers' : [],
+                    };
+
+                    this.selectedQuestion.answers.forEach((answer) => {
+                        question['answers'].push({
+                            'id': answer.id,
+                            'answer': answer.answer,
+                            'is_correct' : 0
+                        });
+                    });
+                    this.startedQuestions.push(this.selectedQuestion.id);
+                    GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: { 'questionData': question, 'timeLimit': this.settings.timePerQuestion }, 'action': 'startTimer'});
                 },
                 changeTriviaToStarted() {
                     fetch('/trv/start', {'method': 'POST', 'headers': {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'gameToken': '{{ $gameInstance['token'] }}'})})
