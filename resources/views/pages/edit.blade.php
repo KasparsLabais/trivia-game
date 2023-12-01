@@ -123,6 +123,17 @@
                                 <label class="raleway font-semibold text-md" for="question">Question:</label>
                                 <input class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" type="text" name="question" id="question">
                             </div>
+                            <div class="flex flex-col px-2 py-2">
+                                <label class="raleway font-semibold text-md" for="question_type">Question Type:</label>
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="question_type" id="question_type">
+                                    <option value="options">Options (A, B, C...)</option>
+                                    <option value="text_input">Text Input</option>
+                                    <option value="number_input">Number Input</option>
+                                    <option value="image">Image</option>
+                                    <!--<option value="video">Video</option>
+                                    <option value="audio">Audio</option>-->
+                                </select>
+                            </div>
                         </div>
                         <div class="flex flex-row px-2">
                             <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="addQuestion()">Add Question</button>
@@ -159,7 +170,8 @@
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({
-                    question: document.querySelector('#question').value
+                    question: document.querySelector('#question').value,
+                    question_type: document.querySelector('#question_type').value
                 })
             }).then(response => response.json())
             .then(data => {
@@ -286,27 +298,30 @@
                     questionFooterAnswerIsCorrectLabel.setAttribute('for', 'is_correct-' + question.id);
                     questionFooterAnswerIsCorrectLabel.innerText = 'Is Correct:';
 
-                    let questionFooterAnswerIsCorrectSelect = document.createElement('select');
-                    questionFooterAnswerIsCorrectSelect.classList.add('bg-slate-100', 'border', 'border-zinc-400', 'shadow', 'shadow-zinc-400', 'rounded');
-                    questionFooterAnswerIsCorrectSelect.setAttribute('name', 'is_correct-' + question.id);
-                    questionFooterAnswerIsCorrectSelect.setAttribute('id', 'is_correct-' + question.id);
 
-                    let questionFooterAnswerIsCorrectSelectOptionNo = document.createElement('option');
-                    questionFooterAnswerIsCorrectSelectOptionNo.setAttribute('value', '0');
-                    questionFooterAnswerIsCorrectSelectOptionNo.innerText = 'No';
+                    if (question.question_type == 'options') {
+                        let questionFooterAnswerIsCorrectSelect = document.createElement('select');
+                        questionFooterAnswerIsCorrectSelect.classList.add('bg-slate-100', 'border', 'border-zinc-400', 'shadow', 'shadow-zinc-400', 'rounded');
+                        questionFooterAnswerIsCorrectSelect.setAttribute('name', 'is_correct-' + question.id);
+                        questionFooterAnswerIsCorrectSelect.setAttribute('id', 'is_correct-' + question.id);
 
-                    let questionFooterAnswerIsCorrectSelectOptionYes = document.createElement('option');
-                    questionFooterAnswerIsCorrectSelectOptionYes.setAttribute('value', '1');
-                    questionFooterAnswerIsCorrectSelectOptionYes.innerText = 'Yes';
+                        let questionFooterAnswerIsCorrectSelectOptionNo = document.createElement('option');
+                        questionFooterAnswerIsCorrectSelectOptionNo.setAttribute('value', '0');
+                        questionFooterAnswerIsCorrectSelectOptionNo.innerText = 'No';
 
-                    questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionNo);
-                    questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionYes);
+                        let questionFooterAnswerIsCorrectSelectOptionYes = document.createElement('option');
+                        questionFooterAnswerIsCorrectSelectOptionYes.setAttribute('value', '1');
+                        questionFooterAnswerIsCorrectSelectOptionYes.innerText = 'Yes';
 
-                    questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectLabel);
-                    questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectSelect);
+                        questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionNo);
+                        questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionYes);
 
-                    questionFooterAnswer.appendChild(questionFooterAnswerAnswer);
-                    questionFooterAnswer.appendChild(questionFooterAnswerIsCorrect);
+                        questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectLabel);
+                        questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectSelect);
+
+                        questionFooterAnswer.appendChild(questionFooterAnswerAnswer);
+                        questionFooterAnswer.appendChild(questionFooterAnswerIsCorrect);
+                    }
 
                     let questionFooterAddAnswer = document.createElement('div');
                     questionFooterAddAnswer.classList.add('flex', 'flex-col', 'justify-center');

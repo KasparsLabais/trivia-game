@@ -614,6 +614,7 @@ class TriviaController
             'trivia_id' => $id,
             'question' => $request->question,
             'order_nr' => !isset($lastOrder['order_nr']) ? 1 : $lastOrder['order_nr']+1,
+            'question_type' => $request->question_type
         ]);
 
         return new JsonResponse([

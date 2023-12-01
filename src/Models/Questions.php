@@ -10,7 +10,8 @@ class Questions extends Model
     protected $fillable = [
         'trivia_id',
         'question',
-        'order_nr'
+        'order_nr',
+        'question_type'
     ];
 
     public function answers()
