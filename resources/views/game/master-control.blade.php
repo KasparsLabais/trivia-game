@@ -210,12 +210,33 @@
                     //this.game.playerInstances = game.playerInstances;
                 },
                 selectQuestion(questionId) {
+
+                    this.selectedView = 'question';
+
                     this.showCorrectAnswerEnabled = false;
                     this.selectedQuestionId = questionId;
 
                     Object.keys(this.game.playerInstances).forEach((key) => {
                         //this.game.playerInstances[key].answerGiven = false;
                     });
+                },
+                previousQuestion() {
+                    console.log('previous next');
+                    let questionIndex = this.game.questions.findIndex(question => question.id === this.selectedQuestionId);
+                    let nextQuestionIndex = questionIndex - 1;
+                    if (nextQuestionIndex < 0) {
+                        nextQuestionIndex = this.game.questions.length - 1;
+                    }
+                    this.selectQuestion(this.game.questions[nextQuestionIndex].id);
+                },
+                nextQuestion() {
+                    console.log('previous question');
+                    let questionIndex = this.game.questions.findIndex(question => question.id === this.selectedQuestionId);
+                    let nextQuestionIndex = questionIndex + 1;
+                    if (nextQuestionIndex >= this.game.questions.length) {
+                        nextQuestionIndex = 0;
+                    }
+                    this.selectQuestion(this.game.questions[nextQuestionIndex].id);
                 },
                 deselectQuestion() {
                     this.selectedQuestionId = null;

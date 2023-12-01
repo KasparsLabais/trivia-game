@@ -54,7 +54,7 @@
 
         <div v-else-if="currentView == 'question_view'">
 
-            <div id="timer-holder" v-class="{'hidden': timerMode }" class="flex flex-col relative">
+            <div id="timer-holder" :class="{'hidden': (timerMode == 0) }" class="flex flex-col relative">
                 <div id="timer-settings" class="flex flex-row justify-center" :class="[timerClass]"  v-bind:["style"]="'width:' + timerSize + '; height: 24.5px;'">
                 </div>
                 <div class="w-full flex flex-row justify-center">
