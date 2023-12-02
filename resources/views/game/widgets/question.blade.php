@@ -12,17 +12,29 @@
                 </div>
                 <div>Previous</div>
             </div>
-            <div class="answer-holder flex flex-row flex-wrap justify-between">
-                <div v-for="(answer, index) in selectedQuestion.answers" class="flex flex-col justify-center px-2 w-full">
-                    <button class="py-3 px-4 shadow-md text-left text-slate-100 text-2xl font-semibold mb-2 w-full rounded bg-lime-600" :class="{'bg-violet-600' : (showCorrectAnswerEnabled && answer.is_correct) }">
-                        <span v-if="index == 0" class="text-zinc-700 josefin-sans">A)</span>
-                        <span v-if="index == 1" class="text-zinc-700 josefin-sans">B)</span>
-                        <span v-if="index == 2" class="text-zinc-700 josefin-sans">C)</span>
-                        <span v-if="index == 3" class="text-zinc-700 josefin-sans">D)</span>
-                        <span v-if="index == 4" class="text-zinc-700 josefin-sans">E)</span>
-                        <span v-if="index == 5" class="text-zinc-700 josefin-sans">F)</span>
-                        [[ answer.answer ]]
-                    </button>
+            <div class="answer-holder flex flex-row flex-wrap justify-between w-8/12">
+                <div v-if="selectedQuestion.question_type == 'options'" class="w-full">
+                    <div v-for="(answer, index) in selectedQuestion.answers" class="flex flex-col justify-center px-2 w-full">
+                        <button class="py-3 px-4 shadow-md text-left text-slate-100 text-2xl font-semibold mb-2 w-full rounded bg-lime-600" :class="{'bg-violet-600' : (showCorrectAnswerEnabled && answer.is_correct) }">
+                            <span v-if="index == 0" class="text-zinc-700 josefin-sans">A)</span>
+                            <span v-if="index == 1" class="text-zinc-700 josefin-sans">B)</span>
+                            <span v-if="index == 2" class="text-zinc-700 josefin-sans">C)</span>
+                            <span v-if="index == 3" class="text-zinc-700 josefin-sans">D)</span>
+                            <span v-if="index == 4" class="text-zinc-700 josefin-sans">E)</span>
+                            <span v-if="index == 5" class="text-zinc-700 josefin-sans">F)</span>
+                            [[ answer.answer ]]
+                        </button>
+                    </div>
+                </div>
+                <div v-else-if="selectedQuestion.question_type == 'text_input'" class="w-full">
+                    <div v-if="showCorrectAnswerEnabled" class="flex flex-row justify-center">
+                        <div v-for="(answer, index) in selectedQuestion.answers">
+                            <h1 class="text-yellow-500 josefin-sans text-4xl">[[ answer.answer ]]</h1>
+                        </div>
+                    </div>
+                    <div v-else class="flex flex-row justify-center w-full">
+                        <h1 class="text-slate-200 josefin-sans text-2xl">Waiting for answer!</h1>
+                    </div>
                 </div>
             </div>
             <div class="w-2/12 text-slate-200 font-bold flex flex-col justify-center cursor-pointer hover:text-violet-600" @click="nextQuestion()">
@@ -39,22 +51,22 @@
         <div class="flex flex-row justify-center px-2 py-1 bg-slate-500">
             <!-- button to start timer -->
             <div class="px-2">
-                <button v-if="settings.timeLimitEnabled == 1" class="py-2 px-4 shadow-md bg-rose-600 text-left text-slate-100 text-xl font-semibold mb-2 rounded" @click="startTimer()">
+                <button v-if="settings.timeLimitEnabled == 1" class="py-2 px-2 shadow-md bg-rose-600 text-left text-slate-100 text-lg font-semibold mb-2 rounded" @click="startTimer()">
                     Start Timer
                 </button>
-                <button v-else class="py-2 px-4 shadow-md bg-rose-600 text-left text-slate-100 text-xl font-semibold mb-2 rounded" @click="startQuestion()">
+                <button v-else class="py-2 px-2 shadow-md bg-rose-600 text-left text-slate-100 text-lg font-semibold mb-2 rounded" @click="startQuestion()">
                     Start Question
                 </button>
             </div>
             <!-- button to show correct answer -->
             <div class="px-2">
-                <button class="py-2 px-4 shadow-md bg-cyan-600 text-left text-slate-100 text-xl font-semibold mb-2 rounded" @click="showCorrectAnswer()">
+                <button class="py-2 px-2 shadow-md bg-cyan-600 text-left text-slate-100 text-lg font-semibold mb-2 rounded" @click="showCorrectAnswer()">
                     Show Correct Answer
                 </button>
             </div>
             <!-- button to show team that answered first and correctly -->
             <div class="px-2">
-                <button class="py-2 px-4 shadow-md bg-violet-600 text-left text-slate-100 text-xl font-semibold mb-2 rounded" @click="showWinningTeam()">
+                <button class="py-2 px-2 shadow-md bg-violet-600 text-left text-slate-100 text-lg font-semibold mb-2 rounded" @click="showWinningTeam()">
                     Show Winner
                 </button>
             </div>

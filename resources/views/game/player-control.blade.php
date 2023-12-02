@@ -73,7 +73,14 @@
                     <!-- todo: change different quotes for waiting -->
                     <p>Give A moment and you will receive a question!</p>
                 </div>
+                <div v-else-if="questionLoaded == 1 && question.question_type == 'text_input' " class="flex text-slate-200 text-xl text-center flex-col py-2 px-2 justify-center">
+                    <div>
+                        <input v-model="correctInputTextAnswer" class="text-center bg-slate-100 py-2 px-2 text-4xl w-full border-2 border-slate-400 text-yellow-500 rounded shadow placeholder:text-gray-400 font-semibold"  type="text" id="correct_answer" name="correct_answer" placeholder="Correct Answer">
+                        <button @click="answerInputText()" type="button" class="py-2 px-2 shadow-md text-left text-slate-100 text-3xl font-semibold mb-2 w-full rounded bg-lime-600 flex justify-center text-center mt-2">Submit Answer</button>
+                    </div>
+                </div>
                 <div v-else class="flex flex-col py-2 px-2 answer-holder">
+                    Question Tyep: [[  question.question_type ]]
                     <button v-for="(answer, index) in answers" @click="answerQuestion(answer.id, index)"  v-bind:["answer-id"]="answer.id"  class="py-2 px-2 shadow-md text-left text-slate-100 text-3xl font-semibold mb-2 w-full rounded bg-lime-600 h-24 flex flex-col justify-center text-center" :class="{'bg-violet-600' : answer.is_correct, 'bg-amber-500' : !answer.is_correct && lastAnsweredAnswerId == answer.id,  }">
                         <span class="flex flex-row w-full josefin-sans">
                             <span v-if="index == 0" class="text-zinc-700">A)</span>
@@ -146,6 +153,7 @@
         createApp({
             data() {
                 return {
+                    correctInputTextAnswer: '',
                     currentView: @if($gameInstance['status'] == 'created') 'game_created' @else 'question_view' @endif,
                     gameInstance: @json($gameInstance),
                     trivia: @json($trivia),
@@ -186,6 +194,27 @@
 
                                 this.lastAnsweredQuestionId = this.question.id;
                                 this.lastAnsweredAnswerId = answerId;
+
+                                GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
+                                GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'indexId' : index, 'questionId': this.question.id, 'id': window.id,'username' : window.username, 'answerid' : answerId }, 'action': 'playerAnsweredEvent'});
+                            }
+                        })
+                        .catch(error => console.log(error));
+                },
+                answerInputText(answerId) {
+                    if (this.question.id == this.lastAnsweredQuestionId) {
+                        return;
+                    }
+
+                    clearInterval(this.timeLimitTimer);
+
+                    //clearInterval(timeLimitTimer);
+                    fetch('/trv/trivia/{{ $gameInstance['token'] }}/answer', {'method' : 'POST', 'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'answer_text': this.correctInputTextAnswer, 'question_id': this.question.id})})
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+
+                                this.lastAnsweredQuestionId = this.question.id;
 
                                 GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
                                 GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'indexId' : index, 'questionId': this.question.id, 'id': window.id,'username' : window.username, 'answerid' : answerId }, 'action': 'playerAnsweredEvent'});
@@ -263,7 +292,9 @@
                     this.question = {
                         'id' : e.detail.id,
                         'question' : e.detail.question,
+                        'question_type' : e.detail.question_type,
                     }
+                    console.log(e.detail);
                     this.answers = e.detail.answers;
                 });
 

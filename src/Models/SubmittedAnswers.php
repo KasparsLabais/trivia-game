@@ -15,7 +15,8 @@ class SubmittedAnswers extends Model
         'game_instance_id',
         'question_id',
         'answer_id',
-        'user_id'
+        'user_id',
+        'answer_custom_input'
     ];
 
     public function gameInstance()

@@ -311,6 +311,7 @@
                     let question = {
                         'id': this.selectedQuestion.id,
                         'question': this.selectedQuestion.question,
+                        'question_type' : this.selectedQuestion.question_type,
                         'answers' : [],
                     };
 
@@ -323,7 +324,6 @@
                     });
 
                     this.startedQuestions.push(this.selectedQuestion.id);
-
                     GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: question, 'action': 'startQuestion'});
                 },
                 startTimer() {
@@ -354,6 +354,7 @@
                         .then(data => {
                             console.log(data);
                             if(data.success) {
+                                this.game.gameStatus = 'started';
                                 GameApi.updateGameInstance('{{ $gameInstance['token'] }}', data.data.gameInstance, 'gameStarted');
                             } else {
                                 alert(data.message);
@@ -382,7 +383,6 @@
                     if (this.selectedQuestionId === null) {
                         return null;
                     }
-                    ///set for all playerInstances answerGiven to false
                     return this.game.questions.find(question => question.id === this.selectedQuestionId);
                 },
                 playerCount() {
@@ -411,6 +411,15 @@
 
                     return winner;
                 },
+                questions() {
+                    //sort this.game.questions by order_nr
+                    this.game.questions.sort((a, b) => (a.order_nr > b.order_nr) ? 1 : -1);
+                    return this.game.questions;
+                },
+
+
+
+
                 //still in progress
                 playerLimit() {
                     return this.game.gameInstanceSettings.player_limit;
@@ -433,9 +442,7 @@
                 gameInstance() {
                     return this.game.gameInstance;
                 },
-                questions() {
-                    return this.game.questions;
-                },
+
 
                 trivia() {
                     return this.game.trivia;

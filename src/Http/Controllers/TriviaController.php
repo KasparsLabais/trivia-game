@@ -356,6 +356,7 @@ class TriviaController
     {
         $data = GameApi::getGameInstance($token);
         $remoteData = json_decode($data['gameInstance']['remote_data'], true);
+        $isCorrect = 0;
 
         if(Auth::check()) {
             $userId = Auth::user()->id;
@@ -394,14 +395,31 @@ class TriviaController
             ]);
         }
 
-        SubmittedAnswers::create([
-            'game_instance_id' => $data['gameInstance']['id'],
-            'question_id' => $questionId,
-            'answer_id' => $request->get('answer_id'),
-            'user_id' => $userId
-        ]);
+        if ($question['question_type'] == 'options') {
+            SubmittedAnswers::create([
+                'game_instance_id' => $data['gameInstance']['id'],
+                'question_id' => $questionId,
+                'answer_id' => $request->get('answer_id'),
+                'user_id' => $userId
+            ]);
+            $answer = Answers::find($request->get('answer_id'));
+            $isCorrect = $answer->is_correct;
+        } elseif($question['question_type'] == 'text_input') {
+            SubmittedAnswers::create([
+                'game_instance_id' => $data['gameInstance']['id'],
+                'question_id' => $questionId,
+                'answer_custom_input' => $request->get('answer_text'),
+                'answer_id' => 0,
+                'user_id' => $userId
+            ]);
+            $answer = Answers::where('question_id', $questionId)->first();
 
-        $answer = Answers::find($request->get('answer_id'));
+            if(strtolower($answer['answer']) == strtolower($request->get('answer_text'))) {
+                $isCorrect = 1;
+            }
+        }
+
+
 
         $playerInstance = (GameApi::getPlayerInstance($data['gameInstance']['id'], $userId))['playerInstance'];
         $playerRemoteData = json_decode($playerInstance['remote_data'], true);
@@ -410,7 +428,8 @@ class TriviaController
             $playerRemoteData = [];
         }
 
-        if ($answer->is_correct == 1) {
+        if ($isCorrect) {
+
             $isCorrect = true;
 
             $totalPointsGiven = (GameApi::getGameInstanceSettings($token, 'points_per_question') == '') ? 2 : GameApi::getGameInstanceSettings($token, 'points_per_question');
@@ -424,7 +443,7 @@ class TriviaController
             GameApi::updatePlayerInstanceScore($playerInstance['id'], $playerInstance['points'] + $totalPointsGiven);
             $playerInstance['points'] = $playerInstance['points'] + $totalPointsGiven;
         } else {
-            $isCorrect = false;
+            $isCorrect = 0;
         }
 
         $playerRemoteData[$remoteData['current_question']] = [
