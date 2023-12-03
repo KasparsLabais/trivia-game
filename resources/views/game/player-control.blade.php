@@ -74,11 +74,18 @@
                     <p>Give A moment and you will receive a question!</p>
                 </div>
                 <div v-else-if="questionLoaded == 1 && question.question_type == 'text_input' " class="flex text-slate-200 text-xl text-center flex-col py-2 px-2 justify-center">
-                    <div>
+                    <div v-if="this.question.id == this.lastAnsweredQuestionId" class="py-4">
+                        <div>
+                            <p class="text-3xl josefin-sans font-semibold text-slate-200">Your Answer: <span class="text-yellow-500">[[ correctInputTextAnswer ]]</span></p>
+                            <p class="text-3xl josefin-sans font-semibold text-slate-200">Correct Answer: <span class="text-yellow-500">[[ correctAnswer ]]</span></p>
+                        </div>
+                    </div>
+                    <div v-else>
                         <input v-model="correctInputTextAnswer" class="text-center bg-slate-100 py-2 px-2 text-4xl w-full border-2 border-slate-400 text-yellow-500 rounded shadow placeholder:text-gray-400 font-semibold"  type="text" id="correct_answer" name="correct_answer" placeholder="Correct Answer">
                         <button @click="answerInputText()" type="button" class="py-2 px-2 shadow-md text-left text-slate-100 text-3xl font-semibold mb-2 w-full rounded bg-lime-600 flex justify-center text-center mt-2">Submit Answer</button>
                     </div>
                 </div>
+
                 <div v-else class="flex flex-col py-2 px-2 answer-holder">
                     Question Tyep: [[  question.question_type ]]
                     <button v-for="(answer, index) in answers" @click="answerQuestion(answer.id, index)"  v-bind:["answer-id"]="answer.id"  class="py-2 px-2 shadow-md text-left text-slate-100 text-3xl font-semibold mb-2 w-full rounded bg-lime-600 h-24 flex flex-col justify-center text-center" :class="{'bg-violet-600' : answer.is_correct, 'bg-amber-500' : !answer.is_correct && lastAnsweredAnswerId == answer.id,  }">
@@ -154,6 +161,7 @@
             data() {
                 return {
                     correctInputTextAnswer: '',
+                    correctAnswer: 'Waiting',
                     currentView: @if($gameInstance['status'] == 'created') 'game_created' @else 'question_view' @endif,
                     gameInstance: @json($gameInstance),
                     trivia: @json($trivia),
@@ -196,7 +204,7 @@
                                 this.lastAnsweredAnswerId = answerId;
 
                                 GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
-                                GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'indexId' : index, 'questionId': this.question.id, 'id': window.id,'username' : window.username, 'answerid' : answerId }, 'action': 'playerAnsweredEvent'});
+                                GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'question_type' : this.question.question_type, 'indexId' : index, 'questionId': this.question.id, 'id': window.id,'username' : window.username, 'answerid' : answerId }, 'action': 'playerAnsweredEvent'});
                             }
                         })
                         .catch(error => console.log(error));
@@ -217,7 +225,7 @@
                                 this.lastAnsweredQuestionId = this.question.id;
 
                                 GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
-                                GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'indexId' : index, 'questionId': this.question.id, 'id': window.id,'username' : window.username, 'answerid' : answerId }, 'action': 'playerAnsweredEvent'});
+                                GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'question_type' : this.question.question_type ,'answer_text' : this.correctInputTextAnswer, 'questionId': this.question.id, 'id': window.id,'username' : window.username, 'answerid' : answerId }, 'action': 'playerAnsweredEvent'});
                             }
                         })
                         .catch(error => console.log(error));
@@ -320,11 +328,15 @@
 
                 document.addEventListener("showCorrectAnswer", (e) => {
                     console.log(e);
-                    this.answers.forEach(answer => {
-                        if (answer.id == e.detail['answer_id']) {
-                            answer.is_correct = 1;
-                        }
-                    });
+                    if (e.detail.question_type == 'text_input') {
+                        this.correctAnswer = e.detail.answer_text;
+                    } else {
+                        this.answers.forEach(answer => {
+                            if (answer.id == e.detail['answer_id']) {
+                                answer.is_correct = 1;
+                            }
+                        });
+                    }
                 });
                 document.addEventListener('showWinningTeam', (e) => {
                     console.log(e);

@@ -117,26 +117,29 @@
                     }
                     this.answeredQuestions[this.selectedQuestionId].forEach((player) => {
                         if (player.id == userId) {
-
-                            switch (player.index) {
-                                case 0:
-                                    givenAnswer = 'A';
-                                    break;
-                                case 1:
-                                    givenAnswer = 'B';
-                                    break;
-                                case 2:
-                                    givenAnswer = 'C';
-                                    break;
-                                case 3:
-                                    givenAnswer = 'D';
-                                    break;
-                                case 4:
-                                    givenAnswer = 'E';
-                                    break;
-                                case 5:
-                                    givenAnswer = 'F';
-                                    break;
+                            if (player.questionType == 'text_input') {
+                                givenAnswer = player.answerText;
+                            } else if (player.questionType == 'options') {
+                                switch (player.index) {
+                                    case 0:
+                                        givenAnswer = 'A';
+                                        break;
+                                    case 1:
+                                        givenAnswer = 'B';
+                                        break;
+                                    case 2:
+                                        givenAnswer = 'C';
+                                        break;
+                                    case 3:
+                                        givenAnswer = 'D';
+                                        break;
+                                    case 4:
+                                        givenAnswer = 'E';
+                                        break;
+                                    case 5:
+                                        givenAnswer = 'F';
+                                        break;
+                                }
                             }
                         }
                     });
@@ -155,22 +158,29 @@
                     //check if provided answerId is correct
                     let isCorrect = false;
 
-                    //get question by questionId
                     this.selectedQuestion.answers.forEach((answer) => {
-                        if (answer.id == data.answerid && answer.is_correct) {
-                            isCorrect = true;
+                        if (data.question_type == 'options') {
+                            if (answer.id == data.answerid && answer.is_correct) {
+                                isCorrect = true;
+                            }
+                        } else if (data.question_type == 'text_input') {
+                            if (answer.answer.toLowerCase() == data.answer_text.toLowerCase()) {
+                                isCorrect = true;
+                            }
                         }
                     });
 
                     this.answeredQuestions[data.questionId].push({
                         'id' : data.id,
+                        'questionType' : data.question_type,
                         'username': player.username,
                         'answerId': data.answerid,
                         'isCorrect': isCorrect,
-                        'index': data.indexId
+                        'index': typeof (data.indexId) !== 'undefined' ? data.indexId : 0,
+                        'answerText': typeof (data.answer_text) !== 'undefined' ? data.answer_text : '',
                     });
 
-                    console.log(this.answeredQuestions);
+                    console.log('Answered List' , this.answeredQuestions);
 
                 },
                 playerJoined(player) {
@@ -286,12 +296,26 @@
                     let currentQuestion = this.selectedQuestion;
                     console.log('show correct answer', currentQuestion);
 
-                    currentQuestion.answers.forEach((answer) => {
-                        console.log(answer);
-                        if (answer.is_correct) {
-                            GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'answer_id': answer.id}, 'action': 'showCorrectAnswer'});
-                        }
-                    });
+                    if (currentQuestion.question_type == 'text_input') {
+
+                        currentQuestion.answers.forEach((answer) => {
+                            console.log(answer);
+                            GameApi.notifyRoom('{{ $gameInstance['token'] }}', {
+                                payload: {'answer_text': answer.answer, 'question_type': currentQuestion.question_type},
+                                'action': 'showCorrectAnswer'
+                            });
+                        });
+                    } else {
+                        currentQuestion.answers.forEach((answer) => {
+                            console.log(answer);
+                            if (answer.is_correct) {
+                                GameApi.notifyRoom('{{ $gameInstance['token'] }}', {
+                                    payload: {'answer_id': answer.id, 'question_type': currentQuestion.question_type},
+                                    'action': 'showCorrectAnswer'
+                                });
+                            }
+                        });
+                    }
                 },
                 showWinningTeam() {
                     this.selectedView = 'winner';

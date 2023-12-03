@@ -435,9 +435,16 @@ class TriviaController
             $totalPointsGiven = (GameApi::getGameInstanceSettings($token, 'points_per_question') == '') ? 2 : GameApi::getGameInstanceSettings($token, 'points_per_question');
             //$totalPointsGiven = $playerInstance['points'] * $pointsPerQuestion;
 
-            if (GameApi::isFirstAnsweredCorrectlyToQuestion( $data['gameInstance']['id'], $questionId, $request->get('answer_id'), $userId)) {
-                $bonusPointsForSpeed = (GameApi::getGameInstanceSettings($token, 'bonus_for_speed') == '') ? 2 : GameApi::getGameInstanceSettings($token, 'bonus_for_speed');
-                $totalPointsGiven = $totalPointsGiven + $bonusPointsForSpeed;
+            if ($question['question_type'] == 'options') {
+                if (GameApi::isFirstAnsweredCorrectlyToQuestion($data['gameInstance']['id'], $questionId, $request->get('answer_id'), $userId)) {
+                    $bonusPointsForSpeed = (GameApi::getGameInstanceSettings($token, 'bonus_for_speed') == '') ? 2 : GameApi::getGameInstanceSettings($token, 'bonus_for_speed');
+                    $totalPointsGiven = $totalPointsGiven + $bonusPointsForSpeed;
+                }
+            } elseif($question['question_type'] == 'text_input') {
+                if (GameApi::isFirstTextInputCorrectAnswer($data['gameInstance']['id'], $questionId, $answer['answer'], $userId)) {
+                    $bonusPointsForSpeed = (GameApi::getGameInstanceSettings($token, 'bonus_for_speed') == '') ? 2 : GameApi::getGameInstanceSettings($token, 'bonus_for_speed');
+                    $totalPointsGiven = $totalPointsGiven + $bonusPointsForSpeed;
+                }
             }
 
             GameApi::updatePlayerInstanceScore($playerInstance['id'], $playerInstance['points'] + $totalPointsGiven);
