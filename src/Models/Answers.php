@@ -10,6 +10,8 @@ class Answers extends Model
         protected $fillable = [
             'question_id',
             'answer',
-            'is_correct'
+            'is_correct',
+            'file_url',
+            'file_url_type'
         ];
 }

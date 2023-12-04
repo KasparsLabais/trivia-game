@@ -99,6 +99,8 @@
                                             <label class="raleway font-semibold text-sm" for="answer-{{ $question['id'] }}">Answer:</label>
                                             <input class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded" type="text" name="answer-{{ $question['id'] }}" id="answer-{{ $question['id'] }}">
                                         </div>
+                                        @if ()
+                                        @endif
                                         @if($question['question_type'] == 'options')
                                         <div class="flex flex-col px-2 py-1">
                                             <label class="raleway font-semibold text-sm" for="is_correct-{{ $question['id'] }}">Is Correct:</label>

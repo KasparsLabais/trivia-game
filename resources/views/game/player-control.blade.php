@@ -207,7 +207,9 @@
                                 GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'question_type' : this.question.question_type, 'indexId' : index, 'questionId': this.question.id, 'id': window.id,'username' : window.username, 'answerid' : answerId }, 'action': 'playerAnsweredEvent'});
                             }
                         })
-                        .catch(error => console.log(error));
+                        .catch(error => {
+                            console.log(error)
+                        });
                 },
                 answerInputText(answerId) {
                     if (this.question.id == this.lastAnsweredQuestionId) {
@@ -226,9 +228,14 @@
 
                                 GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
                                 GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'question_type' : this.question.question_type ,'answer_text' : this.correctInputTextAnswer, 'questionId': this.question.id, 'id': window.id,'username' : window.username, 'answerid' : answerId }, 'action': 'playerAnsweredEvent'});
+                            } else {
+                                this.lastAnsweredQuestionId = this.question.id;
                             }
                         })
-                        .catch(error => console.log(error));
+                        .catch(error => {
+                            console.log(error)
+                            this.lastAnsweredQuestionId = this.question.id;
+                        });
                 },
                 triggerTimer(initialTime) {
                     this.startTimer = initialTime;

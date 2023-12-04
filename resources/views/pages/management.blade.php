@@ -116,7 +116,7 @@
                         <div>
                             <form action="/trv/management/trivia" method="POST" class="flex flex-col px-2 py-4 ">
                                 {{ csrf_field() }}
-                                <div class="flex flex-row">
+                                <div class="flex flex-row flex-wrap">
                                     <div class="flex flex-col px-2 py-2">
                                         <label class="raleway font-semibold text-md" for="title">Title:</label>
                                         <input class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" type="text" name="title" id="title">
@@ -161,7 +161,7 @@
                                 </div>
                             </form>
                         </div>
-                        <div>
+                        <div class="px-4 py-4">
                             <button onclick="openTriviaCreatorFromApiModal()" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold">Create Trivia From API</button>
                         </div>
                     </div>
@@ -170,7 +170,6 @@
                         <table class="my-4">
                             <tr class="border-b-slate-300 border-b">
                                 <th class="px-2 py-2">Title</th>
-                                <th class="px-2 py-2">Description</th>
                                 <th class="px-2 py-2">Difficulty</th>
                                 <th class="px-2 py-2">Category</th>
                                 <th class="px-2 py-2">Active</th>
@@ -181,15 +180,18 @@
                             @foreach($trivias as $trv)
                                 <tr>
                                     <td class="text-center">{{ $trv['title'] }}</td>
-                                    <td class="text-center">{{ $trv['description'] }}</td>
                                     <td class="text-center">{{ Str::limit($trv['difficulty'], 50, '...') }}</td>
                                     <td class="text-center">{{ $trv->category['name'] }}</td>
                                     <td class="text-center">{{ $trv['is_active'] }}</td>
                                     <td class="text-center">{{ $trv['private'] }}</td>
                                     <td class="text-center">{{ $trv['is_premium'] }}</td>
                                     <td class="flex flex-row justify-around">
-                                        <a class="inline-block py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" href="/trv/management/trivia/{{ $trv['id'] }}">Edit</a>
-                                        <button class="py-2 px-4 shadow-md bg-red-500 text-slate-100 font-semibold">Delete</button>
+                                        <div class="px-1">
+                                            <a class="inline-block py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" href="/trv/management/trivia/{{ $trv['id'] }}">Edit</a>
+                                        </div>
+                                        <div class="px-1">
+                                            <button class="py-2 px-4 shadow-md bg-red-500 text-slate-100 font-semibold">Delete</button>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

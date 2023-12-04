@@ -33,7 +33,7 @@
                         </div>
                     </div>
                     <div v-else class="flex flex-row justify-center w-full">
-                        <h1 class="text-slate-200 josefin-sans text-2xl">Waiting for answer!</h1>
+                        <h1 class="text-slate-200 josefin-sans text-2xl">Answer hidden</h1>
                     </div>
                 </div>
             </div>
