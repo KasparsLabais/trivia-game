@@ -301,7 +301,7 @@
                         currentQuestion.answers.forEach((answer) => {
                             console.log(answer);
                             GameApi.notifyRoom('{{ $gameInstance['token'] }}', {
-                                payload: {'answer_text': answer.answer, 'question_type': currentQuestion.question_type},
+                                payload: {'answer_text': answer.answer, 'file_url' : answer.file_url, 'question_type': currentQuestion.question_type},
                                 'action': 'showCorrectAnswer'
                             });
                         });

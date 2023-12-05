@@ -74,10 +74,13 @@
                     <p>Give A moment and you will receive a question!</p>
                 </div>
                 <div v-else-if="questionLoaded == 1 && question.question_type == 'text_input' " class="flex text-slate-200 text-xl text-center flex-col py-2 px-2 justify-center">
-                    <div v-if="this.question.id == this.lastAnsweredQuestionId" class="py-4">
+                    <div v-if="(question.id == lastAnsweredQuestionId) || (correctAnswer != '' )" class="py-4">
                         <div>
                             <p class="text-3xl josefin-sans font-semibold text-slate-200">Your Answer: <span class="text-yellow-500">[[ correctInputTextAnswer ]]</span></p>
                             <p class="text-3xl josefin-sans font-semibold text-slate-200">Correct Answer: <span class="text-yellow-500">[[ correctAnswer ]]</span></p>
+                            <div v-if="correctAnswerFileUrl != ''" class="flex flex-row justify-center">
+                                <img class="w-1/2" :src="correctAnswerFileUrl" alt="Correct Answer Image">
+                            </div>
                         </div>
                     </div>
                     <div v-else>
@@ -161,7 +164,8 @@
             data() {
                 return {
                     correctInputTextAnswer: '',
-                    correctAnswer: 'Waiting',
+                    correctAnswer: '',
+                    correctAnswerFileUrl: '',
                     currentView: @if($gameInstance['status'] == 'created') 'game_created' @else 'question_view' @endif,
                     gameInstance: @json($gameInstance),
                     trivia: @json($trivia),
@@ -297,6 +301,8 @@
                 document.addEventListener('startQuestion', (e) => {
                     console.log(e);
 
+                    this.correctAnswer = '';
+                    this.correctAnswerFileUrl = '';
                     this.timerMode = 0;
                     this.questionWinner = '';
                     this.questionLoaded = 1;
@@ -337,6 +343,7 @@
                     console.log(e);
                     if (e.detail.question_type == 'text_input') {
                         this.correctAnswer = e.detail.answer_text;
+                        this.correctAnswerFileUrl = e.detail.file_url;
                     } else {
                         this.answers.forEach(answer => {
                             if (answer.id == e.detail['answer_id']) {
