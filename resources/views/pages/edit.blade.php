@@ -91,6 +91,20 @@
                                     <div class="@if($answer['is_correct']) border-lime-500 bg-lime-500 @else border-slate-500 bg-slate-500 @endif text-slate-100 font-semibold border-2 px-4 py-2 rounded shadow mx-1">
                                         {{ $answer['answer'] }}
                                     </div>
+
+                                    @if ($question['question_type'] == 'text_input')
+                                        <form method="POST" action="/admin/trv/answer-image/{{ $answer['id'] }}" enctype="multipart/form-data">
+                                            <div class="flex flex-row">
+                                                {{ csrf_field() }}
+                                                <div class="flex flex-col">
+                                                    <label>Upload image ofr correct answer: </label>
+                                                    <input type="file" name="answer-image" id="answer-image">
+                                                </div>
+                                                <button class="py-2 px-2 shadow-md bg-lime-600 text-left text-slate-100 text-lg font-semibold mb-2 rounded" type="submit">Upload Image</button>
+                                            </div>
+                                        </form>
+                                    @endif
+
                                 @endforeach
                                 </div>
                                 <div class="flex flex-row bg-slate-300 py-2 px-2">
@@ -99,8 +113,6 @@
                                             <label class="raleway font-semibold text-sm" for="answer-{{ $question['id'] }}">Answer:</label>
                                             <input class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded" type="text" name="answer-{{ $question['id'] }}" id="answer-{{ $question['id'] }}">
                                         </div>
-                                        @if ()
-                                        @endif
                                         @if($question['question_type'] == 'options')
                                         <div class="flex flex-col px-2 py-1">
                                             <label class="raleway font-semibold text-sm" for="is_correct-{{ $question['id'] }}">Is Correct:</label>

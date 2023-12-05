@@ -30,6 +30,9 @@
                     <div v-if="showCorrectAnswerEnabled" class="flex flex-row justify-center">
                         <div v-for="(answer, index) in selectedQuestion.answers">
                             <h1 class="text-yellow-500 josefin-sans text-4xl">[[ answer.answer ]]</h1>
+                            <div v-if="answer.file_url != '' " class="flex flex-row justify-center">
+                                <img v-bind:["src"]="answer.file_url" class="w-7/12">
+                            </div>
                         </div>
                     </div>
                     <div v-else class="flex flex-row justify-center w-full">

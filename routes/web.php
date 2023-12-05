@@ -62,6 +62,7 @@ Route::group(['middleware' => ['web']], function() {
     Route::post('/admin/' . config('settings.prefix') . '/answer', 'AnswerController@create');
     Route::get('/admin/' . config('settings.prefix') . '/answer/{id}', 'AnswerController@getAnswer');
     Route::post('/admin/' . config('settings.prefix') . '/answer/{id}', 'AnswerController@submitAnswer');
+    Route::post('/admin/' . config('settings.prefix') . '/answer-image/{id}', 'AnswerController@submitAnswerImage');
 
     //Route to get available games
     Route::get('/admin/' . config('settings.prefix') . '/games', 'Controller@getGames');
