@@ -12,7 +12,7 @@ class TmpQuestions extends Model
 
     public function answers()
     {
-        return $this->hasMany(Answers::class, 'question_id', 'original_question_id');
+        return $this->hasMany(TrvAnswers::class, 'question_id', 'original_question_id');
     }
 
 

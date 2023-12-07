@@ -2,8 +2,10 @@
 
 namespace PartyGames\TriviaGame\Http\Controllers;
 
+use http\Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use PartyGames\GameApi\GameApi;
 use PartyGames\GameApi\Models\Game;
@@ -14,7 +16,7 @@ use PartyGames\TriviaGame\Models\Categories;
 use PartyGames\TriviaGame\Models\TrvQuestions;
 use PartyGames\TriviaGame\Models\SubmittedAnswers;
 use PartyGames\TriviaGame\Models\Trivia;
-use PartyGames\TriviaGame\Models\Answers;
+use PartyGames\TriviaGame\Models\TrvAnswers;
 use PartyGames\TriviaGame\Models\Ratings;
 use PartyGames\TriviaGame\Models\OpenTrivias;
 
@@ -402,7 +404,7 @@ class TriviaController
                 'answer_id' => $request->get('answer_id'),
                 'user_id' => $userId
             ]);
-            $answer = Answers::find($request->get('answer_id'));
+            $answer = TrvAnswers::find($request->get('answer_id'));
             $isCorrect = $answer->is_correct;
         } elseif($question['question_type'] == 'text_input') {
             SubmittedAnswers::create([
@@ -412,7 +414,7 @@ class TriviaController
                 'answer_id' => 0,
                 'user_id' => $userId
             ]);
-            $answer = Answers::where('question_id', $questionId)->first();
+            $answer = TrvAnswers::where('question_id', $questionId)->first();
 
             if(strtolower($answer['answer']) == strtolower($request->get('answer_text'))) {
                 $isCorrect = 1;
@@ -552,7 +554,7 @@ class TriviaController
             $questionId = $question['id'];
         }
 
-        $correctAnswer = Answers::where('question_id', $questionId)->where('is_correct', 1)->first();
+        $correctAnswer = TrvAnswers::where('question_id', $questionId)->where('is_correct', 1)->first();
         return new JsonResponse([
             'success' => true,
             'message' => 'Correct answer fetched successfully',
@@ -652,7 +654,7 @@ class TriviaController
 
     public function createAnswer($id, $questionId, Request $request)
     {
-        $answer = Answers::create([
+        $answer = TrvAnswers::create([
             'question_id' => $questionId,
             'answer' => $request->answer,
             'is_correct' => $request->is_correct,
@@ -729,7 +731,7 @@ class TriviaController
             //randomize answers order for each question
             shuffle($question['answers']);
             foreach ($question['answers'] as $answer) {
-                Answers::create([
+                TrvAnswers::create([
                     'question_id' => $newQuestion->id,
                     'answer' => $answer['answer'],
                     'is_correct' => $answer['is_correct'],
@@ -738,6 +740,28 @@ class TriviaController
         }
 
         return redirect()->back();
+    }
+
+    public function apiSingleAnswerQuestionCreator(Request $request)
+    {
+
+        $categoryName = $request->get('category');
+        //$fullUrl = "https://raw.githubusercontent.com/el-cms/Open-trivia-database/master/en/todo/{$categoryName}.json";
+
+        //loead file from public folder
+        $filePath = public_path("/QUESTIONS_JSON/{$categoryName}.json");
+        $json = json_decode(file_get_contents($filePath), true);
+
+        foreach ($json as $question ) {
+            dd($question);
+        }
+        dd($json);
+        dd($json);
+
+        //$json = file_get_contents($fullUrl);
+        //$data = json_decode($json, true);
+
+
     }
 
     public function rateTrivia(Request $request)
@@ -986,7 +1010,7 @@ class TriviaController
 
             shuffle($answers);
             foreach ($answers as $answer) {
-                Answers::create([
+                TrvAnswers::create([
                     'question_id' => $newQuestion->id,
                     'answer' => html_entity_decode($answer['answer']),
                     'is_correct' => $answer['is_correct'],

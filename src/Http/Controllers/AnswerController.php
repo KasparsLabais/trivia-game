@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
-use PartyGames\TriviaGame\Models\Answers;
+use PartyGames\TriviaGame\Models\TrvAnswers;
 class AnswerController
 {
 
@@ -20,7 +20,7 @@ class AnswerController
 
     public function create(Request $request)
     {
-        $answer = Answers::create([
+        $answer = TrvAnswers::create([
             'answer' => $request->get('answer'),
             'question_id' => $request->get('question_id'),
             'is_correct' => $request->get('is_correct'),
@@ -38,7 +38,7 @@ class AnswerController
     }
 
     public function show($id) {
-        $answer = Answers::find($id);
+        $answer = TrvAnswers::find($id);
         return new JsonResponse([
             'success' => true,
             'message' => 'Answer retrieved successfully',
@@ -48,7 +48,7 @@ class AnswerController
 
     public function submitAnswerImage($id, Request $request)
     {
-        $answer = Answers::find($id);
+        $answer = TrvAnswers::find($id);
 
         $img = Image::make($request->file('answer-image'));
         $img->resize(700, null, function($constrains) {

@@ -164,6 +164,37 @@
                         <div class="px-4 py-4">
                             <button onclick="openTriviaCreatorFromApiModal()" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold">Create Trivia From API</button>
                         </div>
+                        <div class="px-4 py-4 shadow">
+                            <form action="/trv/api-single-upload/trivia" method="POST" enctype="multipart/form-data" class="flex flex-col px-2 py-4 ">
+                                {{ csrf_field() }}
+                                <div class="flex flex-row">
+                                    <div class="flex flex-col px-2 py-2">
+                                        <div class="">
+                                            <label class="raleway font-semibold text-md" for="category">Category:</label>
+                                            <select name="category" class="bg-slate-100 border border-zinc-400 rounded py-1">
+                                                <option value="arts_and_literature">Art and Literature</option>
+                                                <option value="entertainment">Entertainment</option>
+                                                <option value="food_and_drink">Food And Drink</option>
+                                                <option value="geography">geography</option>
+                                                <option value="history">history</option>
+                                                <option value="language">language</option>
+                                                <option value="mathematics">mathematics</option>
+                                                <option value="music">music</option>
+                                                <option value="people_and_places">people_and_places</option>
+                                                <option value="religion_and_mythology">religion_and_mythology</option>
+                                                <option value="science_and_nature">science_and_nature</option>
+                                                <option value="sport_and_leisure">sport_and_leisure</option>
+                                                <option value="tech_an_video_games">tech_an_video_games</option>
+                                                <option value="toys_and_games">toys_and_games</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-row px-2">
+                                    <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold">Load Single Answer Questions</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                     <div class="flex flex-col px-2 mt-4">
                         <h2 class="raleway">Trivia's</h2>

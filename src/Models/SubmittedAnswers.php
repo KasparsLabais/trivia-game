@@ -3,7 +3,7 @@
 namespace PartyGames\TriviaGame\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use PartyGames\TriviaGame\Models\Answers;
+use PartyGames\TriviaGame\Models\TrvAnswers;
 use PartyGames\TriviaGame\Models\TrvQuestions;
 use PartyGames\GameApi\Models\GameInstances;
 use PartyGames\GameApi\Models\User;
@@ -31,7 +31,7 @@ class SubmittedAnswers extends Model
 
     public function answer()
     {
-        return $this->belongsTo(Answers::class, 'answer_id', 'id');
+        return $this->belongsTo(TrvAnswers::class, 'answer_id', 'id');
     }
 
     public function user()

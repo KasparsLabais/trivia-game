@@ -13,7 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->nullable();
             $table->boolean('active')->default(true);
             $table->boolean('private')->default(false);
-            $table->string('category')->nullable();
+            $table->string('category_id')->nullable();
             $table->string('question');
             $table->string('question_type')->default('options');
             $table->string('question_image')->nullable();

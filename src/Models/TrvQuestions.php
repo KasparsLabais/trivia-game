@@ -16,7 +16,7 @@ class TrvQuestions extends Model
 
     public function answers()
     {
-        return $this->hasMany(Answers::class, 'question_id', 'id');
+        return $this->hasMany(TrvAnswers::class, 'question_id', 'id');
     }
 
 }

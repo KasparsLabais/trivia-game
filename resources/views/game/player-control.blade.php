@@ -90,7 +90,6 @@
                 </div>
 
                 <div v-else class="flex flex-col py-2 px-2 answer-holder">
-                    Question Tyep: [[  question.question_type ]]
                     <button v-for="(answer, index) in answers" @click="answerQuestion(answer.id, index)"  v-bind:["answer-id"]="answer.id"  class="py-2 px-2 shadow-md text-left text-slate-100 text-3xl font-semibold mb-2 w-full rounded bg-lime-600 h-24 flex flex-col justify-center text-center" :class="{'bg-violet-600' : answer.is_correct, 'bg-amber-500' : !answer.is_correct && lastAnsweredAnswerId == answer.id,  }">
                         <span class="flex flex-row w-full josefin-sans">
                             <span v-if="index == 0" class="text-zinc-700">A)</span>
