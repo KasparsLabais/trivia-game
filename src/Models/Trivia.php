@@ -3,7 +3,7 @@
 namespace PartyGames\TriviaGame\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use PartyGames\TriviaGame\Models\Questions;
+use PartyGames\TriviaGame\Models\TrvQuestions;
 use PartyGames\GameApi\Models\User;
 use PartyGames\TriviaGame\Models\Ratings;
 
@@ -25,7 +25,7 @@ class Trivia extends Model
 
     public function questions()
     {
-        return $this->hasMany(Questions::class);
+        return $this->hasMany(TrvQuestions::class);
     }
 
     public function category()

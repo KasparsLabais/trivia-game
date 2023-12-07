@@ -386,7 +386,7 @@
                     questionCountInput.setAttribute('type', 'number');
                     questionCountInput.setAttribute('name', 'question_count');
                     questionCountInput.setAttribute('id', 'question_count');
-                    questionCountInput.setAttribute('placeholder', 'Number of Questions');
+                    questionCountInput.setAttribute('placeholder', 'Number of TrvQuestions');
                     questionCountInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
 
 
@@ -617,7 +617,7 @@
             questionCountInput.setAttribute('type', 'number');
             questionCountInput.setAttribute('name', 'question_count');
             questionCountInput.setAttribute('id', 'question_count');
-            questionCountInput.setAttribute('placeholder', 'Number of Questions');
+            questionCountInput.setAttribute('placeholder', 'Number of TrvQuestions');
             questionCountInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2');
 
 

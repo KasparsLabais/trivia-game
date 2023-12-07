@@ -11,7 +11,7 @@ use PartyGames\GameApi\Models\TmpUsers;
 use PartyGames\TriviaGame\Models\TmpTrivia;
 use PartyGames\TriviaGame\Models\TmpQuestions;
 use PartyGames\TriviaGame\Models\Categories;
-use PartyGames\TriviaGame\Models\Questions;
+use PartyGames\TriviaGame\Models\TrvQuestions;
 use PartyGames\TriviaGame\Models\SubmittedAnswers;
 use PartyGames\TriviaGame\Models\Trivia;
 use PartyGames\TriviaGame\Models\Answers;
@@ -189,12 +189,12 @@ class TriviaController
             $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
             $answeredUsers = SubmittedAnswers::where('game_instance_id', $gameInstance['id'])->where('question_id', $question['original_question_id'])->get();
         } else {
-            $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+            $question = TrvQuestions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
             $answeredUsers = SubmittedAnswers::where('game_instance_id', $gameInstance['id'])->where('question_id', $question['id'])->get();
         }
 
         $returnObject = [
-            'totalQuestions' => ($remoteData['is_temporary'] == 1) ? TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->count() : Questions::where('trivia_id', $remoteData['trivia_id'])->count(),
+            'totalQuestions' => ($remoteData['is_temporary'] == 1) ? TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->count() : TrvQuestions::where('trivia_id', $remoteData['trivia_id'])->count(),
             'gameInstance' => $gameInstance,
             'remoteData' => $remoteData,
             'answeredUsers' => $answeredUsers,
@@ -309,7 +309,7 @@ class TriviaController
         if ($remoteData['is_temporary']) {
             $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
         } else {
-            $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
+            $question = TrvQuestions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $remoteData['current_question'])->first();
         }
         $question->load('answers');
 
@@ -334,7 +334,7 @@ class TriviaController
             'settings' => $settingsResponse['gameInstanceSetting'],
             'question' => $question['question'],
             'question_id' => $remoteData['current_question'],
-            'total_questions' => Questions::where('trivia_id', $remoteData['trivia_id'])->count(),
+            'total_questions' => TrvQuestions::where('trivia_id', $remoteData['trivia_id'])->count(),
             'answers' => []
         ];
 
@@ -379,7 +379,7 @@ class TriviaController
             $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('original_question_id', $questionId)->first();
             //$questionId = $question['original_question_id'];
         } else {
-            $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('id', $questionId)->first();
+            $question = TrvQuestions::where('trivia_id', $remoteData['trivia_id'])->where('id', $questionId)->first();
             //$questionId = $question['id'];
         }
 
@@ -489,7 +489,7 @@ class TriviaController
         if ($remoteData['is_temporary']) {
             $questionCount = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->count();
         } else {
-            $questionCount = Questions::where('trivia_id', $remoteData['trivia_id'])->count();
+            $questionCount = TrvQuestions::where('trivia_id', $remoteData['trivia_id'])->count();
         }
 
         //step 1 check if current question isn't last available question
@@ -548,7 +548,7 @@ class TriviaController
             $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('order_nr', $currentQuestion)->first();
             $questionId = $question['original_question_id'];
         } else {
-            $question = Questions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $currentQuestion)->first();
+            $question = TrvQuestions::where('trivia_id', $remoteData['trivia_id'])->where('order_nr', $currentQuestion)->first();
             $questionId = $question['id'];
         }
 
@@ -611,7 +611,7 @@ class TriviaController
             return redirect()->to('/trv/trivia');
         }
 
-        $questions = Questions::where('trivia_id', $id)->orderBy('order_nr')->get();
+        $questions = TrvQuestions::where('trivia_id', $id)->orderBy('order_nr')->get();
         $categories = Categories::where('is_active', 1)->get();
 
         return view('trivia-game::pages.edit')->with(['trivia' => $trivia, 'questions' => $questions, 'categories' => $categories]);
@@ -635,8 +635,8 @@ class TriviaController
     public function createQuestion($id, Request $request)
     {
         //get last order_nr for this trivia
-        $lastOrder = Questions::where('trivia_id', $id)->orderBy('order_nr', 'desc')->first();
-        $question = Questions::create([
+        $lastOrder = TrvQuestions::where('trivia_id', $id)->orderBy('order_nr', 'desc')->first();
+        $question = TrvQuestions::create([
             'trivia_id' => $id,
             'question' => $request->question,
             'order_nr' => !isset($lastOrder['order_nr']) ? 1 : $lastOrder['order_nr']+1,
@@ -667,7 +667,7 @@ class TriviaController
 
     public function updateQuestionOrder($id, $questionId, Request $request)
     {
-        $question = Questions::where('id', $questionId)->first();
+        $question = TrvQuestions::where('id', $questionId)->first();
         $question->order_nr = $request->order_nr;
         $question->save();
 
@@ -720,7 +720,7 @@ class TriviaController
                 continue;
             }
 
-            $newQuestion = Questions::create([
+            $newQuestion = TrvQuestions::create([
                 'trivia_id' => $trivia->id,
                 'question' => $question['question'],
                 'order_nr' => $key + 1,
@@ -876,7 +876,7 @@ class TriviaController
         })->get();
 
         foreach ($allTriviasForProvidedCategory as $trivia) {
-            $tmpQuestions = Questions::where('trivia_id', $trivia->id)->get();
+            $tmpQuestions = TrvQuestions::where('trivia_id', $trivia->id)->get();
             foreach ($tmpQuestions as $tmpQuestion) {
                 $questions[] = $tmpQuestion;
             }
@@ -953,7 +953,7 @@ class TriviaController
         foreach ($questions as $question) {
 
             //check if question is not already in database
-            $questionInDb = Questions::where('question',html_entity_decode($question['question']))->first();
+            $questionInDb = TrvQuestions::where('question',html_entity_decode($question['question']))->first();
             if($questionInDb) {
                 continue;
             }
@@ -965,7 +965,7 @@ class TriviaController
             //before inserting question to database convert all special characters to html entities
 
 
-            $newQuestion = Questions::create([
+            $newQuestion = TrvQuestions::create([
                 'trivia_id' => $trivia->id,
                 'question' => html_entity_decode($question['question']),
                 'order_nr' => $orderNr,
