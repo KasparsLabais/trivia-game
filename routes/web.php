@@ -29,6 +29,8 @@ Route::group(['middleware' => ['web']], function() {
     Route::post('/' . config('settings.prefix') . '/api-single-upload/trivia', 'TriviaController@apiSingleAnswerQuestionCreator');
     Route::post('/' . config('settings.prefix') . '/management/api-trivia', 'TriviaController@createTriviaFromApi');
 
+    Route::get('/' . config('settings.prefix') . '/reports/{reportType}', 'ReportsController@index');
+
     Route::post('/' . config('settings.prefix') . '/start', 'TriviaController@startGame');
     Route::post('/' . config('settings.prefix') . '/end', 'TriviaController@endGame');
 
