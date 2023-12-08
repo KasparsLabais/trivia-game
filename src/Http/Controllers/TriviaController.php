@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Session;
 use PartyGames\GameApi\GameApi;
 use PartyGames\GameApi\Models\Game;
 use PartyGames\GameApi\Models\TmpUsers;
+use PartyGames\TriviaGame\Models\Questions;
+use PartyGames\TriviaGame\Models\Answers;
 use PartyGames\TriviaGame\Models\TmpTrivia;
 use PartyGames\TriviaGame\Models\TmpQuestions;
 use PartyGames\TriviaGame\Models\Categories;
@@ -753,15 +755,81 @@ class TriviaController
         $json = json_decode(file_get_contents($filePath), true);
 
         foreach ($json as $question ) {
-            dd($question);
+
+            $existingQuestion = Questions::where('question', $question['question'])->first();
+            if($existingQuestion) {
+                continue;
+            }
+
+            if (strlen($question['question']) > 180) {
+                continue;
+            }
+
+            switch ($categoryName) {
+                case 'arts_and_literature':
+                    $categoryId = 22;
+                    break;
+                case 'entertainment':
+                    $categoryId = 3; //set everyone as FIlm & Television, will change manualy later
+                    break;
+                case 'food_and_drink':
+                    $categoryId = 24;
+                    break;
+                case 'geography':
+                    $categoryId = 12;
+                    break;
+                case 'history':
+                    $categoryId = 13;
+                    break;
+                case 'language':
+                    $categoryId = 25;
+                    break;
+                case 'mathematics':
+                    $categoryId = 15;
+                    break;
+                case 'music':
+                    $categoryId = 4;
+                    break;
+                case 'people_and_places':
+                    $categoryId = 10;
+                    break;
+                case 'religion_and_mythology':
+                    $categoryId = 19;
+                    break;
+                case 'science_and_nature':
+                    $categoryId = 17;
+                    break;
+                case 'sport_and_leisure':
+                    $categoryId = 18;
+                    break;
+                case 'tech_an_video_games':
+                    $categoryId = 7;
+                    break;
+                case 'toys_and_games':
+                    $categoryId = 16;
+                    break;
+                default:
+                    $categoryId = 1;
+                    break;
+            }
+
+            $newQuestion = Questions::create([
+                'question' => $question['question'],
+                'user_id' => Auth::user()->id,
+                'active' => 1,
+                'category_id' => $categoryId,
+                'difficulty' => 'easy',
+                'question_type' => 'text_input',
+            ]);
+
+            Answers::create([
+                'question_id' => $newQuestion->id,
+                'answer' => $question['answers'][0],
+                'correct' => 1,
+            ]);
         }
-        dd($json);
-        dd($json);
 
-        //$json = file_get_contents($fullUrl);
-        //$data = json_decode($json, true);
-
-
+        return redirect()->back();
     }
 
     public function rateTrivia(Request $request)
