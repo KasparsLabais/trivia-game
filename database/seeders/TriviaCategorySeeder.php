@@ -75,6 +75,14 @@ class TriviaCategorySeeder extends Seeder
             [
                 'name' => 'Engineering',
                 'is_active' => 1
+            ],
+            [
+                'name' => 'Food & Drinks',
+                'is_active' => 1
+            ],
+            [
+                'name' => 'Language',
+                'is_active' => 1
             ]
         ];
 
