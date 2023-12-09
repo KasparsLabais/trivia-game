@@ -12,6 +12,7 @@ class TrvAnswers extends Model
             'answer',
             'is_correct',
             'file_url',
-            'file_url_type'
+            'file_url_type',
+            'original_answer_id'
         ];
 }

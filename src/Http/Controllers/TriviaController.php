@@ -636,15 +636,28 @@ class TriviaController
         return redirect()->back();
     }
 
-    public function createQuestion($id, Request $request)
+    public function createTriviaQuestion($id, Request $request)
     {
+
+        $trivia = Trivia::where('id', $id)->first();
+
+        //create first global question
+        $originalQuestion = Questions::create([
+            'question' => $request->question,
+            'category_id' => $trivia->category_id,
+            'difficulty' => 'easy',
+            'question_type' => $request->question_type,
+            'user_id' => Auth::user()->id,
+        ]);
+
         //get last order_nr for this trivia
         $lastOrder = TrvQuestions::where('trivia_id', $id)->orderBy('order_nr', 'desc')->first();
         $question = TrvQuestions::create([
             'trivia_id' => $id,
             'question' => $request->question,
             'order_nr' => !isset($lastOrder['order_nr']) ? 1 : $lastOrder['order_nr']+1,
-            'question_type' => $request->question_type
+            'question_type' => $request->question_type,
+            'original_question_id' => $originalQuestion->id,
         ]);
 
         return new JsonResponse([
@@ -654,12 +667,23 @@ class TriviaController
         ]);
     }
 
-    public function createAnswer($id, $questionId, Request $request)
+    public function createTriviaAnswer($id, $questionId, Request $request)
     {
+
+        $question = TrvQuestions::where('id', $questionId)->first();
+        $originalQuestion = Questions::where('id', $question->original_question_id)->first();
+
+        $originalAnswer = Answers::create([
+            'question_id' => $originalQuestion->id,
+            'answer' => $request->answer,
+            'correct' => $request->is_correct,
+        ]);
+
         $answer = TrvAnswers::create([
             'question_id' => $questionId,
             'answer' => $request->answer,
             'is_correct' => $request->is_correct,
+            'original_answer_id' => $originalAnswer->id,
         ]);
 
         return new JsonResponse([

@@ -11,7 +11,8 @@ class TrvQuestions extends Model
         'trivia_id',
         'question',
         'order_nr',
-        'question_type'
+        'question_type',
+        'original_question_id'
     ];
 
     public function answers()

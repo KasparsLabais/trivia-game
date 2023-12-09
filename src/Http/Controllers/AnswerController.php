@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
+use PartyGames\TriviaGame\Models\Answers;
 use PartyGames\TriviaGame\Models\TrvAnswers;
 class AnswerController
 {
@@ -49,6 +50,7 @@ class AnswerController
     public function submitAnswerImage($id, Request $request)
     {
         $answer = TrvAnswers::find($id);
+        $originalAnswer = Answers::find($answer->original_answer_id);
 
         $img = Image::make($request->file('answer-image'));
         $img->resize(700, null, function($constrains) {
@@ -65,6 +67,10 @@ class AnswerController
         $answer->file_url = $path;
         $answer->file_url_type = 'image';
         $answer->save();
+
+        $originalAnswer->file_url = $path;
+        $originalAnswer->file_type = 'image';
+        $originalAnswer->save();
 
         return redirect()->back();
     }
