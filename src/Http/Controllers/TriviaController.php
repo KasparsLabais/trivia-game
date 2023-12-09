@@ -726,9 +726,10 @@ class TriviaController
         foreach ($rows as $row) {
             $csv[] = [
                 'question' => $row[0],
+                'question_type' => $row[1],
                 'answers' => []
             ];
-            for ($i = 1; $i < count($row); $i++) {
+            for ($i = 2; $i < count($row); $i++) {
                 $csv[count($csv) - 1]['answers'][] = ['answer' => $row[$i], 'is_correct' => ($i == 1) ? 1 : 0];
             }
         }
@@ -748,19 +749,38 @@ class TriviaController
                 continue;
             }
 
+            $originalQuestion  = Questions::create([
+                'question' => $question['question'],
+                'category_id' => 1,
+                'difficulty' => 'easy',
+                'question_type' => $question['question_type'],
+                'user_id' => Auth::user()->id,
+            ]);
+
             $newQuestion = TrvQuestions::create([
                 'trivia_id' => $trivia->id,
                 'question' => $question['question'],
                 'order_nr' => $key + 1,
+                'question_type' => $question['question_type'],
+                'original_question_id' => $originalQuestion->id,
             ]);
 
             //randomize answers order for each question
             shuffle($question['answers']);
             foreach ($question['answers'] as $answer) {
+
+                $originalAnswer = Answers::create([
+                    'question_id' => $originalQuestion->id,
+                    'answer' => $answer['answer'],
+                    'correct' => $answer['is_correct'],
+                    'type' => $question['question_type']
+                ]);
+
                 TrvAnswers::create([
                     'question_id' => $newQuestion->id,
                     'answer' => $answer['answer'],
                     'is_correct' => $answer['is_correct'],
+                    'original_answer_id' => $originalAnswer->id,
                 ]);
             }
         }
@@ -1226,4 +1246,50 @@ class TriviaController
         ]);
         //return view('trivia-game::pages.leaderboard')->with(['leaderboard' => $leaderboard]);
     }
+
+
+
+    public function tmpTransferExistingQuestionsToNew()
+    {
+
+        $oldQuestions = TrvQuestions::where('original_question_id', NULL)->get();
+
+        foreach ($oldQuestions as $oldQuestion) {
+
+            $trivia = Trivia::where('id', $oldQuestion->trivia_id)->first();
+
+            $newQuestion = Questions::create([
+                'question' => $oldQuestion->question,
+                'category_id' => $trivia->category_id,
+                'difficulty' => $trivia->difficulty,
+                'question_type' => $oldQuestion->question_type,
+                'user_id' => $trivia->user_id,
+            ]);
+
+            $oldQuestion->original_question_id = $newQuestion->id;
+            $oldQuestion->save();
+
+            //get answers for this question
+            $answers = TrvAnswers::where('question_id', $oldQuestion->id)->get();
+
+            //transfer answers to new table
+            foreach ($answers as $answer) {
+                $newAnswer = Answers::create([
+                    'question_id' => $newQuestion->id,
+                    'answer' => $answer->answer,
+                    'correct' => $answer->is_correct,
+                    'type' => $oldQuestion->question_type,
+                    'file_url' => $answer->file_url,
+                    'file_type' => $answer->file_url_type,
+                ]);
+
+                $answer->original_answer_id = $newAnswer->id;
+                $answer->save();
+            }
+        }
+
+        dd('success');
+    }
+
+
 }

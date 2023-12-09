@@ -60,9 +60,7 @@ class AnswerController
         $imageName = Str::random(75) . '.jpg';
         Storage::put('answers/' . $imageName, $img);
 
-        $path = '/answers/' . $imageName; //'/' . $request->file('avatar')->store('avatars');
-        ///| file_url      | varchar(255)    | YES  |     | NULL    |                |
-        //| file_url_type | varchar(255)    | YES  |     | NULL    |                |
+        $path = '/answers/' . $imageName;
 
         $answer->file_url = $path;
         $answer->file_url_type = 'image';

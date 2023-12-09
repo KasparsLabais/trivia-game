@@ -69,4 +69,7 @@ Route::group(['middleware' => ['web']], function() {
 
     //Route to get available games
     Route::get('/admin/' . config('settings.prefix') . '/games', 'Controller@getGames');
+
+
+    Route::get('/tmp/transfer-questions', 'TriviaController@tmpTransferExistingQuestionsToNew');
 });

@@ -97,7 +97,7 @@
                                             <div class="flex flex-row">
                                                 {{ csrf_field() }}
                                                 <div class="flex flex-col">
-                                                    <label>Upload image ofr correct answer: </label>
+                                                    <label>Upload Image For Correct answer: </label>
                                                     <input type="file" name="answer-image" id="answer-image">
                                                 </div>
                                                 <button class="py-2 px-2 shadow-md bg-lime-600 text-left text-slate-100 text-lg font-semibold mb-2 rounded" type="submit">Upload Image</button>
