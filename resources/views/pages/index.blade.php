@@ -8,9 +8,9 @@
 
         <x-section title="">
             <div class="flex flex-row justify-center">
-                <div class="flex flex-row bg-zinc-700 px-3 py-3 " style="border-radius: 25px;">
-                    <div class="flex flex bg-zinc-500 text-xl " style="border-radius: 25px;">
-                        <div id="all-cats-btn-holder" onclick="switchVisibleSection('categories')" class="bg-lime-600 px-2 py-2 rounded-lg text-slate-200 josefin-sans font-semibold shadow-md" style="border-radius: 20px">
+                <div class="flex flex-row bg-zinc-700 px-1 py-1" style="border-radius: 25px;">
+                    <div class="flex flex bg-zinc-500 text-xl p-1" style="border-radius: 25px;">
+                        <div id="all-cats-btn-holder" onclick="switchVisibleSection('categories')" class="bg-lime-600 px-2 py-2 rounded-lg text-slate-200 josefin-sans shadow-md" style="border-radius: 20px">
                             All Categories
                         </div>
                         <div id="public-access-btn-holder" onclick="switchVisibleSection('public')" class=" px-2 py-2 josefin-sans font-normal" style="border-radius: 20px">
@@ -46,7 +46,7 @@
         <x-section title="">
             <div id="category-holder"  class="flex flex-col">
                 <div v-for="trivia in selectedTriviasByCategoryAndDifficulty">
-                    <div class="flex flex-row mx-2 py-4 border-2 border-slate-300 bg-slate-300 mb-2">
+                    <div class="flex flex-row py-4 border-2 border-slate-300 bg-slate-300 mb-2">
                         <div class="raleway flex flex-col justify-center px-4 w-3/6">
                             <span class="font-semibold ">[[ trivia.title ]] ([[ trivia.questions ]])  <span v-if="trivia.private" class="text-rose-600">Private</span> </span>
                             <div class="font-normal fira-sans flex flex-row">
@@ -169,9 +169,9 @@
 
     <x-section title="">
         <div class="flex flex-col bg-zinc-700 py-4">
-            <h1 class="px-4 z-20 text-center josefin-sans text-yellow-400 font-semibold text-2xl">Your Quizes</h1>
+            <h1 class="px-4 z-20 text-center josefin-sans text-yellow-400 font-semibold text-2xl">Manage your Quizzes</h1>
 
-            <div class="flex flex-row raleway py-2 px-2 text-slate-200 font-semibold">
+            <div class="flex flex-row raleway py-2 px-2 text-slate-200 font-bold">
                 <div>Total Trivia's: <span class="pr-4 pl-2">{{ $usersTrivias->count() }}</span></div>
                 <div>Active Trivia's: <span class="pr-4 pl-2">{{ $usersTrivias->where('is_active', 1)->count() }}</span></div>
                 <div>Total Times Played: <span class="pr-4 pl-2">0</span></div>
@@ -292,7 +292,7 @@
                     //create form for modal body to submit request to create trivia from all available questions in category
                     let form = document.createElement('form');
                     form.setAttribute('method', 'POST');
-                    form.setAttribute('action', '/trv/trivia/random');
+                    form.setAttribute('action', '/trivia/random');
                     form.setAttribute('id', 'random-trivia-form');
                     form.setAttribute('class', 'flex flex-row flex-wrap justify-center w-full');
 
@@ -386,7 +386,7 @@
                     questionCountInput.setAttribute('type', 'number');
                     questionCountInput.setAttribute('name', 'question_count');
                     questionCountInput.setAttribute('id', 'question_count');
-                    questionCountInput.setAttribute('placeholder', 'Number of TrvQuestions');
+                    questionCountInput.setAttribute('placeholder', 'Number of Questions');
                     questionCountInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
 
 
@@ -548,132 +548,25 @@
             }
         }
 
-        /*
-        function openRandomTriviaModal(categoryId, categoryName) {
-            let title = 'Create Random Trivia - ' + categoryName + ' Category';
-
-            //create form for modal body to submit request to create trivia from all available questions in category
-            let form = document.createElement('form');
-            form.setAttribute('method', 'POST');
-            form.setAttribute('action', '/trv/trivia/random');
-            form.setAttribute('id', 'random-trivia-form');
-            form.setAttribute('class', 'flex flex-row flex-wrap justify-center w-full');
-
-            //create div to hold trivia title and description
-            let triviaInfoDiv = document.createElement('div');
-            triviaInfoDiv.setAttribute('class', 'flex flex-col w-full md:w-4/6 px-2');
-
-            //create input for trivia title
-            let titleInput = document.createElement('input');
-            titleInput.setAttribute('type', 'text');
-            titleInput.setAttribute('name', 'title');
-            titleInput.setAttribute('id', 'title');
-            titleInput.setAttribute('placeholder', 'Trivia Title');
-            titleInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2');
-
-            //create input for trivia description
-            let descriptionInput = document.createElement('input');
-            descriptionInput.setAttribute('type', 'text');
-            descriptionInput.setAttribute('name', 'description');
-            descriptionInput.setAttribute('id', 'description');
-            descriptionInput.setAttribute('placeholder', 'Trivia Description');
-            descriptionInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2');
-
-            triviaInfoDiv.appendChild(titleInput);
-            triviaInfoDiv.appendChild(descriptionInput);
-
-            //create input for trivia difficulty
-            let difficultyInput = document.createElement('select');
-            difficultyInput.setAttribute('name', 'difficulty');
-            difficultyInput.setAttribute('id', 'difficulty');
-            difficultyInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2');
-
-            //create options for difficulty input
-
-            let anyOption = document.createElement('option');
-            anyOption.setAttribute('value', 'any');
-            anyOption.innerText = 'Any Difficulty';
-
-            let easyOption = document.createElement('option');
-            easyOption.setAttribute('value', 'easy');
-            easyOption.innerText = 'Easy';
-
-            let mediumOption = document.createElement('option');
-            mediumOption.setAttribute('value', 'medium');
-            mediumOption.innerText = 'Medium';
-
-            let hardOption = document.createElement('option');
-            hardOption.setAttribute('value', 'hard');
-            hardOption.innerText = 'Hard';
-
-            //append options to difficulty input
-            difficultyInput.appendChild(anyOption);
-            difficultyInput.appendChild(easyOption);
-            difficultyInput.appendChild(mediumOption);
-            difficultyInput.appendChild(hardOption);
-
-            //add question count input
-            let questionCountInput = document.createElement('input');
-            questionCountInput.setAttribute('type', 'number');
-            questionCountInput.setAttribute('name', 'question_count');
-            questionCountInput.setAttribute('id', 'question_count');
-            questionCountInput.setAttribute('placeholder', 'Number of TrvQuestions');
-            questionCountInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2');
-
-
-            triviaInfoDiv.appendChild(difficultyInput);
-            triviaInfoDiv.appendChild(questionCountInput);
-
-            //create input for trivia category
-            let categoryInput = document.createElement('input');
-            categoryInput.setAttribute('type', 'hidden');
-            categoryInput.setAttribute('name', 'category');
-            categoryInput.setAttribute('id', 'category');
-            categoryInput.setAttribute('value', categoryId);
-
-            //create input for csrf token for submit form
-            let csrfInput = document.createElement('input');
-            csrfInput.setAttribute('type', 'hidden');
-            csrfInput.setAttribute('name', '_token');
-            csrfInput.setAttribute('id', '_token');
-            csrfInput.setAttribute('value', '{{ csrf_token() }}');
-
-            //create submit button
-            let submitButton = document.createElement('button');
-            submitButton.setAttribute('type', 'submit');
-            submitButton.setAttribute('class', 'py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold');
-            submitButton.innerText = 'Create Trivia';
-
-            triviaInfoDiv.appendChild(submitButton);
-
-            form.appendChild(categoryInput);
-            form.appendChild(csrfInput);
-            form.appendChild(triviaInfoDiv);
-
-            GameApi.openModal('game-modal', title, form);
-        }
-        */
-
-
         function switchVisibleSection(sectionName = 'categories')
         {
 
             //first change outlined button
             if (sectionName == 'categories') {
-                //all-cats-btn-holder
-                //public-access-btn-holder
+
                 let allCatsBtnHolder = document.getElementById('all-cats-btn-holder');
                 allCatsBtnHolder.classList.add('shadow-md');
                 allCatsBtnHolder.classList.add('bg-lime-600');
                 allCatsBtnHolder.classList.add('text-slate-200');
-                allCatsBtnHolder.classList.add('font-semibold');
-
+                allCatsBtnHolder.classList.add('border-2');
+                allCatsBtnHolder.classList.add('border-lime-700');
 
                 let publicAccessBtnHolder = document.getElementById('public-access-btn-holder');
                 publicAccessBtnHolder.classList.remove('shadow-md');
                 publicAccessBtnHolder.classList.remove('bg-lime-600');
                 publicAccessBtnHolder.classList.remove('text-slate-200');
-                publicAccessBtnHolder.classList.remove('font-semibold');
+                publicAccessBtnHolder.classList.remove('border-2');
+                publicAccessBtnHolder.classList.remove('border-lime-700');
 
 
                 document.getElementById('category-holder').classList.remove('hidden');
@@ -682,19 +575,20 @@
             }
 
             if (sectionName == 'public') {
+
                 let publicAccessBtnHolder = document.getElementById('public-access-btn-holder');
                 publicAccessBtnHolder.classList.add('shadow-md');
                 publicAccessBtnHolder.classList.add('bg-lime-600');
                 publicAccessBtnHolder.classList.add('text-slate-200');
-                publicAccessBtnHolder.classList.add('font-semibold');
-                //add rounded border 20px
-
+                publicAccessBtnHolder.classList.add('border-2');
+                publicAccessBtnHolder.classList.add('border-lime-700');
 
                 let allCatsBtnHolder = document.getElementById('all-cats-btn-holder');
                 allCatsBtnHolder.classList.remove('shadow-md');
                 allCatsBtnHolder.classList.remove('bg-lime-600');
                 allCatsBtnHolder.classList.remove('text-slate-200');
-                allCatsBtnHolder.classList.remove('font-semibold');
+                allCatsBtnHolder.classList.remove('border-2');
+                allCatsBtnHolder.classList.remove('border-lime-700');
 
                 document.getElementById('category-holder').classList.add('hidden');
                 document.getElementById('open-trivias-holder').classList.remove('hidden');

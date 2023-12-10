@@ -149,7 +149,15 @@ class TriviaController
 
                 $playerInstance[$player->user_id] = $tmpUser;
             }
+/*
+            foreach ($trivia->questions as $qt) {
+                if ($qt['id'] == 112) {
+                    dd($qt->load('answers'));
+                }
+            }
 
+            dd($trivia->questions->load('answers'));
+*/
             $returnObject = [
                 'gameInstance' => $gameInstance,
                 'playerInstances' => $playerInstance,
@@ -676,7 +684,7 @@ class TriviaController
         $originalAnswer = Answers::create([
             'question_id' => $originalQuestion->id,
             'answer' => $request->answer,
-            'correct' => $request->is_correct,
+            'is_correct' => $request->is_correct,
         ]);
 
         $answer = TrvAnswers::create([
@@ -772,7 +780,7 @@ class TriviaController
                 $originalAnswer = Answers::create([
                     'question_id' => $originalQuestion->id,
                     'answer' => $answer['answer'],
-                    'correct' => $answer['is_correct'],
+                    'is_correct' => $answer['is_correct'],
                     'type' => $question['question_type']
                 ]);
 
@@ -869,7 +877,7 @@ class TriviaController
             Answers::create([
                 'question_id' => $newQuestion->id,
                 'answer' => $question['answers'][0],
-                'correct' => 1,
+                'is_correct' => 1,
             ]);
         }
 
@@ -996,6 +1004,9 @@ class TriviaController
         //    protected $fillable = ['title', 'category_id', 'difficulty', 'private', 'question_count'];
 
         $questions = [];
+
+
+        /*
         $allTriviasForProvidedCategory = Trivia::where(function($q) use( $category) {
             if($category != 23) {
                 $q->where('category_id', $category);
@@ -1011,12 +1022,34 @@ class TriviaController
             $q->where('is_premium', 0)->orWhere('user_id', Auth::user()->id);
         })->get();
 
+        */
+
+        $allQuestions = Questions::where(function($q) use ($category) {
+            if($category != 23) {
+                $q->where('category_id', $category);
+            }
+        })->where(function($q) use ($difficulty) {
+            if ($difficulty != 'any') {
+                $q->where('difficulty', $difficulty);
+            }
+        })->where(function($q) {
+            $q->where('private', 0)->orWhere('user_id', Auth::user()->id);
+        })->where(function($q) {
+            $q->where('is_premium', 0)->orWhere('user_id', Auth::user()->id);
+        })->get();
+
+        foreach ($allQuestions as $question) {
+            $questions[] = $question;
+        }
+
+        //dd($allQuestions);
+        /*
         foreach ($allTriviasForProvidedCategory as $trivia) {
             $tmpQuestions = TrvQuestions::where('trivia_id', $trivia->id)->get();
             foreach ($tmpQuestions as $tmpQuestion) {
                 $questions[] = $tmpQuestion;
             }
-        }
+        }*/
 
         //select from array random questions to match question count or less if there is not enough questions, provided by user
         $tmpQuestions = array_rand($questions, ( count($questions) < $questionCount ) ? count($questions) : $questionCount);
@@ -1037,7 +1070,8 @@ class TriviaController
                 'question' => $question->question,
                 'order_nr' => $tmpOrderNr,
                 'original_question_id' => $question->id,
-                'tmp_trivia_id' => $tmpTrivia->id
+                'tmp_trivia_id' => $tmpTrivia->id,
+                'question_type' => $question->question_type,
             ]);
             $tmpOrderNr++;
         }
@@ -1051,7 +1085,7 @@ class TriviaController
         if ($response['status'] == false) {
             //TODO: need to setup some action for this case
         }
-        return redirect()->to('/trv/trivia/' . $response['gameInstance']['token'] . '/processing');
+        return redirect()->to('/trivia/' . $response['gameInstance']['token'] . '/processing');
     }
 
     public function processingTmpTriviaGame($token)
@@ -1249,6 +1283,7 @@ class TriviaController
 
 
 
+    //TODO:Use only in emergency cases
     public function tmpTransferExistingQuestionsToNew()
     {
 
@@ -1277,7 +1312,7 @@ class TriviaController
                 $newAnswer = Answers::create([
                     'question_id' => $newQuestion->id,
                     'answer' => $answer->answer,
-                    'correct' => $answer->is_correct,
+                    'is_correct' => $answer->is_correct,
                     'type' => $oldQuestion->question_type,
                     'file_url' => $answer->file_url,
                     'file_type' => $answer->file_url_type,

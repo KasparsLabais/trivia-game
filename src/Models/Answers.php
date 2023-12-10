@@ -10,7 +10,7 @@ class Answers extends Model
     protected $table = 'answers';
     protected $primaryKey = 'id';
 
-    protected $fillable = ['answer', 'question_id', 'correct', 'type', 'file_url', 'file_type'];
+    protected $fillable = ['answer', 'question_id', 'is_correct', 'type', 'file_url', 'file_type'];
 
     public function question()
     {

@@ -9,7 +9,7 @@ class Questions extends Model
     protected $table = 'questions';
     protected $primaryKey = 'id';
 
-    protected $fillable = ['user_id', 'question', 'category_id', 'private', 'question_type', 'question_image', 'tags', 'active', 'difficulty'];
+    protected $fillable = ['user_id', 'question', 'category_id', 'private', 'question_type', 'question_image', 'tags', 'active', 'difficulty', 'is_premium'];
 
     public function answers()
     {
