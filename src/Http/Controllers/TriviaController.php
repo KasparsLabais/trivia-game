@@ -388,7 +388,7 @@ class TriviaController
         //first step is to check if user have not already answered this question
 
         if ($remoteData['is_temporary']) {
-            $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('original_question_id', $questionId)->first();
+            $question = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->where('id', $questionId)->first();
             //$questionId = $question['original_question_id'];
         } else {
             $question = TrvQuestions::where('trivia_id', $remoteData['trivia_id'])->where('id', $questionId)->first();
@@ -414,7 +414,8 @@ class TriviaController
                 'answer_id' => $request->get('answer_id'),
                 'user_id' => $userId
             ]);
-            $answer = TrvAnswers::find($request->get('answer_id'));
+            $answer = Answers::find($request->get('answer_id'));
+            //$answer = Answers::where('question_id', $question['original_question_id'])->first();
             $isCorrect = $answer->is_correct;
         } elseif($question['question_type'] == 'text_input') {
             SubmittedAnswers::create([
@@ -424,8 +425,8 @@ class TriviaController
                 'answer_id' => 0,
                 'user_id' => $userId
             ]);
-            $answer = TrvAnswers::where('question_id', $questionId)->first();
 
+            $answer = Answers::where('question_id', $question['original_question_id'])->first();
             if(strtolower($answer['answer']) == strtolower($request->get('answer_text'))) {
                 $isCorrect = 1;
             }
