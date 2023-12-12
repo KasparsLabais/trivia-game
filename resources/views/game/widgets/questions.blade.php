@@ -12,4 +12,10 @@
             </div>
         </div>
     </div>
+
+    <div class="w-full border-b border-b-zinc-500 px-2 py-2">
+        <button class="text-center px-2 py-2 rounded font-semibold shadow bg-rose-600 text-gray-100" v-on:click="completeTrivia()">
+            Complete Quiz
+        </button>
+    </div>
 </div>

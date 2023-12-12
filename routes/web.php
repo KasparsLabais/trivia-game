@@ -40,11 +40,13 @@ Route::group(['middleware' => ['web']], function() {
     Route::get('/' . config('settings.prefix') . '/trivia/{token}', 'TriviaController@game');
 
     Route::get('/trivia/{token}/processing', 'TriviaController@processingTmpTriviaGame');
+    Route::get('/trivia/{token}/results', 'TriviaController@results');
+    Route::post('/trivia/{token}/complete', 'TriviaController@completeTriviaGame');
+
     Route::get('/' . config('settings.prefix') . '/trivia/{token}/question', 'TriviaController@getQuestion');
     Route::post('/' . config('settings.prefix') . '/trivia/{token}/answer', 'TriviaController@submitAnswer');
     Route::post('/' . config('settings.prefix') . '/trivia/{token}/next', 'TriviaController@nextQuestion');
     Route::get('/' . config('settings.prefix') . '/trivia/{token}/correct', 'TriviaController@correctAnswer');
-    Route::get('/' . config('settings.prefix') . '/trivia/{token}/results', 'TriviaController@results');
     Route::get('/' . config('settings.prefix') . '/trivia/{token}/leaderboard', 'TriviaController@leaderboard');
 
     Route::post('/' . config('settings.prefix') . '/trivia/{token}/accessibility', 'TriviaController@changeAccessibility');

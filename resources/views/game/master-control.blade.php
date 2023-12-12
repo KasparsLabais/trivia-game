@@ -193,12 +193,10 @@
                 playerAnswered (data) {
                     console.log('player answered', data);
                     let player = this.game.playerInstances[data.id];
-
                     //check if this.answeredQuestions contains key with question id
                     if (this.answeredQuestions[data.questionId] == undefined) {
                         this.answeredQuestions[data.questionId] = [];
                     }
-
                     //check if provided answerId is correct
                     let isCorrect = false;
 
@@ -496,6 +494,20 @@
                         .catch(error => console.log(error));
 
                     this.closePlayerEditModal();
+                },
+                completeTrivia() {
+
+                    fetch('/trivia/{{ $gameInstance['token'] }}/complete', {'method' : 'POST', 'headers' : {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            if(data.success) {
+                                this.game.gameStatus = 'completed';
+                                //GameApi.updateGameInstance('{{ $gameInstance['token'] }}', data.data.gameInstance, 'gameCompleted');
+                                GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {}, 'action': 'gameOverEvent'});
+                            }
+                        });
+
                 }
             },
             computed: {
@@ -623,6 +635,11 @@
                 document.addEventListener('playerAnsweredEvent', (e) => {
                     console.log('Player Answered Event', e.detail);
                     this.playerAnswered(e.detail);
+                });
+
+                document.addEventListener('gameOverEvent', (e) => {
+                    console.log('gameOverEvent', e.detail);
+                    window.location.href = '/trivia/{{ $gameInstance['token'] }}/results';
                 });
 
                 GameApi.joinRoom('{{ $gameInstance['token'] }}');

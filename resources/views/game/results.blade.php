@@ -11,10 +11,10 @@
             <div class="flex flex-row py-2 px-2 w-2/4">
                 <div class="flex flex-col w-full bg-zinc-700 rounded shadow-zinc-700">
                     <div class="flex flex-row w-full justify-center relative rounded bg-yellow-500 h-20">
-                        <img class="w-28 h-28 rounded-full shadow-lg absolute border-4 border-zinc-700 -bottom-9" src="@if(is_null($winners['winner']->user->avatar)) /images/default-avatar.jpg @else{{ $winners['winner']->user->avatar }}@endif" alt="Game Image"/>
+                        <img class="w-28 h-28 rounded-full shadow-lg absolute border-4 border-zinc-700 -bottom-9" src="@if(is_null($winners['winner']['avatar'])) /images/default-avatar.jpg @else{{ $winners['winner']['avatar'] }}@endif" alt="Game Image"/>
                     </div>
                     <div class="flex flex-col px-2 py-2 justify-end" style="overflow-wrap: anywhere;">
-                        <div class="raleway text-center text-slate-200 font-bold text-xl mt-10">{{ $winners['winner']->user->username }}</div>
+                        <div class="raleway text-center text-slate-200 font-bold text-xl mt-10">{{ $winners['winner']['username'] }}</div>
                     </div>
                 </div>
             </div>
@@ -39,10 +39,10 @@
                         <div class="flex flex-row w-full">
                             <div class="flex flex-col w-full bg-gray-700 rounded shadow-md">
                                 <div class="flex flex-row w-full justify-center relative rounded bg-gray-400 h-20">
-                                    <img class="w-28 h-28 rounded-full shadow-lg absolute border-4 border-zinc-700 -bottom-9" src="@if(is_null($winners['second']->user->avatar)) /images/default-avatar.jpg @else{{ $winners['winner']->user->avatar }}@endif" alt="Game Image"/>
+                                    <img class="w-28 h-28 rounded-full shadow-lg absolute border-4 border-zinc-700 -bottom-9" src="@if(is_null($winners['second']['avatar'])) /images/default-avatar.jpg @else{{ $winners['winner']['avatar'] }}@endif" alt="Game Image"/>
                                 </div>
                                 <div class="flex flex-col px-2 py-2 justify-end" style="overflow-wrap: anywhere;">
-                                    <div class="raleway text-center text-slate-200 font-bold text-xl mt-8">{{ $winners['second']->user->username }}</div>
+                                    <div class="raleway text-center text-slate-200 font-bold text-xl mt-8">{{ $winners['second']['username'] }}</div>
                                 </div>
                             </div>
                         </div>
@@ -61,10 +61,10 @@
                         <div class="flex flex-row w-full">
                             <div class="flex flex-col w-full bg-gray-700 rounded shadow-md">
                                 <div class="flex flex-row w-full justify-center relative rounded bg-amber-700 h-20">
-                                    <img class="w-28 h-28 rounded-full shadow-lg absolute border-4 border-zinc-700 -bottom-9" src="@if(is_null($winners['third']->user->avatar)) /images/default-avatar.jpg @else{{ $winners['winner']->user->avatar }}@endif" alt="Game Image"/>
+                                    <img class="w-28 h-28 rounded-full shadow-lg absolute border-4 border-zinc-700 -bottom-9" src="@if(is_null($winners['third']['avatar'])) /images/default-avatar.jpg @else{{ $winners['winner']['avatar'] }}@endif" alt="Game Image"/>
                                 </div>
                                 <div class="flex flex-col px-2 py-2 justify-end" style="overflow-wrap: anywhere;">
-                                    <div class="raleway text-center text-slate-200 font-bold text-xl mt-8">{{ $winners['third']->user->username }}</div>
+                                    <div class="raleway text-center text-slate-200 font-bold text-xl mt-8">{{ $winners['third']['username'] }}</div>
                                 </div>
                             </div>
                         </div>
@@ -87,10 +87,10 @@
                         <div class="flex flex-col w-5/6">
                             <div class="flex flex-col w-full bg-gray-600 rounded shadow-md">
                                 <div class="flex flex-row w-full justify-center relative rounded bg-gray-700 h-14">
-                                    <img class="w-20 h-20 rounded-full shadow-lg absolute border-4 border-zinc-700 -bottom-9" src="@if(is_null($runnerUp->user->avatar)) /images/default-avatar.jpg @else{{ $winners['winner']->user->avatar }}@endif" alt="Game Image"/>
+                                    <img class="w-20 h-20 rounded-full shadow-lg absolute border-4 border-zinc-700 -bottom-9" src="@if(is_null($runnerUp['avatar'])) /images/default-avatar.jpg @else{{ $winners['winner']['avatar'] }}@endif" alt="Game Image"/>
                                 </div>
                                 <div class="flex flex-col px-1 py-2 justify-end" style="overflow-wrap: anywhere;">
-                                    <div class="raleway text-center text-slate-200 font-bold text-normal mt-6">{{ $runnerUp->user->username }}</div>
+                                    <div class="raleway text-center text-slate-200 font-bold text-normal mt-6">{{ $runnerUp['username'] }}</div>
                                     <div class="raleway text-center text-slate-400 font-bold text-sm">2 Points</div>
                                 </div>
                             </div>

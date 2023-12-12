@@ -365,6 +365,11 @@
                     console.log(e);
                     this.player.points = e.detail.points;
                 });
+
+                document.addEventListener('gameOverEvent', (e) => {
+                    console.log('gameOverEvent', e.detail);
+                    window.location.href = '/trivia/{{ $gameInstance['token'] }}/results';
+                });
             }
         }).mount('#player-app');
 

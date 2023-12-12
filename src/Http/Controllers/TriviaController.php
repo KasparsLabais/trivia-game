@@ -543,6 +543,56 @@ class TriviaController
         ]);
     }
 
+    public function completeTriviaGame($token, Request $request)
+    {
+        $data = GameApi::getGameInstance($token);
+        $gameInstance = $data['gameInstance'];
+        $remoteData = json_decode($gameInstance['remote_data'], true);
+
+        if ($gameInstance['user_id'] != Auth::user()->id) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'You are not the owner of this game instance',
+                'data' => []
+            ]);
+        }
+
+        if ($gameInstance['status'] == 'completed') {
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Game instance have already been completed',
+                'data' => [
+                    'event' => 'gameOverEvent',
+                    'gameInstance' => $data['gameInstance']
+                ]
+            ]);
+        }
+
+        if ($remoteData['is_temporary']) {
+            $questionCount = TmpQuestions::where('tmp_trivia_id', $remoteData['trivia_id'])->count();
+        } else {
+            $questionCount = TrvQuestions::where('trivia_id', $remoteData['trivia_id'])->count();
+        }
+
+        GameApi::changeGameInstanceStatus($token, 'completed');
+        if ($remoteData['is_temporary']) {
+            if ($questionCount > 20) {
+                GameApi::giveUsersGameCurrency($token, $remoteData['trivia_id'], 'tmp_trivia_id');
+            }
+        } else {
+            GameApi::giveUsersGameCurrency($token, $remoteData['trivia_id'], 'trivia_id');
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Game ended successfully',
+            'data' => [
+                'event' => 'gameOverEvent',
+                'gameInstance' => $data['gameInstance']
+            ]
+        ]);
+    }
+
     public function correctAnswer($token, Request $request)
     {
         $data = GameApi::getGameInstance($token);
@@ -585,6 +635,7 @@ class TriviaController
             OpenTrivias::where('game_instance_id', $gameInstance['gameInstance']['id'])->update(['status' => 0, 'closed_at' => date('Y-m-d H:i:s')]);
         }
 
+        //dd($winners['response']['winner']);
         return view('trivia-game::game.results')->with(['gameInstance' => $gameInstance['gameInstance'], 'winners' => $winners['response']]);
     }
 
