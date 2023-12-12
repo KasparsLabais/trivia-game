@@ -50,6 +50,10 @@ Route::group(['middleware' => ['web']], function() {
     Route::post('/' . config('settings.prefix') . '/trivia/{token}/accessibility', 'TriviaController@changeAccessibility');
     //Route::post('/' . config('settings.prefix') . '/trivia/{id}', 'TriviaController@startGame');
 
+    Route::post('/trivia/{token}/add-points', 'TriviaController@addPoints');
+    Route::post('/trivia/{token}/remove-points', 'TriviaController@removePoints');
+
+
     //Routes to create a new game
     Route::get('/admin/' . config('settings.prefix') . '/trivia', 'TriviaController@adminIndex');
     Route::post('/admin/' . config('settings.prefix') . '/trivia', 'TriviaController@create');

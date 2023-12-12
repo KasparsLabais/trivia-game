@@ -29,6 +29,46 @@
                 @include('trivia-game::game.widgets.streamers')
             </div>
         </div>
+
+
+
+        <div class="absolute player_modal" :class="{ 'hidden' : !playerEditModalVisible }">
+            <div class="game_modal-overlay fixed top-0 h-screen w-screen bg-gray-700 opacity-80" @click="closePlayerEditModal()">
+            </div>
+            <div class="game_modal-content fixed flex flex-col w-full h-full justify-center">
+                <div class="flex flex-row w-full justify-center">
+                    <div class="w-11/12 bg-gray-200 mt-4 shadow-md">
+                        <div class="game_modal-header bg-gray-300 w-full px-4 py-4 text-center">
+                            <h2 class="raleway font-semibold text-2xl">Player: [[ selectedPlayer.username ]]</h2>
+                        </div>
+                        <div class="game_modal-body w-full flex flex-row px-4 py-4 justify-center">
+                            <div class="flex flex-row">
+                                <input class="text-center josefin-sans text-2xl" type="number" id="pointsToAdd" name="pointsToAdd" v-model="pointsToAdd">
+                                <div class="px-2">
+                                    <button type="button" class="text-center px-2 py-2 rounded font-semibold shadow bg-lime-500 text-gray-100" @click="addPointsToPlayer()">
+                                        Add Points
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-row">
+                                <input class="text-center josefin-sans text-2xl" type="number" id="pointsToRemove" name="pointsToRemove" v-model="pointsToRemove">
+                                <div class="px-2">
+                                    <button type="button" class="text-center px-2 py-2 rounded font-semibold shadow bg-rose-600 text-gray-100" @click="removePointsToPlayer()">
+                                        Remove Points
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="game_modal-footer" class="bg-gray-300 w-full px-4 py-4">
+                            <button type="button" @click="closePlayerEditModal()" class="w-full fira-sans py-2 px-2 md:px-6 shadow bg-lime-600 text-slate-100 font-semibold text-lg  shadow-gray-900 my-2">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
 
@@ -106,6 +146,10 @@
                     startedQuestions: [],
                     leaderboard: @if(count($leaderboard) > 0)  @json($leaderboard) @else [] @endif,
                     triggerNr: 0,
+                    playerEditModalVisible: false,
+                    selectedPlayer: [],
+                    pointsToAdd: 0,
+                    pointsToRemove: 0,
                 }
             },
             delimiters: ['[[', ']]'],
@@ -401,6 +445,58 @@
                         })
                         .catch(error => console.log(error));
                 },
+                userActionModal(playerId) {
+                    console.log('user action modal ' + playerId);
+                    //get player from playerId
+                    this.selectedPlayer = this.game.playerInstances[playerId];
+                    this.playerEditModalVisible = true;
+                },
+                closePlayerEditModal() {
+                    this.playerEditModalVisible = false;
+                },
+                addPointsToPlayer() {
+                    console.log('add points to player');
+                    fetch('/trivia/{{ $gameInstance['token'] }}/add-points', {'method' : 'POST', 'body': JSON.stringify({'user_id': this.selectedPlayer.user_id, 'pointsToAdd': this.pointsToAdd}), 'headers' : {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            if(data.success) {
+                                //update points in player list
+                                this.game.playerInstances[this.selectedPlayer.user_id].points += this.pointsToAdd;
+
+                                this.pointsToAdd = 0;
+                                this.updateLeaderboard();
+                            }
+                        })
+                        .catch(error => console.log(error));
+                    /*
+                    console.log(this.selectedPlayer);
+                    console.log(this.pointsToAdd);
+                    if (this.pointsToAdd <= 0) {
+                        return;
+                    }
+                     */
+                    //GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'playerId': this.selectedPlayer.id, 'pointsToAdd': this.pointsToAdd}, 'action': 'addPointsToPlayer'});
+                    this.closePlayerEditModal();
+                },
+                removePointsToPlayer() {
+                    console.log('remove points to player');
+                    fetch('/trivia/{{ $gameInstance['token'] }}/remove-points', {'method' : 'POST', 'body': JSON.stringify({'user_id': this.selectedPlayer.user_id, 'pointsToRemove': this.pointsToRemove}), 'headers' : {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            if(data.success) {
+                                //update points in player list
+                                this.game.playerInstances[this.selectedPlayer.user_id].points -= this.pointsToRemove;
+
+                                this.pointsToRemove = 0;
+                                this.updateLeaderboard();
+                            }
+                        })
+                        .catch(error => console.log(error));
+
+                    this.closePlayerEditModal();
+                }
             },
             computed: {
                 selectedQuestion() {

@@ -1282,7 +1282,61 @@ class TriviaController
         //return view('trivia-game::pages.leaderboard')->with(['leaderboard' => $leaderboard]);
     }
 
+    public function addPoints($token, Request $request)
+    {
+        $game = GameApi::getGameInstance($token);
+        $gameInstance = $game['gameInstance'];
 
+        if ($gameInstance['user_id'] != Auth::user()->id) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'You are not the owner of this game instance',
+                'payload' => []
+            ]);
+        }
+
+        $pointsToAdd = $request->get('pointsToAdd');
+
+        $playerInstance = (GameApi::getPlayerInstance($gameInstance['id'], $request->get('user_id')))['playerInstance'];
+        GameApi::updatePlayerInstanceScore($playerInstance['id'], $playerInstance['points'] + $pointsToAdd);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Points added successfully',
+            'payload' => [
+                'playerInstance' => $playerInstance,
+                'points' => $pointsToAdd
+            ]
+        ]);
+    }
+
+    public function removePoints($token, Request $request)
+    {
+        $game = GameApi::getGameInstance($token);
+        $gameInstance = $game['gameInstance'];
+
+        if ($gameInstance['user_id'] != Auth::user()->id) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'You are not the owner of this game instance',
+                'payload' => []
+            ]);
+        }
+
+        $pointsToRemove = $request->get('pointsToRemove');
+
+        $playerInstance = (GameApi::getPlayerInstance($gameInstance['id'], $request->get('user_id')))['playerInstance'];
+        GameApi::updatePlayerInstanceScore($playerInstance['id'], $playerInstance['points'] - $pointsToRemove);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Points removed successfully',
+            'payload' => [
+                'playerInstance' => $playerInstance,
+                'points' => $pointsToRemove
+            ]
+        ]);
+    }
 
     //TODO:Use only in emergency cases
     public function tmpTransferExistingQuestionsToNew()
