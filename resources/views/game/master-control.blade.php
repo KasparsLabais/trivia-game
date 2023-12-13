@@ -120,6 +120,7 @@
         createApp({
             data() {
                 return {
+                    gameToken: '{{ $gameInstance['token'] }}',
                     game: {
                         gameInstance: @json($gameInstance),
                         trivia: @json($trivia),
@@ -191,6 +192,7 @@
                     return givenAnswer;
                 },
                 playerAnswered (data) {
+
                     console.log('player answered', data);
                     let player = this.game.playerInstances[data.id];
                     //check if this.answeredQuestions contains key with question id
@@ -222,21 +224,16 @@
                         'answerText': typeof (data.answer_text) !== 'undefined' ? data.answer_text : '',
                     });
 
-                    console.log('Answered List' , this.answeredQuestions);
+                    let answeredQuestionsJsonString = JSON.stringify(this.answeredQuestions);
+                    this.setCookie('answeredQuestions', answeredQuestionsJsonString, 1);
 
                 },
                 playerJoined(player) {
                     console.log('player joined', player);
-                    /*
-                    {
-                        "username": "BobTheBuilder",
-                        "id": 2,
-                        "avatar": "/images/default-avatar.jpg"
-                    }
-                    */
 
                     this.game.playerInstances[player.id] = {
                         'id' : player.id,
+                        'user_id' : player.id,
                         'username' : player.username,
                         'avatar' : player.avatar,
                         'icon_flair' : ''
@@ -390,6 +387,10 @@
                     });
 
                     this.startedQuestions.push(this.selectedQuestion.id);
+
+                    let startedQuestionsJsonString = JSON.stringify(this.startedQuestions);
+                    this.setCookie('startedQuestions', startedQuestionsJsonString, 1);
+
                     GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: question, 'action': 'startQuestion'});
                 },
                 startTimer() {
@@ -467,13 +468,6 @@
                             }
                         })
                         .catch(error => console.log(error));
-                    /*
-                    console.log(this.selectedPlayer);
-                    console.log(this.pointsToAdd);
-                    if (this.pointsToAdd <= 0) {
-                        return;
-                    }
-                     */
                     //GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {'playerId': this.selectedPlayer.id, 'pointsToAdd': this.pointsToAdd}, 'action': 'addPointsToPlayer'});
                     this.closePlayerEditModal();
                 },
@@ -496,7 +490,6 @@
                     this.closePlayerEditModal();
                 },
                 completeTrivia() {
-
                     fetch('/trivia/{{ $gameInstance['token'] }}/complete', {'method' : 'POST', 'headers' : {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})
                         .then(response => response.json())
                         .then(data => {
@@ -507,8 +500,57 @@
                                 GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {}, 'action': 'gameOverEvent'});
                             }
                         });
-
-                }
+                },
+                //add function to store a cookie - accepted params are name, value, and days until expiration
+                setCookie(name, value, days) {
+                    name = name + '_' + this.gameToken;
+                    var expires = "";
+                    if (days) {
+                        var date = new Date();
+                        date.setTime(date.getTime() + (days*24*60*60*1000));
+                        expires = "; expires=" + date.toUTCString();
+                    }
+                    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+                },
+                //add function to retrieve a cookie - accepts param name
+                getCookie(name) {
+                    name = name + '_' + this.gameToken;
+                    console.log('get cookie', name);
+                    var nameEQ = name + "=";
+                    var ca = document.cookie.split(';');
+                    for(var i=0;i < ca.length;i++) {
+                        var c = ca[i];
+                        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+                    }
+                    return null;
+                },
+                //add function to erase a cookie - accepts param name
+                eraseCookie(name) {
+                    name = name + '_' + this.gameToken;
+                    document.cookie = name+'=; Max-Age=-99999999;';
+                },
+                //add function to check if a cookie exists - accepts param name
+                checkCookie(name) {
+                    var cookie = this.getCookie(name);
+                    if (cookie) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                },
+                retrieveStartedQuestions() {
+                    if (this.checkCookie('startedQuestions')) {
+                        let startedQuestions = JSON.parse(this.getCookie('startedQuestions'));
+                        this.startedQuestions = startedQuestions;
+                    }
+                },
+                retrieveAnsweredQuestions() {
+                    if (this.checkCookie('answeredQuestions')) {
+                        let answeredQuestions = JSON.parse(this.getCookie('answeredQuestions'));
+                        this.answeredQuestions = answeredQuestions;
+                    }
+                },
             },
             computed: {
                 selectedQuestion() {
@@ -550,8 +592,7 @@
                 },
 
 
-
-
+                /*-----------------------------------------*/
                 //still in progress
                 playerLimit() {
                     return this.game.gameInstanceSettings.player_limit;
@@ -645,6 +686,9 @@
                 GameApi.joinRoom('{{ $gameInstance['token'] }}');
                 //GameApi.registerCallbackGameInstanceUpdated(callbackGameInstanceUpdated);
                 //GameApi.registerCallbackPlayerJoined(this.playerJoined);
+                this.retrieveStartedQuestions();
+                this.retrieveAnsweredQuestions();
+
             }
         }).mount('#master-app');
 
