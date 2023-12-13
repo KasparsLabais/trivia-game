@@ -343,7 +343,7 @@
                         currentQuestion.answers.forEach((answer) => {
                             console.log(answer);
                             GameApi.notifyRoom('{{ $gameInstance['token'] }}', {
-                                payload: {'answer_text': answer.answer, 'file_url' : answer.file_url, 'question_type': currentQuestion.question_type},
+                                payload: {'answer_text': answer.answer, 'file_url' : answer.file_url, 'file_url_type': answer.file_url_type, 'question_type': currentQuestion.question_type},
                                 'action': 'showCorrectAnswer'
                             });
                         });

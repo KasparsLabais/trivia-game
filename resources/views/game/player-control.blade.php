@@ -79,7 +79,15 @@
                             <p class="text-3xl josefin-sans font-semibold text-slate-200">Your Answer: <span class="text-yellow-500">[[ correctInputTextAnswer ]]</span></p>
                             <p class="text-3xl josefin-sans font-semibold text-slate-200">Correct Answer: <span class="text-yellow-500">[[ correctAnswer ]]</span></p>
                             <div v-if="correctAnswerFileUrl != ''" class="flex flex-row justify-center">
-                                <img class="w-1/2" :src="correctAnswerFileUrl" alt="Correct Answer Image">
+                                <template v-if="correctAnswerFileUrlType == 'image'">
+                                    <img class="w-1/2" :src="correctAnswerFileUrl" alt="Correct Answer Image">
+                                </template>
+                                <template v-else-if="correctAnswerFileUrlType == 'video'">
+                                    <video class="w-1/2" controls>
+                                        <source :src="correctAnswerFileUrl" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -165,6 +173,7 @@
                     correctInputTextAnswer: '',
                     correctAnswer: '',
                     correctAnswerFileUrl: '',
+                    correctAnswerFileUrlType: 'image',
                     currentView: @if($gameInstance['status'] == 'created') 'game_created' @else 'question_view' @endif,
                     gameInstance: @json($gameInstance),
                     trivia: @json($trivia),
@@ -302,6 +311,7 @@
 
                     this.correctAnswer = '';
                     this.correctAnswerFileUrl = '';
+                    this.correctAnswerFileUrlType = 'image';
                     this.timerMode = 0;
                     this.questionWinner = '';
                     this.questionLoaded = 1;
@@ -343,6 +353,7 @@
                     if (e.detail.question_type == 'text_input') {
                         this.correctAnswer = e.detail.answer_text;
                         this.correctAnswerFileUrl = e.detail.file_url;
+                        this.correctAnswerFileUrlType = e.detail.file_url_type;
                     } else {
                         this.answers.forEach(answer => {
                             if (answer.id == e.detail['answer_id']) {
