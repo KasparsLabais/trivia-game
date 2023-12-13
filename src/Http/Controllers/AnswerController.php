@@ -52,22 +52,76 @@ class AnswerController
         $answer = TrvAnswers::find($id);
         $originalAnswer = Answers::find($answer->original_answer_id);
 
-        $img = Image::make($request->file('answer-image'));
-        $img->resize(700, null, function($constrains) {
-            $constrains->aspectRatio();
-        })->encode('jpg', 80);
+        //get uploaded file type
+        $fileType = $request->file('answer-image')->getClientOriginalExtension();
+        //dd($fileType);
+        $imageFileTypes = ['jpg', 'jpeg', 'png', 'gif'];
 
-        $imageName = Str::random(75) . '.jpg';
-        Storage::put('answers/' . $imageName, $img);
 
-        $path = '/answers/' . $imageName;
+        if (in_array($fileType, $imageFileTypes)) {
+            $img = Image::make($request->file('answer-image'));
+            $img->resize(700, null, function($constrains) {
+                $constrains->aspectRatio();
+            })->encode('jpg', 80);
+
+            $imageName = Str::random(75) . '.jpg';
+            Storage::put('answers/' . $imageName, $img);
+
+            $path = '/answers/' . $imageName;
+            $fileUrlType = 'image';
+
+        } else {
+            //upload video file
+            $videoFileTypes = ['mp4', 'mov', 'avi', 'wmv', 'flv', 'webm'];
+
+            if (in_array($fileType, $videoFileTypes)) {
+                $videoName = Str::random(75) . '.' . $fileType;
+                $video = Storage::put('answers', $request->file('answer-image'));
+
+                $path = '/' . $video;//'/answers/' . $request->file('answer-image')->getClientOriginalName();
+                $fileUrlType = 'video';
+            } else {
+                //upload audio file
+                $audioFileTypes = ['mp3', 'wav', 'ogg', 'm4a'];
+                if (in_array($fileType, $audioFileTypes)) {
+                    $audioName = Str::random(75) . '.' . $fileType;
+                    Storage::put('answers/' . $audioName, $request->file('answer-image'));
+
+                    $path = '/answers/' . $audioName;
+                    $fileUrlType = 'audio';
+                } else {
+                    //upload document file
+                    $documentFileTypes = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+                    if (in_array($fileType, $documentFileTypes)) {
+                        /*
+                        $documentName = Str::random(75) . '.' . $fileType;
+                        Storage::put('answers/' . $documentName, $request->file('answer-image'));
+
+                        $path = '/answers/' . $documentName;
+                        $fileUrlType = 'document';
+                        */
+                    } else {
+                        /*
+                        //upload other file
+                        $otherName = Str::random(75) . '.' . $fileType;
+                        Storage::put('answers/' . $otherName, $request->file('answer-image'));
+
+                        $path = '/answers/' . $otherName;
+                        $fileUrlType = 'other';
+                        */
+                    }
+                }
+            }
+        }
+
+
 
         $answer->file_url = $path;
-        $answer->file_url_type = 'image';
+        $answer->file_url_type = $fileUrlType;
         $answer->save();
 
         $originalAnswer->file_url = $path;
-        $originalAnswer->file_type = 'image';
+        $originalAnswer->file_type = $fileUrlType;
         $originalAnswer->save();
 
         return redirect()->back();

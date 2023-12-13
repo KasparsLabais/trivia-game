@@ -97,6 +97,11 @@
                                             <div class="flex flex-row">
                                                 {{ csrf_field() }}
                                                 <div class="flex flex-col">
+                                                    @if($answer['file_url_type'])
+                                                        <div class="flex flex-col">
+                                                            <a class="font-semibold text-cyan-700" href="{{ $answer['file_url'] }}" target="_blank">Current File</a>
+                                                        </div>
+                                                    @endif
                                                     <label>Upload Image For Correct answer: </label>
                                                     <input type="file" name="answer-image" id="answer-image">
                                                 </div>
