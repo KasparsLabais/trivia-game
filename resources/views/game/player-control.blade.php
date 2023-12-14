@@ -170,6 +170,7 @@
         createApp({
             data() {
                 return {
+                    gameToken: '{{ $gameInstance['token'] }}',
                     correctInputTextAnswer: '',
                     correctAnswer: '',
                     correctAnswerFileUrl: '',
@@ -215,6 +216,9 @@
                                 this.lastAnsweredQuestionId = this.question.id;
                                 this.lastAnsweredAnswerId = answerId;
 
+                                this.setCookie('last_answered_question_id', this.question.id, 1);
+                                this.setCookie('last_answered_answer_id', answerId, 1);
+
                                 GameApi.updatePlayerInstance('{{ $gameInstance['token'] }}', data.data.playerInstance);
                                 GameApi.notifyGameMaster('{{ $gameInstance['token'] }}', {'data' :  {'question_type' : this.question.question_type, 'indexId' : index, 'questionId': this.question.id, 'id': window.id,'username' : window.username, 'answerid' : answerId }, 'action': 'playerAnsweredEvent'});
                             }
@@ -234,6 +238,7 @@
                     fetch('/trv/trivia/{{ $gameInstance['token'] }}/answer', {'method' : 'POST', 'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, 'body': JSON.stringify({'answer_text': this.correctInputTextAnswer, 'question_id': this.question.id})})
                         .then(response => response.json())
                         .then(data => {
+                            this.setCookie('last_answered_question_id', this.question.id, 1);
                             if (data.success) {
 
                                 this.lastAnsweredQuestionId = this.question.id;
@@ -246,6 +251,7 @@
                         })
                         .catch(error => {
                             console.log(error)
+                            this.setCookie('last_answered_question_id', this.question.id, 1);
                             this.lastAnsweredQuestionId = this.question.id;
                         });
                 },
@@ -296,9 +302,66 @@
                         this.timeLeft = this.timeLeft - 1;
                         this.updateTimer();
                     }, 1000);
-                }
+                },
+                setCookie(name, value, days) {
+                    name = name + '_' + this.gameToken;
+                    var expires = "";
+                    if (days) {
+                        var date = new Date();
+                        date.setTime(date.getTime() + (days*24*60*60*1000));
+                        expires = "; expires=" + date.toUTCString();
+                    }
+                    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+                },
+                //add function to retrieve a cookie - accepts param name
+                getCookie(name) {
+                    name = name + '_' + this.gameToken;
+                    console.log('get cookie', name);
+                    var nameEQ = name + "=";
+                    var ca = document.cookie.split(';');
+                    for(var i=0;i < ca.length;i++) {
+                        var c = ca[i];
+                        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+                    }
+                    return null;
+                },
+                //add function to erase a cookie - accepts param name
+                eraseCookie(name) {
+                    name = name + '_' + this.gameToken;
+                    document.cookie = name+'=; Max-Age=-99999999;';
+                },
+                //add function to check if a cookie exists - accepts param name
+                checkCookie(name) {
+                    var cookie = this.getCookie(name);
+                    if (cookie) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                },
+                preLoadInfoFromCookies() {
+                    if (this.checkCookie('last_answered_question_id')) {
+                        this.lastAnsweredQuestionId = this.getCookie('last_answered_question_id');
+                    }
+
+                    if (this.checkCookie('last_answered_answer_id')) {
+                        this.lastAnsweredAnswerId = this.getCookie('last_answered_answer_id');
+                    }
+
+                    if (this.checkCookie('active_question')) {
+                        this.question = JSON.parse(this.getCookie('active_question'));
+                    }
+
+                    if (this.checkCookie('active_question_answers')) {
+                        this.answers = JSON.parse(this.getCookie('active_question_answers'));
+                    }
+                },
             },
             mounted() {
+
+                this.preLoadInfoFromCookies();
+
                 document.addEventListener('gameStarted', (e) => {
                     console.log(e);
                     this.gameInstance.status = 'started';
@@ -308,6 +371,11 @@
 
                 document.addEventListener('startQuestion', (e) => {
                     console.log(e);
+
+                    this.eraseCookie('last_answered_question_id');
+                    this.eraseCookie('last_answered_answer_id');
+                    this.eraseCookie('active_question');
+                    this.eraseCookie('active_question_answers');
 
                     this.correctAnswer = '';
                     this.correctAnswerFileUrl = '';
@@ -326,6 +394,14 @@
                     }
                     console.log(e.detail);
                     this.answers = e.detail.answers;
+
+
+                    let activeQuestionJson = JSON.stringify(this.question);
+                    let activeQuestionAnswersJson = JSON.stringify(this.answers);
+
+                    this.setCookie('active_question', activeQuestionJson, 1);
+                    this.setCookie('active_question_answers',  activeQuestionAnswersJson, 1);
+
                 });
 
                 document.addEventListener('startTimer', (e) => {
@@ -349,6 +425,14 @@
                 });
 
                 document.addEventListener("showCorrectAnswer", (e) => {
+
+
+                    this.eraseCookie('last_answered_question_id');
+                    this.eraseCookie('last_answered_answer_id');
+
+                    this.eraseCookie('active_question');
+                    this.eraseCookie('active_question_answers');
+
                     console.log(e);
                     if (e.detail.question_type == 'text_input') {
                         this.correctAnswer = e.detail.answer_text;
@@ -363,6 +447,13 @@
                     }
                 });
                 document.addEventListener('showWinningTeam', (e) => {
+
+                    this.eraseCookie('last_answered_question_id');
+                    this.eraseCookie('last_answered_answer_id');
+
+                    this.eraseCookie('active_question');
+                    this.eraseCookie('active_question_answers');
+
                     console.log(e);
                     this.changeView('winners_view');
                     this.questionWinner = e.detail.winnerName;
