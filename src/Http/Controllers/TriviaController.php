@@ -735,7 +735,7 @@ class TriviaController
         $originalAnswer = Answers::create([
             'question_id' => $originalQuestion->id,
             'answer' => $request->answer,
-            'correct' => $request->is_correct,
+            'is_correct' => $request->is_correct,
         ]);
 
         $answer = TrvAnswers::create([
@@ -783,13 +783,19 @@ class TriviaController
 
         $csv = array();
         foreach ($rows as $row) {
+            if(!isset($row[0])) {
+                continue;
+            }
             $csv[] = [
                 'question' => $row[0],
                 'question_type' => $row[1],
                 'answers' => []
             ];
             for ($i = 2; $i < count($row); $i++) {
-                $csv[count($csv) - 1]['answers'][] = ['answer' => $row[$i], 'is_correct' => ($i == 1) ? 1 : 0];
+                if ($row[$i] == "") {
+                    continue;
+                }
+                $csv[count($csv) - 1]['answers'][] = ['answer' => $row[$i], 'is_correct' => ($i == 2) ? 1 : 0];
             }
         }
 

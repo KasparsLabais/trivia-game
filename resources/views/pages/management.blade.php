@@ -148,7 +148,7 @@
                             </form>
                         </div>
                         <div>
-                            <form action="/trv/csv-upload/trivia" method="POST" enctype="multipart/form-data" class="flex flex-col px-2 py-4 shadow">
+                            <form action="/csv-upload/trivia" method="POST" enctype="multipart/form-data" class="flex flex-col px-2 py-4 shadow">
                                 {{ csrf_field() }}
                                 <div class="flex flex-row">
                                     <div class="flex flex-col px-2 py-2">

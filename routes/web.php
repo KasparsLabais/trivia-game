@@ -25,7 +25,7 @@ Route::group(['middleware' => ['web']], function() {
     Route::post('/management/trivia/{id}/question/{questionId}/answer', 'TriviaController@createTriviaAnswer');
     Route::put('/' . config('settings.prefix') . '/management/trivia/{id}/question/{questionId}/order', 'TriviaController@updateQuestionOrder');
 
-    Route::post('/' . config('settings.prefix') . '/csv-upload/trivia', 'TriviaController@csvUpload');
+    Route::post('/csv-upload/trivia', 'TriviaController@csvUpload');
     Route::post('/' . config('settings.prefix') . '/api-single-upload/trivia', 'TriviaController@apiSingleAnswerQuestionCreator');
     Route::post('/' . config('settings.prefix') . '/management/api-trivia', 'TriviaController@createTriviaFromApi');
 
