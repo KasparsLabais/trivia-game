@@ -71,7 +71,7 @@
                                     <a href="/premium" class="flex justify-center w-full fira-sans py-2 px-2 md:px-6 shadow bg-yellow-500 text-slate-100 font-semibold text-lg shadow-gray-900 my-2">Get Premium</a>
                                 </div>
                                 <div v-else>
-                                    <button type="button" v-on:click="startTriviaGame( [[ trivia.id ]] )" class="w-full fira-sans py-2 px-2 md:px-6 shadow bg-lime-600 text-slate-100 font-semibold text-lg shadow-gray-900 my-2">Play</button>
+                                    <button type="button" v-on:click="startTriviaGame( trivia.id )" class="w-full fira-sans py-2 px-2 md:px-6 shadow bg-lime-600 text-slate-100 font-semibold text-lg shadow-gray-900 my-2">Play</button>
                                 </div>
                             @else
                                 <div>
@@ -265,7 +265,7 @@
                 startTriviaGame(triviaId) {
                     console.log(triviaId);
 
-                    fetch('/trv/trivia', {
+                    fetch('/trivia', {
                         'method': 'POST',
                         'headers': {'Content-Type': 'application/json', 'X-CSRF-TOKEN' : '{{ csrf_token() }}' },
                         'body': JSON.stringify({'trivia_id': triviaId})

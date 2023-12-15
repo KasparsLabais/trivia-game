@@ -14,7 +14,7 @@ Route::group(['middleware' => ['web']], function() {
 
     //create trivia route
     Route::get('/trivia', 'TriviaController@index');
-    Route::post('/' . config('settings.prefix') . '/trivia', 'TriviaController@createGame');
+    Route::post('/trivia', 'TriviaController@createGame');
 
     Route::get('/' . config('settings.prefix') . '/management', 'TriviaController@management');
     Route::post('/' . config('settings.prefix') . '/management/trivia', 'TriviaController@createTrivia');
@@ -22,7 +22,7 @@ Route::group(['middleware' => ['web']], function() {
     Route::post('/' . config('settings.prefix') . '/management/trivia/{id}', 'TriviaController@updateTrivia');
 
     Route::post('/' . config('settings.prefix') . '/management/trivia/{id}/question', 'TriviaController@createTriviaQuestion');
-    Route::post('/'. config('settings.prefix')  . '/management/trivia/{id}/question/{questionId}/answer', 'TriviaController@createTriviaAnswer');
+    Route::post('/management/trivia/{id}/question/{questionId}/answer', 'TriviaController@createTriviaAnswer');
     Route::put('/' . config('settings.prefix') . '/management/trivia/{id}/question/{questionId}/order', 'TriviaController@updateQuestionOrder');
 
     Route::post('/' . config('settings.prefix') . '/csv-upload/trivia', 'TriviaController@csvUpload');

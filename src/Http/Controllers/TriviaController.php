@@ -60,7 +60,6 @@ class TriviaController
         ];
 
         $response = GameApi::createGameInstance(config('settings.token'), $trivia->title, $remoteData);
-
         if ($response['status'] == false) {
             return new JsonResponse([
                 'success' => false,
@@ -736,7 +735,7 @@ class TriviaController
         $originalAnswer = Answers::create([
             'question_id' => $originalQuestion->id,
             'answer' => $request->answer,
-            'is_correct' => $request->is_correct,
+            'correct' => $request->is_correct,
         ]);
 
         $answer = TrvAnswers::create([

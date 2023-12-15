@@ -351,10 +351,16 @@
 
                     if (this.checkCookie('active_question')) {
                         this.question = JSON.parse(this.getCookie('active_question'));
+
+                        this.questionLoaded = 1;
+                        this.changeView('question_view');
+
+                        console.log('Active Question: ' + this.question);
                     }
 
                     if (this.checkCookie('active_question_answers')) {
                         this.answers = JSON.parse(this.getCookie('active_question_answers'));
+                        console.log('Active Question Answers: ' + this.answers);
                     }
                 },
             },

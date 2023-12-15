@@ -376,7 +376,7 @@
             let questionId = event.target.getAttribute('data-questionid');
             let questionType = document.querySelector('#question-' + questionId).getAttribute('question-type');
 
-            fetch('/trv/management/trivia/{{ $trivia['id'] }}/question/' + questionId + '/answer', {
+            fetch('/management/trivia/{{ $trivia['id'] }}/question/' + questionId + '/answer', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
