@@ -211,6 +211,7 @@
 
                     let questionDiv = document.createElement('div');
                     questionDiv.setAttribute('id', 'question-' + question.id);
+                    questionDiv.setAttribute('question-type', question.question_type);
                     questionDiv.classList.add('flex', 'flex-col', 'bg-slate-200', 'shadow', 'rounded', 'mt-4');
 
                     let questionHeader = document.createElement('div');
@@ -311,16 +312,18 @@
                     questionFooterAnswerAnswer.appendChild(questionFooterAnswerAnswerLabel);
                     questionFooterAnswerAnswer.appendChild(questionFooterAnswerAnswerInput);
 
-                    let questionFooterAnswerIsCorrect = document.createElement('div');
-                    questionFooterAnswerIsCorrect.classList.add('flex', 'flex-col', 'px-2', 'py-1');
-
-                    let questionFooterAnswerIsCorrectLabel = document.createElement('label');
-                    questionFooterAnswerIsCorrectLabel.classList.add('raleway', 'font-semibold', 'text-sm');
-                    questionFooterAnswerIsCorrectLabel.setAttribute('for', 'is_correct-' + question.id);
-                    questionFooterAnswerIsCorrectLabel.innerText = 'Is Correct:';
 
 
                     if (question.question_type == 'options') {
+
+                        let questionFooterAnswerIsCorrect = document.createElement('div');
+                        questionFooterAnswerIsCorrect.classList.add('flex', 'flex-col', 'px-2', 'py-1');
+
+                        let questionFooterAnswerIsCorrectLabel = document.createElement('label');
+                        questionFooterAnswerIsCorrectLabel.classList.add('raleway', 'font-semibold', 'text-sm');
+                        questionFooterAnswerIsCorrectLabel.setAttribute('for', 'is_correct-' + question.id);
+                        questionFooterAnswerIsCorrectLabel.innerText = 'Is Correct:';
+
                         let questionFooterAnswerIsCorrectSelect = document.createElement('select');
                         questionFooterAnswerIsCorrectSelect.classList.add('bg-slate-100', 'border', 'border-zinc-400', 'shadow', 'shadow-zinc-400', 'rounded');
                         questionFooterAnswerIsCorrectSelect.setAttribute('name', 'is_correct-' + question.id);
@@ -340,9 +343,10 @@
                         questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectLabel);
                         questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectSelect);
 
-                        questionFooterAnswer.appendChild(questionFooterAnswerAnswer);
                         questionFooterAnswer.appendChild(questionFooterAnswerIsCorrect);
                     }
+
+                    questionFooterAnswer.appendChild(questionFooterAnswerAnswer);
 
                     let questionFooterAddAnswer = document.createElement('div');
                     questionFooterAddAnswer.classList.add('flex', 'flex-col', 'justify-center');
@@ -396,14 +400,63 @@
 
                     let answerDiv = document.createElement('div');
 
-                    if(answer.is_correct == "1") {
-                        answerDiv.classList.add('border-lime-500', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
-                    } else {
-                        answerDiv.classList.add('border-slate-500', 'bg-slate-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
-                    }
-                    answerDiv.innerText = answer.answer;
-                    answerHolder.appendChild(answerDiv);
+                    if (questionType == 'options') {
+                        if(answer.is_correct == "1") {
+                            answerDiv.classList.add('border-lime-500', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
+                        } else {
+                            answerDiv.classList.add('border-slate-500', 'bg-slate-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
+                        }
 
+                        answerDiv.innerText = answer.answer;
+                        answerHolder.appendChild(answerDiv);
+
+                    } else if (questionType == 'text_input') {
+
+                        answerDiv.classList.add('border-lime-500', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
+                        answerDiv.innerText = answer.answer;
+
+                        let answerImageForm = document.createElement('form');
+                        answerImageForm.setAttribute('method', 'POST');
+                        answerImageForm.setAttribute('action', '/admin/trv/answer-image/' + answer.id);
+                        answerImageForm.setAttribute('enctype', 'multipart/form-data');
+
+                        let answerImageFormFlex = document.createElement('div');
+                        answerImageFormFlex.classList.add('flex', 'flex-row');
+
+                        let answerImageFormToken = document.createElement('input');
+                        answerImageFormToken.setAttribute('type', 'hidden');
+                        answerImageFormToken.setAttribute('name', '_token');
+                        answerImageFormToken.setAttribute('value', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+                        let answerImageFormInputHolder = document.createElement('div');
+                        answerImageFormInputHolder.classList.add('flex', 'flex-col');
+
+                        let answerImageFormLabel = document.createElement('label');
+                        answerImageFormLabel.innerText = 'Upload Image For Correct answer: ';
+
+                        let answerImageFormInput = document.createElement('input');
+                        answerImageFormInput.setAttribute('type', 'file');
+                        answerImageFormInput.setAttribute('name', 'answer-image');
+                        answerImageFormInput.setAttribute('id', 'answer-image');
+
+                        let answerImageFormButtonHolder = document.createElement('button');
+                        answerImageFormButtonHolder.classList.add('py-2', 'px-2', 'shadow-md', 'bg-lime-600', 'text-left', 'text-slate-100', 'text-lg', 'font-semibold', 'mb-2', 'rounded');
+
+                        let answerImageFormButton = document.createElement('button');
+                        answerImageFormButton.setAttribute('type', 'submit');
+                        answerImageFormButton.innerText = 'Upload Image';
+
+                        answerImageFormButtonHolder.appendChild(answerImageFormButton);
+                        answerImageFormInputHolder.appendChild(answerImageFormLabel);
+                        answerImageFormInputHolder.appendChild(answerImageFormInput);
+                        answerImageFormFlex.appendChild(answerImageFormToken);
+                        answerImageFormFlex.appendChild(answerImageFormInputHolder);
+                        answerImageFormFlex.appendChild(answerImageFormButtonHolder);
+                        answerImageForm.appendChild(answerImageFormFlex);
+
+                        answerHolder.appendChild(answerDiv);
+                        answerHolder.appendChild(answerImageForm);
+                    }
                     //add answer to questionsList
                     questionsList[questionId]['answers'].push(answer);
                 }
