@@ -85,7 +85,7 @@ class TriviaController
             if(Session::get('tmp-user-id') != null) {
                 $userId = Session::get('tmp-user-id');
             } else {
-                return redirect()->to('/trv/trivia');
+                return redirect()->to('/trivia');
             }
         }
 
@@ -192,7 +192,7 @@ class TriviaController
         }
 
         if ($gameInstance['status'] == 'completed') {
-            return redirect()->to("/trv/trivia/{$gameToken}/results");
+            return redirect()->to("/trivia/{$gameToken}/results");
             //return view('trivia-game::game.results')->with(['gameInstance' => $gameInstance]);
         }
 
@@ -665,13 +665,13 @@ class TriviaController
     public function editTrivia($id)
     {
         if (!Auth::check()) {
-            return redirect()->to('/trv/trivia');
+            return redirect()->to('/trivia');
         }
 
         $trivia = Trivia::where('id', $id)->first();
 
         if (Auth::user()->user_id == $trivia->user_id) {
-            return redirect()->to('/trv/trivia');
+            return redirect()->to('/trivia');
         }
 
         $questions = TrvQuestions::where('trivia_id', $id)->orderBy('order_nr')->get();
