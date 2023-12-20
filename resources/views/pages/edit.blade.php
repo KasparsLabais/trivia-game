@@ -20,6 +20,8 @@
                                 <label class="raleway font-semibold text-md" for="question">Description:</label>
                                 <input value="{{ $trivia['description'] }}"  class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" type="text" name="description" id="description">
                             </div>
+                        </div>
+                        <div class="flex flex-row">
                             <div class="flex flex-col px-2 py-2">
                                 <label class="raleway font-semibold text-md" for="difficulty">Difficulty</label>
                                 <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="difficulty" id="difficulty">
@@ -36,7 +38,8 @@
                                     @endforeach
                                 </select>
                             </div>
-
+                        </div>
+                        <div class="flex flex-row">
                             <div class="flex flex-col px-2 py-2">
                                 <label class="raleway font-semibold text-md" for="is_active">Is Active: </label>
                                 <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="is_active" id="is_active">
