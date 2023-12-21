@@ -9,22 +9,22 @@
 
                 <h1 class="josefin-sans font-semibold text-4xl text-yellow-500 mt-2">{{ $trivia['title'] }}</h1>
                 <div class="bg-slate-100 rounded shadow">
-                    <form action="" method="POST" class="flex flex-col px-2 py-4 bg-slate-200 shadow">
+                    <form action="" method="POST" class="flex flex-row px-2 py-4 bg-slate-200 shadow">
                         {{ csrf_field() }}
-                        <div class="flex flex-row">
+                        <div class="flex flex-col w-2/6">
                             <div class="flex flex-col px-2 py-2">
                                 <label class="raleway font-semibold text-md" for="title">Title:</label>
-                                <input value="{{ $trivia['title'] }}" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" type="text" name="title" id="title">
+                                <input value="{{ $trivia['title'] }}" class="px-2 bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 text-lg" type="text" name="title" id="title">
                             </div>
                             <div class="flex flex-col px-2 py-2">
                                 <label class="raleway font-semibold text-md" for="question">Description:</label>
-                                <input value="{{ $trivia['description'] }}"  class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" type="text" name="description" id="description">
+                                <input value="{{ $trivia['description'] }}"  class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" type="text" name="description" id="description">
                             </div>
                         </div>
-                        <div class="flex flex-row">
+                        <div class="flex flex-col w-2/6">
                             <div class="flex flex-col px-2 py-2">
                                 <label class="raleway font-semibold text-md" for="difficulty">Difficulty</label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="difficulty" id="difficulty">
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" name="difficulty" id="difficulty">
                                     <option value="easy" @if($trivia['difficulty'] == 'easy') selected="selected" @endif>Easy</option>
                                     <option value="medium" @if($trivia['difficulty'] == 'medium') selected="selected" @endif>Medium</option>
                                     <option value="hard" @if($trivia['difficulty'] == 'hard') selected="selected" @endif>Hard</option>
@@ -32,17 +32,17 @@
                             </div>
                             <div class="flex flex-col px-2 py-2">
                                 <label class="raleway font-semibold text-md" for="category">Category</label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="category" id="category">
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" name="category" id="category">
                                     @foreach($categories as $cat)
                                         <option value="{{ $cat['id'] }}" @if($trivia['category_id'] == $cat['id']) selected="selected" @endif>{{ $cat['name'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
-                        <div class="flex flex-row">
+                        <div class="flex flex-col w-1/6">
                             <div class="flex flex-col px-2 py-2">
                                 <label class="raleway font-semibold text-md" for="is_active">Is Active: </label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="is_active" id="is_active">
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" name="is_active" id="is_active">
                                     <option value="0" @if($trivia['is_active'] == 0) selected="selected" @endif>0</option>
                                     <option value="1" @if($trivia['is_active'] == 1) selected="selected" @endif>1</option>
                                 </select>
@@ -50,7 +50,7 @@
 
                             <div class="flex flex-col px-2 py-2">
                                 <label class="raleway font-semibold text-md" for="is_active">Private: </label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="private" id="private">
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" name="private" id="private">
                                     <option value="0" @if($trivia['private'] == 0) selected="selected" @endif>0</option>
                                     <option value="1" @if($trivia['private'] == 1) selected="selected" @endif>1</option>
                                 </select>
@@ -66,7 +66,9 @@
 
                         </div>
                         <div class="flex flex-row px-2">
-                            <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold">Save</button>
+                            <div class="flex flex-col justify-center">
+                                <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-lg text-slate-100 font-semibold">Save Changes</button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -78,7 +80,23 @@
                 <div v-for="question in sortedQuestions" class="flex flex-col bg-slate-100 shadow rounded mt-4">
                     <div class="flex flex-row justify-between bg-slate-300 py-2 px-4">
                         <div class="flex flex-col justify-center">
-                            <span class="text-xl josefin-sans font-semibold">[[ question.question ]] | <span class="font-normal">Question Type: [[ question.question_type ]]</span> </span>
+                            <div class="flex flex-row text-xl josefin-sans font-semibold">
+                                [[ question.question ]]
+                                | <span class="font-normal">Question Type: [[ question.question_type ]]</span>
+                                <div v-if="question.id == editedQuestionId" class="flex flex-row px-2">
+                                    <svg v-on:click="saveEditQuestion()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="stroke-lime-600 mx-2 w-6 h-6 cursor-pointer">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                    </svg>
+                                    <svg v-on:click="cancelEditQuestion()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="stroke-rose-600 mx-2 w-6 h-6 cursor-pointer">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                    </svg>
+                                </div>
+                                <div v-else v-on:click="editQuestion(question.id)" class="px-2">
+                                    <svg  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="stroke-cyan-600 w-6 h-6 mx-2 cursor-pointer">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                         <div class="flex flex-row">
                             <div class="flex flex-col rounded  px-1 cursor-pointer" v-on:click="moveQuestionOrderNrUp(question.id)">
@@ -294,12 +312,59 @@
         createApp({
             data() {
                 return {
+                    editedQuestionId: 0,
+                    editedQuestionValues: {
+                        question: '',
+                        question_type: '',
+                        answers: []
+                    },
                     questions: questionsList
                 }
             },
             delimiters: ['[[', ']]'],
-            method: {
-
+            methods: {
+                editQuestion(questionId) {
+                    console.log('edit question', questionId);
+                    this.editedQuestionId = questionId;
+                    this.editedQuestionValues.question = this.questions[questionId].question;
+                    this.editedQuestionValues.question_type = this.questions[questionId].question_type;
+                    this.editedQuestionValues.answers = this.questions[questionId].answers;
+                },
+                cancelEditQuestion() {
+                    console.log('cancel edit question');
+                    this.editedQuestionId = 0;
+                    this.editedQuestionValues.question = '';
+                    this.editedQuestionValues.question_type = '';
+                    this.editedQuestionValues.answers = [];
+                },
+                saveEditQuestion() {
+                    console.log('save edit question');
+                    console.log(this.editedQuestionValues);
+                    fetch('/trv/management/trivia/{{ $trivia['id'] }}/question/' + this.editedQuestionId, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            question: this.editedQuestionValues.question,
+                            question_type: this.editedQuestionValues.question_type,
+                            answers: this.editedQuestionValues.answers
+                        })
+                    }).then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        if (data.success) {
+                            this.questions[this.editedQuestionId].question = this.editedQuestionValues.question;
+                            this.questions[this.editedQuestionId].question_type = this.editedQuestionValues.question_type;
+                            this.questions[this.editedQuestionId].answers = this.editedQuestionValues.answers;
+                            this.editedQuestionId = 0;
+                            this.editedQuestionValues.question = '';
+                            this.editedQuestionValues.question_type = '';
+                            this.editedQuestionValues.answers = [];
+                        }
+                    });
+                }
             },
             computed: {
                 sortedQuestions() {
