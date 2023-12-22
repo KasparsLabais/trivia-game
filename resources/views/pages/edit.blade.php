@@ -161,6 +161,28 @@
                                     </div>
                                 </div>
                             </template>
+                            <template v-if="question.question_type == 'text_input'">
+                                <div v-for="(answer, index) in editedQuestionValues.answers" class="flex flex-col pr-2">
+                                    <div class="flex flex-col">
+                                        <div class="flex flex-row">
+                                            <div class="flex flex-col px-2 py-1">
+                                                <label class="raleway font-semibold text-sm" >Answer:</label>
+                                                <input v-model="answer.answer" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2" type="text" placeholder="Enter Answer">
+                                            </div>
+                                            <div class="flex flex-col px-2 py-1">
+                                                <label class="raleway font-semibold text-sm" >Is Correct:</label>
+                                                <select v-model="answer.is_correct" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2" >
+                                                    <option value="0">No</option>
+                                                    <option value="1">Yes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-row justify-start px-2 h-full">
+                                            <button v-on:click="removeAnswer(index)" class="py-2 px-2 shadow-md bg-rose-600 text-left text-slate-100 text-lg font-semibold rounded">Remove Answer</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
                         </template>
 
                         <template v-else v-for="answer in question.answers">
@@ -204,7 +226,7 @@
 
                     <div class="flex flex-row bg-slate-300 py-2 px-2">
                         <template v-if="question.id == editedQuestionId">
-                            Question is in edit mode.
+                            <span class="text-lg josefin-sans font-semibold">Question is in edit mode.</span>
                         </template>
                         <div v-else class="flex flex-row">
                             <div class="flex flex-col px-2 py-1">
