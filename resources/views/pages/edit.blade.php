@@ -58,7 +58,7 @@
 
                             <div class="flex flex-col px-2 py-2">
                                 <label class="raleway font-semibold text-md" for="is_premium">Is Premium: </label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="is_premium" id="is_premium">
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" name="is_premium" id="is_premium">
                                     <option value="0" @if($trivia['is_premium'] == 0) selected="selected" @endif>0</option>
                                     <option value="1" @if($trivia['is_premium'] == 1) selected="selected" @endif>1</option>
                                 </select>
@@ -81,8 +81,27 @@
                     <div class="flex flex-row justify-between bg-slate-300 py-2 px-4">
                         <div class="flex flex-col justify-center">
                             <div class="flex flex-row text-xl josefin-sans font-semibold">
-                                [[ question.question ]]
-                                | <span class="font-normal">Question Type: [[ question.question_type ]]</span>
+                                <template v-if="question.id == editedQuestionId">
+                                    <input v-model="editedQuestionValues.question" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded px-2 py-2" type="text" placeholder="Enter Question">
+                                </template>
+                                <template v-else>
+                                    [[ question.question ]]
+                                </template>
+                                <span class="px-2">|</span>
+                                <template v-if="question.id == editedQuestionId">
+                                    <select v-model="editedQuestionValues.question_type" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2" >
+                                        <option value="options">Options (A, B, C...)</option>
+                                        <option value="text_input">Text Input</option>
+                                        <option value="number_input">Number Input</option>
+                                        <option value="image">Image</option>
+                                        <!--<option value="video">Video</option>
+                                        <option value="audio">Audio</option>-->
+                                    </select>
+                                </template>
+                                <template v-else>
+                                    <span class="font-normal">Question Type: [[ question.question_type ]]</span>
+                                </template>
+
                                 <div v-if="question.id == editedQuestionId" class="flex flex-row px-2">
                                     <svg v-on:click="saveEditQuestion()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="stroke-lime-600 mx-2 w-6 h-6 cursor-pointer">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
@@ -118,8 +137,33 @@
                         </div>
                     </div>
                     <div class="flex flex-row py-4 px-4">
-                        <template v-for="answer in question.answers">
 
+                        <template v-if="question.id == editedQuestionId">
+                            <template v-if="question.question_type == 'options'">
+                                <div v-for="(answer, index) in editedQuestionValues.answers" class="flex flex-col pr-2">
+                                    <div class="flex flex-col">
+                                        <div class="flex flex-row">
+                                            <div class="flex flex-col px-2 py-1">
+                                                <label class="raleway font-semibold text-sm" >Answer:</label>
+                                                <input v-model="answer.answer" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2" type="text" placeholder="Enter Answer">
+                                            </div>
+                                            <div class="flex flex-col px-2 py-1">
+                                                <label class="raleway font-semibold text-sm" >Is Correct:</label>
+                                                <select v-model="answer.is_correct" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2" >
+                                                    <option value="0">No</option>
+                                                    <option value="1">Yes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-row justify-start px-2 h-full">
+                                            <button v-on:click="removeAnswer(index)" class="py-2 px-2 shadow-md bg-rose-600 text-left text-slate-100 text-lg font-semibold rounded">Remove Answer</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+
+                        <template v-else v-for="answer in question.answers">
                             <template v-if="question.question_type == 'options'">
                                 <div v-if="answer.is_correct" class="flex flex-row border-lime-500 bg-lime-500 text-slate-100 font-semibold border-2 px-4 py-2 rounded shadow mx-1">
                                     [[ answer.answer ]]
@@ -128,7 +172,6 @@
                                     [[ answer.answer ]]
                                 </div>
                             </template>
-
                             <template v-if="question.question_type == 'text_input'">
 
                                 <div class="flex flex-col pr-2">
@@ -156,10 +199,14 @@
                                 </form>
                             </template>
                         </template>
+
                     </div>
 
                     <div class="flex flex-row bg-slate-300 py-2 px-2">
-                        <div class="flex flex-row">
+                        <template v-if="question.id == editedQuestionId">
+                            Question is in edit mode.
+                        </template>
+                        <div v-else class="flex flex-row">
                             <div class="flex flex-col px-2 py-1">
                                 <label class="raleway font-semibold text-sm" >Answer:</label>
                                 <input class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded px-2 py-2" type="text" placeholder="Enter Answer">
