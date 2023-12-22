@@ -237,12 +237,12 @@
                         <div v-else class="flex flex-row">
                             <div class="flex flex-col px-2 py-1">
                                 <label class="raleway font-semibold text-sm" >Answer:</label>
-                                <input class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded px-2 py-2" type="text" placeholder="Enter Answer">
+                                <input v-model="question.new_answer" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded px-2 py-2" type="text" placeholder="Enter Answer">
                             </div>
                             <template v-if="question.question_type == 'options'">
                                 <div class="flex flex-col px-2 py-1">
                                     <label class="raleway font-semibold text-sm" >Is Correct:</label>
-                                    <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2" >
+                                    <select v-model="question.new_answer_is_correct" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2" >
                                         <option value="0">No</option>
                                         <option value="1">Yes</option>
                                     </select>
@@ -368,7 +368,7 @@
 
         let questionsList = {
             @foreach($questions as $question)
-            '{{ $question['id'] }}' :{ 'id' :{{ $question['id'] }}, 'order_nr':{{ $question['order_nr'] }}, 'question':'{{ $question['question'] }}', 'question_type': '{{ $question['question_type']  }}', 'answers':[
+            '{{ $question['id'] }}' :{ 'id' :{{ $question['id'] }}, 'order_nr':{{ $question['order_nr'] }}, 'question':'{{ $question['question'] }}', 'question_type': '{{ $question['question_type']  }}', 'new_answer' : '', 'new_answer_is_correct' : 0, 'answers':[
                         @foreach($question->answers as $answer)
                     {
                         'id': {{ $answer['id'] }},
@@ -439,7 +439,30 @@
                             this.editedQuestionValues.answers = [];
                         }
                     });
-                }
+                },
+                addAnswer(questionId) {
+                    console.log('add answer', questionId);
+                    console.log(this.questions[questionId]);
+                    fetch('/management/trivia/{{ $trivia['id'] }}/question/' + questionId + '/answer', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            answer: this.questions[questionId].new_answer,
+                            is_correct: this.questions[questionId].new_answer_is_correct
+                        })
+                    }).then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        if (data.success) {
+                            this.questions[questionId].answers.push(data.payload);
+                            this.questions[questionId].new_answer = '';
+                            this.questions[questionId].new_answer_is_correct = 0;
+                        }
+                    });
+                },
             },
             computed: {
                 sortedQuestions() {
