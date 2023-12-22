@@ -463,6 +463,23 @@
                         }
                     });
                 },
+                removeAnswer(index) {
+                    console.log('remove answer', index);
+                    console.log(this.questions[this.editedQuestionId].answers[index]);
+                    fetch('/management/trivia/{{ $trivia['id'] }}/question/' + this.editedQuestionId + '/answer/' + this.questions[this.editedQuestionId].answers[index].id, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    }).then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        if (data.success) {
+                            this.questions[this.editedQuestionId].answers.splice(index, 1);
+                        }
+                    });
+                },
             },
             computed: {
                 sortedQuestions() {

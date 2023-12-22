@@ -794,6 +794,21 @@ class TriviaController
         ]);
     }
 
+    public function deleteTriviaAnswer($id, $questionId, $answerId)
+    {
+        $answer = TrvAnswers::where('id', $answerId)->first();
+        $answer->delete();
+
+        $originalAnswer = Answers::where('id', $answer->original_answer_id)->first();
+        $originalAnswer->delete();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Answer deleted successfully',
+            'payload' => $answer
+        ]);
+    }
+
     public function updateQuestionOrder($id, $questionId, Request $request)
     {
         $question = TrvQuestions::where('id', $questionId)->first();
