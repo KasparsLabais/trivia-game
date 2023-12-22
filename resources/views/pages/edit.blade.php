@@ -103,12 +103,18 @@
                                 </template>
 
                                 <div v-if="question.id == editedQuestionId" class="flex flex-row px-2">
+                                    <div>
+                                        <button v-on:click="saveEditQuestion()" class="py-2 px-6 shadow-md bg-lime-500 text-lg text-slate-100 font-semibold mx-1">Save</button>
+                                        <button v-on:click="cancelEditQuestion()"  class="py-2 px-6 shadow-md bg-rose-500 text-lg text-slate-100 font-semibold mx-1">Cancel</button>
+                                    </div>
+                                    <!--
                                     <svg v-on:click="saveEditQuestion()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="stroke-lime-600 mx-2 w-6 h-6 cursor-pointer">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                                     </svg>
                                     <svg v-on:click="cancelEditQuestion()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="stroke-rose-600 mx-2 w-6 h-6 cursor-pointer">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                                     </svg>
+                                    -->
                                 </div>
                                 <div v-else v-on:click="editQuestion(question.id)" class="px-2">
                                     <svg  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="stroke-cyan-600 w-6 h-6 mx-2 cursor-pointer">
@@ -409,7 +415,7 @@
                 saveEditQuestion() {
                     console.log('save edit question');
                     console.log(this.editedQuestionValues);
-                    fetch('/trv/management/trivia/{{ $trivia['id'] }}/question/' + this.editedQuestionId, {
+                    fetch('/management/trivia/{{ $trivia['id'] }}/question/' + this.editedQuestionId, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

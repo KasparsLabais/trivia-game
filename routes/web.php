@@ -22,6 +22,7 @@ Route::group(['middleware' => ['web']], function() {
     Route::post('/' . config('settings.prefix') . '/management/trivia/{id}', 'TriviaController@updateTrivia');
 
     Route::post('/' . config('settings.prefix') . '/management/trivia/{id}/question', 'TriviaController@createTriviaQuestion');
+    Route::post('/management/trivia/{id}/question/{questionId}', 'TriviaController@updateTriviaQuestion');
     Route::post('/management/trivia/{id}/question/{questionId}/answer', 'TriviaController@createTriviaAnswer');
     Route::put('/' . config('settings.prefix') . '/management/trivia/{id}/question/{questionId}/order', 'TriviaController@updateQuestionOrder');
 

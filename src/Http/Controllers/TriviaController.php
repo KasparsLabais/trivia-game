@@ -726,6 +726,48 @@ class TriviaController
         ]);
     }
 
+    public function updateTriviaQuestion($id, $questionId, Request $request)
+    {
+        $question = TrvQuestions::where('id', $questionId)->first();
+        $question->question = $request->question;
+        $question->question_type = $request->question_type;
+        $question->save();
+
+        $ownsQuestion = false;
+
+        if (Questions::where('id', $question->original_question_id)->where('user_id', Auth::user()->id)->exists()) {
+            $ownsQuestion = true;
+        }
+
+        if($ownsQuestion) {
+            $originalQuestion = Questions::where('id', $question->original_question_id)->first();
+            $originalQuestion->question = $request->question;
+            $originalQuestion->question_type = $request->question_type;
+            $originalQuestion->save();
+        }
+
+        //update all answers
+        foreach ($request->answers as $answer) {
+            $trvAnswer = TrvAnswers::where('id', $answer['id'])->first();
+            $trvAnswer->answer = $answer['answer'];
+            $trvAnswer->is_correct = $answer['is_correct'];
+            $trvAnswer->save();
+
+            if($ownsQuestion) {
+                $originalAnswer = Answers::where('id', $trvAnswer->original_answer_id)->first();
+                $originalAnswer->answer = $answer['answer'];
+                $originalAnswer->is_correct = $answer['is_correct'];
+                $originalAnswer->save();
+            }
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Question updated successfully',
+            'payload' => $question
+        ]);
+    }
+
     public function createTriviaAnswer($id, $questionId, Request $request)
     {
 
