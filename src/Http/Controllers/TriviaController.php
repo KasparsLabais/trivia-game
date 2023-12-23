@@ -413,7 +413,7 @@ class TriviaController
                 'answer_id' => $request->get('answer_id'),
                 'user_id' => $userId
             ]);
-            $answer = Answers::find($request->get('answer_id'));
+            $answer = TrvAnswers::find($request->get('answer_id'));
             //$answer = Answers::where('question_id', $question['original_question_id'])->first();
             $isCorrect = $answer->is_correct;
         } elseif($question['question_type'] == 'text_input') {
