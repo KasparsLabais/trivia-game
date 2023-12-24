@@ -91,7 +91,7 @@
                                 </div>
                                 <div class="flex flex-col px-1 py-2 justify-end" style="overflow-wrap: anywhere;">
                                     <div class="raleway text-center text-slate-200 font-bold text-normal mt-6">{{ $runnerUp['username'] }}</div>
-                                    <div class="raleway text-center text-slate-400 font-bold text-sm">2 Points</div>
+                                    <div class="raleway text-center text-slate-400 font-bold text-sm">{{ $runnerUp['points'] }} Points</div>
                                 </div>
                             </div>
                         </div>
