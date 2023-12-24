@@ -134,7 +134,7 @@
                     selectedQuestionId: null,
                     pointsPerQuestion: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'points_per_question')) {{ GameApi::getGameInstanceSettings($gameInstance['token'], 'points_per_question') }} @else 2 @endif,
                     pointsPerIncorrectAnswer: @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 1 ) 1 @else 0 @endif,
-                    bonusForSpeed: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'bonus_for_speed')) {{ GameApi::getGameInstanceSettings($gameInstance['token'], 'bonus_for_speed') }} @else 2 @endif,
+                    bonusForSpeed: @if(GameApi::getGameInstanceSettings($gameInstance['token'], 'bonus_for_speed')) {{ GameApi::getGameInstanceSettings($gameInstance['token'], 'bonus_for_speed') }} @else 0 @endif,
                     showCorrectAnswerEnabled: false,
                     settings: {
                         timeLimitEnabled: @if((int)GameApi::getGameInstanceSettings($gameInstance['token'], 'time_limit_enabled') == 1 ) 1 @else 0 @endif,
