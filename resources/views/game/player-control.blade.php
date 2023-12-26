@@ -478,6 +478,11 @@
                     console.log('gameOverEvent', e.detail);
                     window.location.href = '/trivia/{{ $gameInstance['token'] }}/results';
                 });
+
+                document.addEventListener('userconnected', (e) => {
+                    console.log('event userconnected', e.detail);
+                    GameApi.joinRoom('{{ $gameInstance['token'] }}');
+                });
             }
         }).mount('#player-app');
 
