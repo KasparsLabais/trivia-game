@@ -4,11 +4,11 @@
         <div class="flex flex-col justify-center">
         @foreach($players as $player)
             <div class="flex flex-row py-4">
-                <div class="flex flex-row justify-center w-2/6">
+                <div class="flex flex-row justify-center w-3/6">
                     <p class="text-yellow-500 text-6xl">{{ $player->name }}</p>
-                    <p class="text-slate-200 text-8xl px-4">{{ $player->points }}</p>
+                    <p class="text-slate-200 text-6xl px-4">{{ $player->points }}</p>
                 </div>
-                <div class="flex flex-row w-4/6">
+                <div class="flex flex-row w-3/6">
 
                     <form action="/scrabble/{{ $game->token }}" method="POST" class="flex flex-col px-4 py-2">
                         {{ csrf_field() }}
