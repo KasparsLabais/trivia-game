@@ -77,4 +77,12 @@ Route::group(['middleware' => ['web']], function() {
 
     //Route to get available games
     Route::get('/admin/' . config('settings.prefix') . '/games', 'Controller@getGames');
+
+
+    //Scribble
+    Route::get('/scrabble', 'ScrabbleController@index');
+    Route::post('/scrabble', 'ScrabbleController@createGame');
+    Route::get('/scrabble/{token}', 'ScrabbleController@game');
+    Route::put('/scrabble/{token}', 'ScrabbleController@addPlayersPoints');
+    Route::delete('/scrabble/{token}', 'ScrabbleController@removePlayersPoints');
 });
