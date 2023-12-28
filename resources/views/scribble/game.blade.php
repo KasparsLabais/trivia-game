@@ -10,7 +10,7 @@
                 </div>
                 <div class="flex flex-row w-3/6">
 
-                    <form action="/scrabble/{{ $game->token }}" method="POST" class="flex flex-col px-4 py-2">
+                    <form action="/scrabble/{{ $game->token }}" method="POST" class="w-1/2 flex flex-col px-2 py-2">
                         {{ csrf_field() }}
                         <input type="hidden" name="_method" value="PUT">
                         <input type="hidden" name="player_id" id="player_id" value="{{ $player->id }}">
@@ -19,7 +19,7 @@
                     </form>
 
 
-                    <form action="/scrabble/{{ $game->token }}" method="POST" class="flex flex-col px-4 py-2">
+                    <form action="/scrabble/{{ $game->token }}" method="POST" class="w-1/2 flex flex-col px-2 py-2">
                         {{ csrf_field() }}
                         <input type="hidden" name="_method" value="DELETE">
                         <input type="hidden" name="player_id" id="player_id" value="{{ $player->id }}">
