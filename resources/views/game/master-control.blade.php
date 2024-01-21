@@ -329,6 +329,10 @@
                     console.log('bonus for speed changed');
                     GameApi.updateGameInstanceSetting('{{ $gameInstance['token'] }}', 'bonus_for_speed', this.bonusForSpeed);
                 },
+                changeTriviaTitle() {
+                    console.log('trivia title changed');
+                    GameApi.updateGameMainGameInstanceSetting('{{ $gameInstance['token'] }}', 'title', this.game.gameInstance.title);
+                },
                 showCorrectAnswer() {
                     this.showCorrectAnswerEnabled = true;
 

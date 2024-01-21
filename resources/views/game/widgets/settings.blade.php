@@ -4,6 +4,18 @@
 
         <div class="flex flex-col border-b border-b-slate-300 pb-4  px-2">
             <div>
+                <span class="font-semibold">Main Settings</span>
+            </div>
+            <div class="flex flex-row justify-between w-full">
+                <div class="flex flex-row w-full">
+                    <label class="raleway font-normal text-base w-2/6" for="title">Title:</label>
+                    <input v-on:change="changeTriviaTitle()" type="text" step="1" min="0" class="text-center raleway font-normal text-base capitalize w-4/6" v-model="game.gameInstance.title" name="title" id="title" />
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col border-b border-b-slate-300 pb-4  px-2">
+            <div>
                 <span class="font-semibold">Time Settings</span>
             </div>
             <div class="flex flex-row justify-between w-full">

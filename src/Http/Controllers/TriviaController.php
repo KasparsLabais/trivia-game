@@ -1114,11 +1114,23 @@ class TriviaController
         $description = !is_null($request->get('description')) ? $request->get('description') : '';
         $category = $request->get('category');
         $difficulty = $request->get('difficulty');
-        $questionCount = $request->get('question_count');
+        $questionCount = is_null($request->get('question_count')) ? 10 : $request->get('question_count');
         //    protected $fillable = ['title', 'category_id', 'difficulty', 'private', 'question_count'];
 
         $questions = [];
 
+        if (is_null($title)) {
+            //dd('Title is required');
+            if ($category == 23) {
+                $categoryName = "Random";
+            } else {
+                $categoryName =  Categories::where('id', $category)->first()->name;
+            }
+
+            //capitalize first letter of category name
+            $tmpDifficulty = ucfirst($difficulty);
+            $title = "{$categoryName} Category Trivia - {$tmpDifficulty} Difficulty";
+        }
 
         /*
         $allTriviasForProvidedCategory = Trivia::where(function($q) use( $category) {
