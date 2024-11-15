@@ -2,15 +2,12 @@
 @section('body')
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
-
     <div id="game-app">
-
         <x-section title="">
-            <div class="flex flex-row justify-center">
-                <div class="flex flex-row bg-zinc-700 px-1 py-1" style="border-radius: 25px;">
-                    <div class="flex flex bg-zinc-500 text-xl p-1" style="border-radius: 25px;">
-                        <div id="all-cats-btn-holder" onclick="switchVisibleSection('categories')" class="bg-lime-600 px-2 py-2 rounded-lg text-slate-200 josefin-sans shadow-md" style="border-radius: 20px">
+            <div class="flex flex-row justify-center mt-4">
+                <div class="flex flex-row bg-alternative-accent px-1 py-1 shadow-md" style="border-radius: 25px;">
+                    <div class="flex flex bg-main-light text-xl p-1" style="border-radius: 25px;">
+                        <div id="all-cats-btn-holder" onclick="switchVisibleSection('categories')" class="bg-main-accent px-2 py-2 rounded-lg text-slate-200 josefin-sans shadow-md" style="border-radius: 20px">
                             All Categories
                         </div>
                         <div id="public-access-btn-holder" onclick="switchVisibleSection('public')" class=" px-2 py-2 josefin-sans font-normal" style="border-radius: 20px">
@@ -22,8 +19,64 @@
         </x-section>
 
         <x-section title="">
-            <div class="flex flex-col bg-zinc-700 py-4">
-                <h1 class="px-4 z-20 text-center josefin-sans text-yellow-400 font-semibold text-2xl">Select Trivia</h1>
+            <div class="flex flex-col py-4">
+                <h1 class="px-4 z-20 text-center josefin-sans text-main-dark font-semibold text-2xl">Select Trivia</h1>
+
+                <div class="flex flex-row  w-full px-2 flex-wrap">
+                    <div class="flex flex-row w-full">
+                        <p>Select Category</p>
+                    </div>
+
+                    <div class="flex flex-row w-full">
+                        <div v-for="category in categories" class="bg-alternative-light rounded-md">
+                            [[ category.name ]]
+                        </div>
+                    </div>
+
+                    <select class="w-full py-2 text-xl" v-model="selectedCategory" name="selectedCategory" id="selectedCategory">
+                        <option value="0">Select Category</option>
+                        <option v-for="category in categories" :value="category.id">[[ category.name ]]</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-row  w-full px-2 flex-wrap">
+                    <div class="flex flex-row w-full">
+                        <p>Select Difficulty</p>
+                    </div>
+                    <div class="flex flex-row justify-center w-1/3 border border-lime-600 rounded-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-lime-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                        </svg>
+                        <span class="px-2.5 text-xl">Easy</span>
+                    </div>
+                    <div class="flex flex-row w-1/3">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-amber-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                        </svg>
+                        <span class="px-2.5">Medium</span>
+                    </div>
+                    <div class="flex flex-row w-1/3">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-rose-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                        </svg>
+                        <span class="px-2.5">Hard</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-row py-4">
+                    <div class="flex flex-row  w-2/4 px-2 flex-wrap">
+                        <!--
+                        <select class="w-full py-2 text-xl" v-model="selectedDifficulty" name="selectedDifficulty" id="selectedDifficulty">
+                            <option value="0">Select Difficulty</option>
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                        -->
+                    </div>
+                </div>
+
+                <!--
                 <div class="flex flex-row py-4">
                     <div class="flex flex-row w-2/4 px-2">
                         <select class="w-full py-2 text-xl" v-model="selectedCategory" name="selectedCategory" id="selectedCategory">
@@ -40,6 +93,7 @@
                         </select>
                     </div>
                 </div>
+                -->
             </div>
         </x-section>
 
@@ -556,17 +610,15 @@
 
                 let allCatsBtnHolder = document.getElementById('all-cats-btn-holder');
                 allCatsBtnHolder.classList.add('shadow-md');
-                allCatsBtnHolder.classList.add('bg-lime-600');
                 allCatsBtnHolder.classList.add('text-slate-200');
-                allCatsBtnHolder.classList.add('border-2');
-                allCatsBtnHolder.classList.add('border-lime-700');
+                //allCatsBtnHolder.classList.add('border-2');
+                allCatsBtnHolder.classList.add('bg-main-accent');
 
                 let publicAccessBtnHolder = document.getElementById('public-access-btn-holder');
                 publicAccessBtnHolder.classList.remove('shadow-md');
-                publicAccessBtnHolder.classList.remove('bg-lime-600');
                 publicAccessBtnHolder.classList.remove('text-slate-200');
-                publicAccessBtnHolder.classList.remove('border-2');
-                publicAccessBtnHolder.classList.remove('border-lime-700');
+                //publicAccessBtnHolder.classList.remove('border-2');
+                publicAccessBtnHolder.classList.remove('bg-main-accent');
 
 
                 document.getElementById('category-holder').classList.remove('hidden');
@@ -578,17 +630,18 @@
 
                 let publicAccessBtnHolder = document.getElementById('public-access-btn-holder');
                 publicAccessBtnHolder.classList.add('shadow-md');
-                publicAccessBtnHolder.classList.add('bg-lime-600');
+                publicAccessBtnHolder.classList.add('bg-main-accent');
                 publicAccessBtnHolder.classList.add('text-slate-200');
-                publicAccessBtnHolder.classList.add('border-2');
-                publicAccessBtnHolder.classList.add('border-lime-700');
+                //publicAccessBtnHolder.classList.add('border-2');
+                //publicAccessBtnHolder.classList.add('border-lime-700');
+                //bg-main-accent px-2 py-2 rounded-lg text-slate-200 josefin-sans shadow-md
 
                 let allCatsBtnHolder = document.getElementById('all-cats-btn-holder');
                 allCatsBtnHolder.classList.remove('shadow-md');
-                allCatsBtnHolder.classList.remove('bg-lime-600');
+                allCatsBtnHolder.classList.remove('bg-main-accent');
                 allCatsBtnHolder.classList.remove('text-slate-200');
-                allCatsBtnHolder.classList.remove('border-2');
-                allCatsBtnHolder.classList.remove('border-lime-700');
+                //allCatsBtnHolder.classList.remove('border-2');
+                //allCatsBtnHolder.classList.remove('border-lime-700');
 
                 document.getElementById('category-holder').classList.add('hidden');
                 document.getElementById('open-trivias-holder').classList.remove('hidden');
