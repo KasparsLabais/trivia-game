@@ -18,14 +18,14 @@
             </div>
         </div>
 
-        <div id="master-layout_right" class="w-3/12 bg-slate-200">
-            <div>
-                @include('trivia-game::game.widgets.settings')
-            </div>
-            <div>
+        <div id="master-layout_right" class="w-3/12 bg-main-light">
+            <div class="py-2">
                 @include('trivia-game::game.widgets.leaderboard')
             </div>
-            <div>
+            <div class="py-2">
+                @include('trivia-game::game.widgets.settings')
+            </div>
+            <div class="py-2">
                 @include('trivia-game::game.widgets.streamers')
             </div>
         </div>

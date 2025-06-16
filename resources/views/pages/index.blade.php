@@ -5,7 +5,7 @@
     <div id="game-app">
         <x-section title="">
             <div class="flex flex-row justify-center mt-4">
-                <div class="flex flex-row bg-alternative-accent px-1 py-1 shadow-md" style="border-radius: 25px;">
+                <div class="flex flex-row bg-main-accent px-1 py-1 shadow-md" style="border-radius: 25px;">
                     <div class="flex flex bg-main-light text-xl p-1" style="border-radius: 25px;">
                         <div id="all-cats-btn-holder" onclick="switchVisibleSection('categories')" class="bg-main-accent px-2 py-2 rounded-lg text-slate-200 josefin-sans shadow-md" style="border-radius: 20px">
                             All Categories
@@ -22,88 +22,47 @@
             <div class="flex flex-col py-4">
                 <h1 class="px-4 z-20 text-center josefin-sans text-main-dark font-semibold text-2xl">Select Trivia</h1>
 
-                <div class="flex flex-row  w-full px-2 flex-wrap">
-                    <div class="flex flex-row w-full">
-                        <p>Select Category</p>
-                    </div>
-
-                    <div class="flex flex-row w-full">
-                        <div v-for="category in categories" class="bg-alternative-light rounded-md">
-                            [[ category.name ]]
-                        </div>
-                    </div>
-
-                    <select class="w-full py-2 text-xl" v-model="selectedCategory" name="selectedCategory" id="selectedCategory">
-                        <option value="0">Select Category</option>
-                        <option v-for="category in categories" :value="category.id">[[ category.name ]]</option>
-                    </select>
-                </div>
-
-                <div class="flex flex-row  w-full px-2 flex-wrap">
-                    <div class="flex flex-row w-full">
-                        <p>Select Difficulty</p>
-                    </div>
-                    <div class="flex flex-row justify-center w-1/3 border border-lime-600 rounded-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-lime-600">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
-                        </svg>
-                        <span class="px-2.5 text-xl">Easy</span>
-                    </div>
-                    <div class="flex flex-row w-1/3">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-amber-600">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
-                        </svg>
-                        <span class="px-2.5">Medium</span>
-                    </div>
-                    <div class="flex flex-row w-1/3">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-rose-600">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
-                        </svg>
-                        <span class="px-2.5">Hard</span>
-                    </div>
-                </div>
-
-                <div class="flex flex-row py-4">
-                    <div class="flex flex-row  w-2/4 px-2 flex-wrap">
-                        <!--
-                        <select class="w-full py-2 text-xl" v-model="selectedDifficulty" name="selectedDifficulty" id="selectedDifficulty">
-                            <option value="0">Select Difficulty</option>
-                            <option value="easy">Easy</option>
-                            <option value="medium">Medium</option>
-                            <option value="hard">Hard</option>
-                        </select>
-                        -->
-                    </div>
-                </div>
-
-                <!--
-                <div class="flex flex-row py-4">
-                    <div class="flex flex-row w-2/4 px-2">
-                        <select class="w-full py-2 text-xl" v-model="selectedCategory" name="selectedCategory" id="selectedCategory">
+                <div class="flex flex-row py-4 justify-center flex-wrap">
+                    <div class="flex flex-col w-10/12 md:w-2/6 px-2">
+                        <label for="selectedCategory" class="flex flex-row">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-alternative-accent">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 0 0 5.304 0l6.401-6.402M6.75 21A3.75 3.75 0 0 1 3 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 0 0 3.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008Z" />
+                            </svg>
+                            <span class="px-5">Category</span>
+                        </label>
+                        <select class="w-full py-2 text-xl mt-2" v-model="selectedCategory" name="selectedCategory" id="selectedCategory">
                             <option value="0">Select Category</option>
                             <option v-for="category in categories" :value="category.id">[[ category.name ]]</option>
                         </select>
                     </div>
-                    <div class="flex flex-row  w-2/4 px-2">
-                        <select class="w-full py-2 text-xl" v-model="selectedDifficulty" name="selectedDifficulty" id="selectedDifficulty">
-                            <option value="0">Select Difficulty</option>
+                    <div class="flex flex-col w-10/12 md:w-2/6 px-2">
+                        <label for="selectedDifficulty" class="flex flex-row">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6" :class="{'fill-lime-600' : selectedDifficulty == 'easy', 'fill-amber-500' : selectedDifficulty == 'medium', 'fill-rose-600' : selectedDifficulty == 'hard', 'fill-zinc-300' : selectedDifficulty == 'any'}">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z" />
+                            </svg>
+                            <span class="px-5">Difficulty</span>
+                        </label>
+                        <select class="w-full py-2 text-xl mt-2" v-model="selectedDifficulty" name="selectedDifficulty" id="selectedDifficulty">
+                            <option value="any">Select Difficulty</option>
                             <option value="easy">Easy</option>
                             <option value="medium">Medium</option>
                             <option value="hard">Hard</option>
                         </select>
                     </div>
                 </div>
-                -->
             </div>
         </x-section>
 
         <x-section title="">
-            <div id="category-holder"  class="flex flex-col">
-                <div v-for="trivia in selectedTriviasByCategoryAndDifficulty">
-                    <div class="flex flex-row py-4 border-2 border-slate-300 bg-slate-300 mb-2">
-                        <div class="raleway flex flex-col justify-center px-4 w-3/6">
-                            <span class="font-semibold ">[[ trivia.title ]] ([[ trivia.questions ]])  <span v-if="trivia.private" class="text-rose-600">Private</span> </span>
-                            <div class="font-normal fira-sans flex flex-row">
+            <div id="category-holder"  class="flex flex-row flex-wrap">
+                <div class="w-10/12 md:w-4/12 px-2" v-for="trivia in selectedTriviasByCategoryAndDifficulty">
+
+
+                    <div class="flex flex-row justify-between py-4 border-2 border-main-dark bg-main-dark mb-2 w-full shadow-md rounded">
+                        <div class="raleway flex flex-col justify-top px-4 w-3/6">
+                            <span class="font-semibold text-main-accent">[[ trivia.title ]] <!--([[ trivia.questions ]])-->  <span v-if="trivia.private" class="text-rose-600">Private</span> </span>
+                            <div class="font-normal fira-sans flex flex-row text-main-light">
                                 <div v-for="index in 4">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6" :class="{'fill-amber-500' : trivia.rating >= index && trivia.rating != 0, 'stroke-amber-500' : trivia.rating >= index && trivia.rating != 0}">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
@@ -111,21 +70,12 @@
                                 </div>
                                 ([[ trivia.rating ]])
                             </div>
-                            <div class="flex flex-row"><span class="font-normal">Author: </span><span class="font-semibold"> [[ trivia.author]]&nbsp</span></div>
-                        </div>
-                        <div class="flex flex-col justify-center px-4 w-3/6">
-                            <div>
-                                Difficulty: <span class="capitalize text-semibold fira-sans" :class="{'text-amber-700' : trivia.difficulty == 'medium', 'text-red-700' :  trivia.difficulty == 'hard', 'text-lime-600' : trivia.difficulty == 'easy' }">[[ trivia.difficulty ]] </span>
-                            </div>
-                            <div>
-                                <span  class="font-semibold">[[ trivia.questions ]]</span> Questions
-                            </div>
                             @if(Auth::check())
                                 <div v-if="trivia.is_premium">
                                     <a href="/premium" class="flex justify-center w-full fira-sans py-2 px-2 md:px-6 shadow bg-yellow-500 text-slate-100 font-semibold text-lg shadow-gray-900 my-2">Get Premium</a>
                                 </div>
                                 <div v-else>
-                                    <button type="button" v-on:click="startTriviaGame( trivia.id )" class="w-full fira-sans py-2 px-2 md:px-6 shadow bg-lime-600 text-slate-100 font-semibold text-lg shadow-gray-900 my-2">Play</button>
+                                    <button type="button" v-on:click="startTriviaGame( trivia.id )" class="w-full fira-sans py-2 px-2 md:px-6 shadow btn-main-accent text-white font-semibold text-lg shadow-gray-900 my-2">Play</button>
                                 </div>
                             @else
                                 <div>
@@ -135,7 +85,25 @@
                                 </div>
                             @endif
                         </div>
+                        <div class="flex flex-col justify-top px-4 w-3/6">
+                            <div class="text-main-light">
+                                <span  class="font-semibold text-main-accent">[[ trivia.questions ]]</span> Questions
+                            </div>
+                            <div class="text-main-light">
+                                Rated as <span class="capitalize text-semibold fira-sans" :class="{'text-amber-500' : trivia.difficulty == 'medium', 'text-rose-600' :  trivia.difficulty == 'hard', 'text-lime-600' : trivia.difficulty == 'easy' }">[[ trivia.difficulty ]] </span>
+                            </div>
+
+                            <hr class="my-2.5">
+
+                            <div class="flex flex-row">
+                                <span class="font-normal text-main-light">Created by</span>&nbsp;<span class="font-semibold  text-alternative-accent"> [[ trivia.author]]</span>
+                            </div>
+                        </div>
                     </div>
+
+
+
+
                 </div>
             </div>
             <div id="open-trivias-holder" class="hidden flex flex-col">

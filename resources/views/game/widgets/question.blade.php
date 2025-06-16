@@ -94,8 +94,9 @@
 
     <div v-else class="text-center flex flex-col justify-center h-full">
         <!-- add some waiting animation here -->
-        <h1 class="text-4xl josefin-sans text-slate-200 ">Waiting for players!</h1>
-        <h2 class="text-6xl josefin-sans text-yellow-500">PIN: [[game.pin]]</h2>
+        <h1 class="text-4xl josefin-sans text-main-light">Waiting for players!</h1>
+        <p class="text-2xl josefin-sans text-alternative-accent">PIN</p>
+        <h2 class="text-6xl josefin-sans text-alternative-accent">[[game.pin]]</h2>
         <div class="flex flex-col justify-center px-4 py-4">
             <div class="flex flex-row justify-center" id="qrcode"></div>
             <span class="flex flex-row justify-center my-4 text-slate-200 text-xl">OR</span>
