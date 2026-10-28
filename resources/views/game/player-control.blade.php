@@ -130,7 +130,8 @@
 
         {{-- Question (answering, waiting for options, revealed answers) --}}
         <div v-else-if="currentView == 'question_view'" class="dotted-canvas min-h-screen flex justify-center items-start px-4 py-8 md:py-12">
-            <div class="w-full max-w-2xl bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+            {{-- Wider on desktop: answers sit in two columns there. --}}
+            <div class="w-full max-w-2xl lg:max-w-5xl bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
 
                 {{-- Title bar: traffic lights + points --}}
                 <div class="flex items-center gap-2.5 bg-main-dark px-5 py-3">
@@ -154,14 +155,14 @@
                     </div>
                 </div>
 
-                <div class="p-6 md:p-10 flex flex-col gap-6">
+                <div class="p-6 md:p-10 lg:p-12 flex flex-col gap-6 lg:gap-8">
 
                     {{-- Question text --}}
                     <h1 v-if="questionLoaded == 0" id="question-holder" class="russo text-main-dark/40 text-3xl md:text-4xl text-center leading-tight">Waiting for question&hellip;</h1>
-                    <h1 v-else id="question-holder" class="russo text-main-dark text-2xl md:text-4xl text-center leading-tight break-words">[[ question.question ]]</h1>
+                    <h1 v-else id="question-holder" class="russo text-main-dark text-2xl md:text-4xl lg:text-5xl text-center leading-tight break-words">[[ question.question ]]</h1>
 
                     {{-- No question yet --}}
-                    <div v-if="questionLoaded == 0" class="bg-main-light border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] px-5 py-6 flex flex-col items-center gap-3 text-center">
+                    <div v-if="questionLoaded == 0" class="w-full max-w-2xl mx-auto bg-main-light border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] px-5 py-6 flex flex-col items-center gap-3 text-center">
                         <div class="flex items-center gap-2" aria-hidden="true">
                             <span class="waiting-dot w-4 h-4 bg-main-accent border-2 border-main-dark"></span>
                             <span class="waiting-dot w-4 h-4 bg-pop border-2 border-main-dark"></span>
@@ -171,7 +172,7 @@
                     </div>
 
                     {{-- Text input question --}}
-                    <div v-else-if="questionLoaded == 1 && question.question_type == 'text_input' " class="flex flex-col gap-4">
+                    <div v-else-if="questionLoaded == 1 && question.question_type == 'text_input' " class="w-full max-w-2xl mx-auto flex flex-col gap-4">
                         <div v-if="(question.id == lastAnsweredQuestionId) || (correctAnswer != '' )" class="flex flex-col gap-4">
                             <div class="flex flex-row items-stretch border-4 border-main-dark">
                                 <span class="flex items-center bg-main-dark text-white px-3 russo text-xs uppercase tracking-widest shrink-0">Your answer</span>
@@ -207,7 +208,7 @@
                     </div>
 
                     {{-- Open input question (judged by the host) --}}
-                    <div v-else-if="questionLoaded == 1 && question.question_type == 'open_input'" class="flex flex-col gap-4">
+                    <div v-else-if="questionLoaded == 1 && question.question_type == 'open_input'" class="w-full max-w-2xl mx-auto flex flex-col gap-4">
                         {{-- After the host reveals: show everyone's submissions --}}
                         <div v-if="openSubmissionsRevealed" class="flex flex-col gap-3">
                             <h2 class="russo text-main-dark text-xl uppercase tracking-wide text-center">Submitted Answers</h2>
@@ -246,8 +247,8 @@
                     </div>
 
                     {{-- Multiple choice --}}
-                    <div v-else class="flex flex-col gap-4 answer-holder">
-                        <div v-if="!answersRevealed" class="bg-main-light border-4 border-main-dark px-5 py-6 text-center">
+                    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5 answer-holder">
+                        <div v-if="!answersRevealed" class="lg:col-span-2 bg-main-light border-4 border-main-dark px-5 py-6 text-center">
                             <h2 class="russo text-main-dark text-2xl">Get ready&hellip;</h2>
                             <p class="fira-sans text-main-dark/60 mt-1">The answer options are coming up!</p>
                         </div>
