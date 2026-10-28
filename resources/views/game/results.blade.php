@@ -144,6 +144,10 @@
             if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 return;
             }
+            // ?instant=1: players already watched the reveal on the Display Screen.
+            if (new URLSearchParams(window.location.search).has('instant')) {
+                return;
+            }
 
             const ROW_STAGGER = 150;   // ms between participant rows
             const ROWS_MAX = 2500;     // cap on total row stagger for big games

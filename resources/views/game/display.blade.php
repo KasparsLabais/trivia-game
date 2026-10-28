@@ -21,6 +21,16 @@
         .honk { font-family: 'Honk', system-ui, cursive; font-weight: 400; }
         .russo { font-family: 'Russo One', ui-sans-serif, sans-serif; }
         html, body { height: 100%; }
+        /* Results reveal */
+        .reveal-hidden { visibility: hidden; }
+        .chip-in { animation: chip-in 0.35s ease-out both; }
+        @keyframes chip-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .spot-pop { animation: spot-pop 0.5s cubic-bezier(.2, 1.6, .4, 1) both; }
+        @keyframes spot-pop { from { opacity: 0; transform: scale(0.5) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .drumroll { animation: drumroll 0.12s linear infinite; }
+        @keyframes drumroll { 0%, 100% { transform: translateX(0) rotate(0); } 25% { transform: translateX(-4px) rotate(-2deg); } 75% { transform: translateX(4px) rotate(2deg); } }
+        .mystery-pulse { animation: mystery-pulse 1s ease-in-out infinite; }
+        @keyframes mystery-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         .display-canvas {
             background-color: #FFB900;
             background-image: radial-gradient(#14323B 2px, transparent 2.1px);
@@ -32,7 +42,7 @@
     <div class="flex flex-row h-full gap-[20px] lg:gap-[30px]">
 
         {{-- ================= QUESTION WINDOW ================= --}}
-        <div class="flex flex-col w-2/3 h-full bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+        <div id="question-window" class="flex flex-col w-2/3 h-full bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
             {{-- Window title bar: traffic lights + trivia title + PIN --}}
             <div class="flex items-center gap-2.5 bg-main-dark px-5 py-3 shrink-0">
                 <span class="w-4 h-4 rounded-full bg-main-accent shrink-0"></span>
@@ -76,6 +86,20 @@
                     <div id="winner-name" class="russo text-main-accent text-6xl lg:text-7xl"></div>
                 </div>
 
+                {{-- Final standings reveal (master: "Reveal Results on Display") --}}
+                <div id="stage-results" class="w-full h-full" style="display:none;">
+                    <div class="w-full h-full flex flex-col items-center gap-6">
+                        <div class="fira-sans uppercase tracking-widest text-main-dark/50 text-xl">Final Standings</div>
+
+                        <div id="results-others-wrap" class="w-full max-w-6xl" style="display:none;">
+                            <div class="fira-sans uppercase tracking-widest text-main-dark/50 text-sm text-center mb-2">Happy To Participate</div>
+                            <div id="results-others" class="flex flex-row flex-wrap justify-center gap-2 max-h-48 overflow-hidden"></div>
+                        </div>
+
+                        <div id="results-podium" class="flex-1 w-full max-w-5xl flex flex-row items-end justify-center gap-6 pb-2"></div>
+                    </div>
+                </div>
+
                 <div id="stage-gameover" class="text-center" style="display:none;">
                     <div class="russo text-main-accent text-6xl lg:text-7xl">GAME OVER</div>
                     <div class="fira-sans text-main-dark/50 text-2xl mt-3">Thanks for playing!</div>
@@ -85,7 +109,7 @@
         </div>
 
         {{-- ================= LEADERBOARD WINDOW ================= --}}
-        <div class="flex flex-col w-1/3 h-full bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+        <div id="leaderboard-window" class="flex flex-col w-1/3 h-full bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
             {{-- Leaderboard --}}
             <div class="flex-1 flex flex-col overflow-hidden">
                 <div class="px-5 py-3 bg-brand border-b-4 border-main-dark shrink-0">
@@ -119,8 +143,16 @@
         var LETTERS = ['A','B','C','D','E','F'];
 
         var el = function (id) { return document.getElementById(id); };
-        var stages = ['stage-waiting','stage-question','stage-winner','stage-gameover'];
+        var stages = ['stage-waiting','stage-question','stage-winner','stage-results','stage-gameover'];
         function showStage(id) {
+            // Host went back to the game after revealing results: restore the layout.
+            if (resultsShown && id !== 'stage-results' && id !== 'stage-gameover') {
+                resultsShown = false;
+                resultsTimers.forEach(clearTimeout);
+                el('leaderboard-window').style.display = '';
+                el('question-window').classList.remove('w-full');
+                el('question-window').classList.add('w-2/3');
+            }
             stages.forEach(function (s) { el(s).style.display = (s === id ? 'block' : 'none'); });
         }
 
@@ -185,7 +217,130 @@
             showStage('stage-winner');
         }
 
-        function showGameOver() { hideTimer(); showStage('stage-gameover'); }
+        // Once the final standings are on screen, game over keeps them there.
+        function showGameOver() { hideTimer(); if (!resultsShown) { showStage('stage-gameover'); } }
+
+        // ---- Final standings reveal ----
+        // Everyone outside the top three first, then 3rd -> 2nd -> drum roll -> 1st.
+        // The leaderboard column is hidden so it can't spoil the result.
+        var STANDINGS_URL = '/trv/trivia/' + GAME_TOKEN + '/standings';
+        var resultsShown = false;
+        var resultsTimers = [];
+        function revealResults() {
+            fetch(STANDINGS_URL).then(function (r) { return r.json(); }).then(function (res) {
+                if (res && res.success) { playResults(res.data); }
+            }).catch(function () {});
+        }
+        function playResults(data) {
+            resultsTimers.forEach(clearTimeout);
+            resultsTimers = [];
+            var at = function (ms, fn) { resultsTimers.push(setTimeout(fn, ms)); };
+
+            resultsShown = true;
+            hideTimer();
+            el('leaderboard-window').style.display = 'none';
+            el('question-window').classList.remove('w-2/3');
+            el('question-window').classList.add('w-full');
+            showStage('stage-results');
+
+            // Everyone else, as chips.
+            var others = el('results-others');
+            others.innerHTML = '';
+            el('results-others-wrap').style.display = (data.others || []).length ? 'block' : 'none';
+            var chips = (data.others || []).map(function (p, i) {
+                var chip = document.createElement('div');
+                chip.className = 'reveal-hidden flex flex-row items-center gap-2 pl-1 pr-3 py-1 bg-main-light border-2 border-main-dark';
+                var rank = document.createElement('span');
+                rank.className = 'russo text-main-dark/50 text-sm pl-1';
+                rank.textContent = '#' + (i + 4);
+                var img = document.createElement('img');
+                img.src = p.avatar; img.className = 'w-8 h-8 object-cover border-2 border-main-dark';
+                img.onerror = function () { this.src = '/images/default-avatar.jpg'; };
+                var name = document.createElement('span');
+                name.className = 'fira-sans text-base font-bold';
+                name.textContent = p.username;
+                var pts = document.createElement('span');
+                pts.className = 'fira-sans text-sm text-main-dark/60';
+                pts.textContent = p.points + ' pts';
+                chip.append(rank, img, name, pts);
+                others.appendChild(chip);
+                return chip;
+            });
+
+            // Podium: 2nd | 1st | 3rd, each starting as a "?" placeholder.
+            var podium = el('results-podium');
+            podium.innerHTML = '';
+            var spots = {};
+            [
+                { place: 2, player: data.second, label: '2nd', colour: 'bg-surface text-main-dark', height: 'h-32', size: 'w-28 h-28' },
+                { place: 1, player: data.first, label: '1st', colour: 'bg-pop text-main-dark', height: 'h-48', size: 'w-40 h-40' },
+                { place: 3, player: data.third, label: '3rd', colour: 'bg-secondly-accent text-white', height: 'h-20', size: 'w-24 h-24' }
+            ].forEach(function (s) {
+                if (!s.player) { return; }
+                var spot = document.createElement('div');
+                spot.className = 'flex-1 max-w-xs flex flex-col items-center gap-3';
+
+                var mystery = document.createElement('div');
+                mystery.className = 'flex flex-col items-center gap-3';
+                mystery.innerHTML = '<div class="' + s.size + ' bg-main-light border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] flex items-center justify-center">' +
+                    '<span class="mystery-pulse russo text-main-dark/40 text-6xl">?</span></div>' +
+                    '<span class="russo text-main-dark/40 text-2xl tracking-widest">???</span>';
+
+                var player = document.createElement('div');
+                player.className = 'flex flex-col items-center gap-3 w-full';
+                player.style.display = 'none';
+                if (s.place === 1) {
+                    var crown = document.createElement('span');
+                    crown.className = 'russo text-main-accent text-3xl uppercase tracking-widest';
+                    crown.textContent = 'Winner!';
+                    player.appendChild(crown);
+                }
+                var img = document.createElement('img');
+                img.src = s.player.avatar;
+                img.className = s.size + ' object-cover bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B]';
+                img.onerror = function () { this.src = '/images/default-avatar.jpg'; };
+                var name = document.createElement('div');
+                name.className = 'fira-sans font-bold text-main-dark text-center break-words w-full ' + (s.place === 1 ? 'text-4xl' : 'text-2xl');
+                name.textContent = s.player.username;
+                var pts = document.createElement('span');
+                pts.className = 'bg-white text-main-dark border-2 border-main-dark px-3 py-1 russo text-base uppercase tracking-wide';
+                pts.textContent = s.player.points + ' Points';
+                player.append(img, name, pts);
+
+                var block = document.createElement('div');
+                block.className = 'w-full ' + s.height + ' ' + s.colour + ' border-4 border-main-dark flex items-start justify-center pt-3';
+                block.innerHTML = '<span class="russo text-4xl">' + s.label + '</span>';
+
+                spot.append(mystery, player, block);
+                podium.appendChild(spot);
+                spots[s.place] = { spot: spot, mystery: mystery, player: player };
+            });
+
+            var show = function (place) {
+                var s = spots[place];
+                if (!s) { return; }
+                s.spot.classList.remove('drumroll');
+                s.mystery.style.display = 'none';
+                s.player.style.display = 'flex';
+                s.player.classList.add('spot-pop');
+            };
+
+            if (!data.first) {
+                podium.innerHTML = '<div class="russo text-3xl text-main-dark/40 self-center">No one scored in this game.</div>';
+                return;
+            }
+
+            // Timeline (ms) — a little slower than on phones, it's the main event.
+            var step = chips.length ? Math.min(180, 3000 / chips.length) : 0;
+            chips.forEach(function (chip, i) {
+                at(i * step, function () { chip.classList.remove('reveal-hidden'); chip.classList.add('chip-in'); });
+            });
+            var t = chips.length ? chips.length * step + 2000 : 1500;
+            if (spots[3]) { at(t, function () { show(3); }); t += 2500; }
+            if (spots[2]) { at(t, function () { show(2); }); t += 800; }
+            at(t, function () { spots[1].spot.classList.add('drumroll'); });
+            at(t + 3500, function () { show(1); });
+        }
 
         // ---- Timer ----
         var timerHandle = null, timerTotal = 0, timeLeft = 0;
@@ -288,6 +443,7 @@
                 case 'showCorrectAnswer': showCorrect(payload); break;
                 case 'showWinningTeam': showWinner(payload.winnerName); break;
                 case 'updatePoints': fetchLeaderboard(); break;
+                case 'revealResultsOnDisplay': revealResults(); break;
                 case 'gameOverEvent': showGameOver(); break;
                 case 'gameClosed': showGameOver(); break;
             }

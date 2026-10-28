@@ -1594,6 +1594,39 @@ class TriviaController
         //return view('trivia-game::pages.leaderboard')->with(['leaderboard' => $leaderboard]);
     }
 
+    // Final standings for the display-screen results reveal: top three plus
+    // everyone else, with only what the screen needs (no ids / remote data).
+    public function standings($token)
+    {
+        $gameInstance = GameApi::getGameInstance($token);
+        if (!$gameInstance['status']) {
+            return new JsonResponse(['success' => false, 'message' => 'Game instance not found', 'data' => null]);
+        }
+
+        $winners = GameApi::getWinners($gameInstance['gameInstance']['id'])['response'];
+        $slim = function ($player) {
+            if (empty($player)) {
+                return null;
+            }
+            return [
+                'username' => $player['username'],
+                'avatar' => $player['avatar'] ?: '/images/default-avatar.jpg',
+                'points' => $player['points'],
+            ];
+        };
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Standings fetched successfully',
+            'data' => [
+                'first' => $slim($winners['winner'] ?? []),
+                'second' => $slim($winners['second'] ?? []),
+                'third' => $slim($winners['third'] ?? []),
+                'others' => array_values(array_map($slim, $winners['winners'] ?? [])),
+            ],
+        ]);
+    }
+
     public function addPoints($token, Request $request)
     {
         $game = GameApi::getGameInstance($token);

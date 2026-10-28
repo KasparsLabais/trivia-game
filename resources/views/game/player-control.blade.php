@@ -301,6 +301,33 @@
             </div>
         </div>
 
+        {{-- Host is revealing the final standings on the Display Screen --}}
+        <div v-else-if="currentView == 'results_on_display'" class="dotted-canvas min-h-screen flex justify-center items-start px-4 py-8 md:py-12">
+            <div class="w-full max-w-2xl bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+                <div class="flex items-center gap-2.5 bg-main-dark px-5 py-3">
+                    <span class="w-4 h-4 rounded-full bg-main-accent shrink-0"></span>
+                    <span class="w-4 h-4 rounded-full bg-pop shrink-0"></span>
+                    <span class="w-4 h-4 rounded-full bg-green-500 shrink-0"></span>
+                    <span class="ml-2 russo uppercase tracking-widest text-white text-xs md:text-sm">Final Results</span>
+                </div>
+                <div class="p-6 md:p-10 flex flex-col items-center gap-6 text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-16 h-16 text-main-dark">
+                        <path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5v2h2a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2h2v-2H5a2 2 0 0 1-2-2V5Z"/>
+                    </svg>
+                    <h1 class="russo text-main-dark text-4xl md:text-5xl leading-tight">Eyes on the big screen!</h1>
+                    <div class="w-full bg-main-light border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] px-5 py-5 flex flex-col items-center gap-3">
+                        <div class="flex items-center gap-2" aria-hidden="true">
+                            <span class="waiting-dot w-4 h-4 bg-main-accent border-2 border-main-dark"></span>
+                            <span class="waiting-dot w-4 h-4 bg-pop border-2 border-main-dark"></span>
+                            <span class="waiting-dot w-4 h-4 bg-brand border-2 border-main-dark"></span>
+                        </div>
+                        <p class="fira-sans text-main-dark font-bold text-lg">The winners are being revealed.</p>
+                        <p class="fira-sans text-main-dark/60 text-sm">Your results will appear here once [[ gameInstance.user.username ]] wraps up the game.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Game over (host closed the game) --}}
         <div v-else-if="currentView == 'game_over'" class="dotted-canvas min-h-screen flex justify-center items-start px-4 py-8 md:py-12">
             <div class="w-full max-w-2xl bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
@@ -653,6 +680,11 @@
                         console.log('Active Question Answers: ' + this.answers);
                     }
 
+                    // Reloaded while the host is revealing results on the big screen.
+                    if (this.checkCookie('results_on_display')) {
+                        this.changeView('results_on_display');
+                    }
+
                     // Restore whether the options were revealed, so a reload during
                     // the "question only" phase keeps the options hidden.
                     if (this.checkCookie('active_question_revealed')) {
@@ -711,6 +743,7 @@
                     this.eraseCookie('last_answered_answer_id');
                     this.eraseCookie('active_question');
                     this.eraseCookie('active_question_answers');
+                    this.eraseCookie('results_on_display');
 
                     this.correctAnswer = '';
                     this.correctAnswerFileUrl = '';
@@ -841,9 +874,22 @@
                     this.player.points = e.detail.points;
                 });
 
+                // Host is revealing the final standings on the Display Screen.
+                document.addEventListener('revealResultsOnDisplay', (e) => {
+                    clearTimeout(this.timeLimitTimer);
+                    clearInterval(this.timeLimitTimer);
+                    this.timerMode = 0;
+                    this.setCookie('results_on_display', '1', 1);
+                    this.changeView('results_on_display');
+                });
+
                 document.addEventListener('gameOverEvent', (e) => {
                     console.log('gameOverEvent', e.detail);
-                    window.location.href = '/trivia/{{ $gameInstance['token'] }}/results';
+                    // Already watched the reveal on the big screen -> skip the
+                    // suspense animation on the phone.
+                    let instant = this.checkCookie('results_on_display') ? '?instant=1' : '';
+                    this.eraseCookie('results_on_display');
+                    window.location.href = '/trivia/{{ $gameInstance['token'] }}/results' + instant;
                 });
 
                 document.addEventListener('gameClosed', (e) => {
