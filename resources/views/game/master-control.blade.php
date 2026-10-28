@@ -135,6 +135,7 @@
             data() {
                 return {
                     gameToken: '{{ $gameInstance['token'] }}',
+                    resultsRevealedOnDisplay: false,
                     game: {
                         gameInstance: @json($gameInstance),
                         trivia: @json($trivia),
@@ -767,6 +768,12 @@
                         .catch(error => console.log(error));
 
                     this.closePlayerEditModal();
+                },
+                // Play the final-standings reveal on the Display Screen. Players'
+                // phones show "eyes on the big screen" until the quiz is completed.
+                revealResultsOnDisplay() {
+                    this.resultsRevealedOnDisplay = true;
+                    GameApi.notifyRoom('{{ $gameInstance['token'] }}', {payload: {}, 'action': 'revealResultsOnDisplay'});
                 },
                 completeTrivia() {
                     fetch('/trivia/{{ $gameInstance['token'] }}/complete', {'method' : 'POST', 'headers' : {'Content-Type' : 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}})

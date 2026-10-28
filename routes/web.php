@@ -56,6 +56,8 @@ Route::group(['middleware' => ['web']], function() {
     Route::post('/' . config('settings.prefix') . '/trivia/{token}/next', 'TriviaController@nextQuestion');
     Route::get('/' . config('settings.prefix') . '/trivia/{token}/correct', 'TriviaController@correctAnswer');
     Route::get('/' . config('settings.prefix') . '/trivia/{token}/leaderboard', 'TriviaController@leaderboard');
+    //final standings (podium + everyone else) for the display-screen results reveal
+    Route::get('/' . config('settings.prefix') . '/trivia/{token}/standings', 'TriviaController@standings');
 
     Route::post('/' . config('settings.prefix') . '/trivia/{token}/accessibility', 'TriviaController@changeAccessibility');
     //Route::post('/' . config('settings.prefix') . '/trivia/{id}', 'TriviaController@startGame');
