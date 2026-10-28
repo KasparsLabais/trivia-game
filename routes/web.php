@@ -16,6 +16,9 @@ Route::group(['middleware' => ['web']], function() {
     Route::get('/trivia', 'TriviaController@index');
     Route::post('/trivia', 'TriviaController@createGame');
 
+    //read-only big-screen spectator display (guest accessible)
+    Route::get('/' . config('settings.prefix') . '/trivia/{token}/display', 'TriviaController@display');
+
     Route::get('/' . config('settings.prefix') . '/management', 'TriviaController@management');
     Route::post('/' . config('settings.prefix') . '/management/trivia', 'TriviaController@createTrivia');
     Route::get('/' . config('settings.prefix') . '/management/trivia/{id}', 'TriviaController@editTrivia');
@@ -47,6 +50,9 @@ Route::group(['middleware' => ['web']], function() {
 
     Route::get('/' . config('settings.prefix') . '/trivia/{token}/question', 'TriviaController@getQuestion');
     Route::post('/' . config('settings.prefix') . '/trivia/{token}/answer', 'TriviaController@submitAnswer');
+    //open_input: image submission (temporary) + fetch all submissions for a question
+    Route::post('/' . config('settings.prefix') . '/trivia/{token}/submit-image', 'TriviaController@submitImage');
+    Route::get('/' . config('settings.prefix') . '/trivia/{token}/submissions/{questionId}', 'TriviaController@openSubmissions');
     Route::post('/' . config('settings.prefix') . '/trivia/{token}/next', 'TriviaController@nextQuestion');
     Route::get('/' . config('settings.prefix') . '/trivia/{token}/correct', 'TriviaController@correctAnswer');
     Route::get('/' . config('settings.prefix') . '/trivia/{token}/leaderboard', 'TriviaController@leaderboard');
@@ -58,25 +64,29 @@ Route::group(['middleware' => ['web']], function() {
     Route::post('/trivia/{token}/remove-points', 'TriviaController@removePoints');
 
 
-    //Routes to create a new game
-    Route::get('/admin/' . config('settings.prefix') . '/trivia', 'TriviaController@adminIndex');
-    Route::post('/admin/' . config('settings.prefix') . '/trivia', 'TriviaController@create');
-    Route::get('/admin/' . config('settings.prefix') . '/trivia/{id}', 'TriviaController@show');
+    //Admin trivia management (default trivias) — gated by role permission.
+    Route::group(['middleware' => ['permission:trivias.edit_default']], function () {
 
-    //Route to create a question for a game
-    Route::get('/admin/' . config('settings.prefix') . '/question', 'QuestionController@index');
-    Route::post('/admin/' . config('settings.prefix') . '/question', 'QuestionController@create');
-    Route::get('/admin/' . config('settings.prefix') . '/question/{id}', 'QuestionController@show');
+        //Routes to create a new game
+        Route::get('/admin/' . config('settings.prefix') . '/trivia', 'TriviaController@adminIndex');
+        Route::post('/admin/' . config('settings.prefix') . '/trivia', 'TriviaController@create');
+        Route::get('/admin/' . config('settings.prefix') . '/trivia/{id}', 'TriviaController@show');
 
-    //Route to create an answer for a question
-    Route::get('/admin/' . config('settings.prefix') . '/answer', 'AnswerController@index');
-    Route::post('/admin/' . config('settings.prefix') . '/answer', 'AnswerController@create');
-    Route::get('/admin/' . config('settings.prefix') . '/answer/{id}', 'AnswerController@getAnswer');
-    Route::post('/admin/' . config('settings.prefix') . '/answer/{id}', 'AnswerController@submitAnswer');
-    Route::post('/admin/' . config('settings.prefix') . '/answer-image/{id}', 'AnswerController@submitAnswerImage');
+        //Route to create a question for a game
+        Route::get('/admin/' . config('settings.prefix') . '/question', 'QuestionController@index');
+        Route::post('/admin/' . config('settings.prefix') . '/question', 'QuestionController@create');
+        Route::get('/admin/' . config('settings.prefix') . '/question/{id}', 'QuestionController@show');
 
-    //Route to get available games
-    Route::get('/admin/' . config('settings.prefix') . '/games', 'Controller@getGames');
+        //Route to create an answer for a question
+        Route::get('/admin/' . config('settings.prefix') . '/answer', 'AnswerController@index');
+        Route::post('/admin/' . config('settings.prefix') . '/answer', 'AnswerController@create');
+        Route::get('/admin/' . config('settings.prefix') . '/answer/{id}', 'AnswerController@getAnswer');
+        Route::post('/admin/' . config('settings.prefix') . '/answer/{id}', 'AnswerController@submitAnswer');
+        Route::post('/admin/' . config('settings.prefix') . '/answer-image/{id}', 'AnswerController@submitAnswerImage');
+
+        //Route to get available games
+        Route::get('/admin/' . config('settings.prefix') . '/games', 'Controller@getGames');
+    });
 
 
     //Scribble

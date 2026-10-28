@@ -1,6 +1,11 @@
 @extends('game-api::layout')
 @section('body')
     @include('trivia-game::game.partials.scripts')
+    @php
+        // Base URL for join links / QR codes. Defaults to the app's own URL;
+        // override with GAME_JOIN_URL (config settings.join_url) for a short domain.
+        $joinUrlBase = rtrim(config('settings.join_url') ?: url('/'), '/');
+    @endphp
 
     <div class="py-4">
         <x-section title="">
@@ -57,7 +62,7 @@
                     PIN: <span class="josefin-sans text-yellow-500 font-bold">{{ $gameInstance['pin'] }}</span>
                 </div>
                 <div class="text-slate-200 font-semibold text-2xl px-6" style="overflow-wrap: break-word;">
-                    <p>Link: https://quizcrave.com/join/{{ $gameInstance['token'] }}</p>
+                    <p>Link: {{ $joinUrlBase }}/join/{{ $gameInstance['token'] }}</p>
                 </div>
                 <p class="text-center text-slate-200 text-2xl px-6 py-4 font-semibold">OR</p>
                 <div class="flex flex-row justify-center z-20 relative" id="qrcode"></div>
@@ -68,7 +73,7 @@
     <script src="/vendor/trivia-game/js/qrcode.min.js"></script>
     <script>
         var qrcode = new QRCode("qrcode", {
-            text: "https://is-a.gay/join/{{ $gameInstance['token'] }}",
+            text: "{{ $joinUrlBase }}/join/{{ $gameInstance['token'] }}",
             width: 168,
             height: 168,
             colorDark : "#000000",

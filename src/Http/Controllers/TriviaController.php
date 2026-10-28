@@ -18,6 +18,7 @@ use PartyGames\TriviaGame\Models\Categories;
 use PartyGames\TriviaGame\Models\TrvQuestions;
 use PartyGames\TriviaGame\Models\SubmittedAnswers;
 use PartyGames\TriviaGame\Models\Trivia;
+use PartyGames\TriviaGame\Models\NotificationAction;
 use PartyGames\TriviaGame\Models\TrvAnswers;
 use PartyGames\TriviaGame\Models\Ratings;
 use PartyGames\TriviaGame\Models\OpenTrivias;
@@ -125,7 +126,7 @@ class TriviaController
                         'user_id' => $player->user_id,
                         'username' => $player->user->username,
                         'avatar' => ($player->user->avatar) ?: '/images/default-avatar.jpg',
-                        'icon_flair' => $player->user->iconFlair->icon_url,
+                        'icon_flair' => $player->user->iconFlair?->icon_url ?? '',
                         'points' => $player->points,
                         'user_type' => $player->user_type,
                         'remote_data' => json_decode($player->remote_data, true),
@@ -163,6 +164,7 @@ class TriviaController
                 'trivia' => $trivia,
                 'questions' => $trivia->questions,
                 'leaderboard' => $leaderboard,
+                'notificationActions' => NotificationAction::all(),
             ];
 
             return view('trivia-game::game.master-control')->with($returnObject);
@@ -212,6 +214,65 @@ class TriviaController
             'playerInstance' => $playerInstance['playerInstance']
         ];
         return view('trivia-game::game.play')->with($returnObject);
+    }
+
+    // Read-only big-screen display for the game master to project the quiz.
+    public function display($token)
+    {
+        $gameInstance = \PartyGames\GameApi\Models\GameInstances::where('token', $token)->first();
+        if (!$gameInstance) {
+            return redirect()->to('/trivia');
+        }
+        $gameInstance->load('user', 'game', 'playerInstances');
+        $remoteData = json_decode($gameInstance['remote_data'], true);
+        $isTemporary = !empty($remoteData['is_temporary']);
+        $triviaId = $remoteData['trivia_id'] ?? null;
+        $currentQuestionNr = $remoteData['current_question'] ?? null;
+
+        $trivia = $isTemporary ? TmpTrivia::find($triviaId) : Trivia::find($triviaId);
+
+        // Seed the current question (+ answers) so the screen is not blank on load.
+        // The correct answer is never sent here — it only arrives via a live event.
+        $currentQuestion = null;
+        if (!$isTemporary && $currentQuestionNr !== null) {
+            $q = TrvQuestions::where('trivia_id', $triviaId)
+                ->where('order_nr', $currentQuestionNr)
+                ->with('answers')
+                ->first();
+            if ($q) {
+                $currentQuestion = [
+                    'id' => $q->id,
+                    'question' => $q->question,
+                    'question_type' => $q->question_type,
+                    'answers' => $q->answers->map(function ($a) {
+                        return ['id' => $a->id, 'answer' => $a->answer];
+                    })->values(),
+                ];
+            }
+        }
+
+        // Initial player list (username, avatar, points).
+        $players = [];
+        foreach ($gameInstance->playerInstances as $playerInstance) {
+            if ($playerInstance->user_type == 'guest') {
+                $user = $playerInstance->tmpUser;
+                $username = $user->username ?? 'Guest';
+                $avatar = '/images/default-avatar.jpg';
+            } else {
+                $user = $playerInstance->user;
+                $username = $user->username ?? 'Player';
+                $avatar = ($user && $user->avatar) ? $user->avatar : '/images/default-avatar.jpg';
+            }
+            $players[] = ['username' => $username, 'avatar' => $avatar, 'points' => $playerInstance->points];
+        }
+
+        return view('trivia-game::game.display')->with([
+            'gameInstance' => $gameInstance,
+            'trivia' => $trivia,
+            'currentQuestion' => $currentQuestion,
+            'players' => $players,
+            'token' => $token,
+        ]);
     }
 
     public function adminIndex()
@@ -429,6 +490,17 @@ class TriviaController
             if(strtolower($answer['answer']) == strtolower($request->get('answer_text'))) {
                 $isCorrect = 1;
             }
+        } elseif($question['question_type'] == 'open_input') {
+            // Judged open submission (string/number). No auto-grading — the game
+            // master decides the winner later and awards points manually.
+            SubmittedAnswers::create([
+                'game_instance_id' => $data['gameInstance']['id'],
+                'question_id' => $questionId,
+                'answer_custom_input' => $request->get('answer_text'),
+                'answer_id' => 0,
+                'user_id' => $userId
+            ]);
+            // isCorrect stays 0 — points are awarded by the game master, not here.
         }
 
 
@@ -489,6 +561,117 @@ class TriviaController
                 'correct' => $isCorrect
             ]
         ]);
+    }
+
+    // Image answer for an open_input question. Images are intentionally NOT kept
+    // permanently: they go to a dated temp folder that is cleared daily (see the
+    // submissions:clean-temp command + scheduler). We also opportunistically
+    // sweep old folders here so it works even without the scheduler running.
+    public function submitImage($token, Request $request)
+    {
+        $data = GameApi::getGameInstance($token);
+
+        if (Auth::check()) {
+            $userId = Auth::user()->id;
+        } elseif (Session::get('tmp-user-id') != null) {
+            $userId = Session::get('tmp-user-id');
+        } else {
+            return new JsonResponse(['success' => false, 'message' => 'You are not logged in', 'data' => NULL]);
+        }
+
+        $questionId = $request->get('question_id');
+
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,gif,webp|max:8192',
+        ]);
+
+        // One submission per question per user.
+        $already = SubmittedAnswers::where('game_instance_id', $data['gameInstance']['id'])
+            ->where('question_id', $questionId)->where('user_id', $userId)->first();
+        if ($already) {
+            return new JsonResponse(['success' => false, 'message' => 'You have already answered this question', 'data' => NULL]);
+        }
+
+        $this->cleanOldTempSubmissions();
+
+        $dateDir = date('Ymd');
+        $dir = public_path('tmp-submissions/' . $dateDir);
+        if (!is_dir($dir)) { @mkdir($dir, 0775, true); }
+
+        $ext = strtolower($request->file('image')->getClientOriginalExtension() ?: 'jpg');
+        $name = \Illuminate\Support\Str::random(40) . '.' . $ext;
+        $request->file('image')->move($dir, $name);
+
+        $url = '/tmp-submissions/' . $dateDir . '/' . $name;
+
+        SubmittedAnswers::create([
+            'game_instance_id' => $data['gameInstance']['id'],
+            'question_id' => $questionId,
+            'answer_custom_input' => $url,
+            'answer_id' => 0,
+            'user_id' => $userId
+        ]);
+
+        return new JsonResponse(['success' => true, 'message' => 'Image submitted', 'data' => ['url' => $url]]);
+    }
+
+    // All submissions for an open_input question, resolved to display info. Used
+    // by the game master to reveal everyone's answers and to pick a winner, and
+    // by players/display when answers are revealed. Image values are URLs under
+    // /tmp-submissions/.
+    public function openSubmissions($token, $questionId)
+    {
+        $data = GameApi::getGameInstance($token);
+
+        $submissions = SubmittedAnswers::where('game_instance_id', $data['gameInstance']['id'])
+            ->where('question_id', $questionId)
+            ->orderBy('id', 'asc')
+            ->get()
+            ->map(function ($s) {
+                $username = 'Player';
+                $avatar = '/images/default-avatar.jpg';
+
+                $user = \PartyGames\GameApi\Models\User::where('id', $s->user_id)->first();
+                if ($user) {
+                    $username = $user->username;
+                    $avatar = $user->avatar ?: '/images/default-avatar.jpg';
+                } else {
+                    $tmp = TmpUsers::where('tmp_user_id', $s->user_id)->first();
+                    if ($tmp) { $username = $tmp->username; }
+                }
+
+                $value = $s->answer_custom_input;
+                $isImage = is_string($value) && strpos($value, '/tmp-submissions/') === 0;
+
+                return [
+                    'user_id' => $s->user_id,
+                    'username' => $username,
+                    'avatar' => $avatar,
+                    'value' => $value,
+                    'is_image' => $isImage,
+                ];
+            });
+
+        return new JsonResponse(['success' => true, 'data' => $submissions]);
+    }
+
+    // Remove temp-submission folders from previous days.
+    private function cleanOldTempSubmissions()
+    {
+        $base = public_path('tmp-submissions');
+        if (!is_dir($base)) { return; }
+        $today = date('Ymd');
+        foreach (@scandir($base) ?: [] as $entry) {
+            if ($entry === '.' || $entry === '..' || $entry === $today) { continue; }
+            $path = $base . '/' . $entry;
+            if (is_dir($path) && ctype_digit($entry)) {
+                foreach (@scandir($path) ?: [] as $f) {
+                    if ($f === '.' || $f === '..') { continue; }
+                    @unlink($path . '/' . $f);
+                }
+                @rmdir($path);
+            }
+        }
     }
 
     public function nextQuestion($token, Request $request)
@@ -706,6 +889,7 @@ class TriviaController
             'category_id' => $trivia->category_id,
             'difficulty' => 'easy',
             'question_type' => $request->question_type,
+            'input_type' => $request->input_type,
             'user_id' => Auth::user()->id,
         ]);
 
@@ -716,6 +900,7 @@ class TriviaController
             'question' => $request->question,
             'order_nr' => !isset($lastOrder['order_nr']) ? 1 : $lastOrder['order_nr']+1,
             'question_type' => $request->question_type,
+            'input_type' => $request->input_type,
             'original_question_id' => $originalQuestion->id,
         ]);
 
@@ -731,6 +916,7 @@ class TriviaController
         $question = TrvQuestions::where('id', $questionId)->first();
         $question->question = $request->question;
         $question->question_type = $request->question_type;
+        $question->input_type = $request->input_type;
         $question->save();
 
         $ownsQuestion = false;
@@ -743,6 +929,7 @@ class TriviaController
             $originalQuestion = Questions::where('id', $question->original_question_id)->first();
             $originalQuestion->question = $request->question;
             $originalQuestion->question_type = $request->question_type;
+            $originalQuestion->input_type = $request->input_type;
             $originalQuestion->save();
         }
 

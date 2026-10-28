@@ -8,7 +8,7 @@ class TmpQuestions extends Model
 {
 
     protected $table = 'trv_tmp_questions';
-    protected $fillable = ['question', 'order_nr', 'original_question_id', 'tmp_trivia_id', 'question_type'];
+    protected $fillable = ['question', 'order_nr', 'original_question_id', 'tmp_trivia_id', 'question_type', 'input_type'];
 
     public function answers()
     {

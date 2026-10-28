@@ -1,6 +1,11 @@
 @extends('game-api::layout')
 @section('body')
     @include('trivia-game::game.partials.scripts')
+    @php
+        // Base URL for join links / QR codes. Defaults to the app's own URL;
+        // override with GAME_JOIN_URL (config settings.join_url) for a short domain.
+        $joinUrlBase = rtrim(config('settings.join_url') ?: url('/'), '/');
+    @endphp
     <div class="flex flex-row justify-center px-4 md:px-none">
         <div class="flex flex-col">
             <div class="bg-slate-200 px-6 py-8">
@@ -45,7 +50,7 @@
                 <span class="fira-sans font-semibold text-xl my-2">Join:</span>
                 <div class="flex flex-row justify-center" id="qrcode"></div>
                 <span class="flex flex-row justify-center my-4">OR</span>
-                <h2 class="fira-sans flex flex-row justify-center"><span>https://is-a.gay/join/{{ $gameInstance['token'] }}</span></h2>
+                <h2 class="fira-sans flex flex-row justify-center"><span>{{ $joinUrlBase }}/join/{{ $gameInstance['token'] }}</span></h2>
                 @if(Auth::check() && (Auth::user()->id == $gameInstance['user_id']))
                 <span class="fira-sans font-semibold text-xl my-2">Settings:</span>
                 <div class="border-b border-b-slate-300 pb-4">
@@ -128,7 +133,7 @@
     <script>
 
         var qrcode = new QRCode("qrcode", {
-            text: "https://is-a.gay/join/{{ $gameInstance['token'] }}",
+            text: "{{ $joinUrlBase }}/join/{{ $gameInstance['token'] }}",
             width: 128,
             height: 128,
             colorDark : "#000000",

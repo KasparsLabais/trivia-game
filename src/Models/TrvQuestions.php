@@ -12,6 +12,7 @@ class TrvQuestions extends Model
         'question',
         'order_nr',
         'question_type',
+        'input_type',
         'original_question_id'
     ];
 

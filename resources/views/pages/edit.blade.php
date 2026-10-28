@@ -91,11 +91,13 @@
                                 <template v-if="question.id == editedQuestionId">
                                     <select v-model="editedQuestionValues.question_type" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2" >
                                         <option value="options">Options (A, B, C...)</option>
-                                        <option value="text_input">Text Input</option>
-                                        <option value="number_input">Number Input</option>
+                                        <option value="text_input">Text Input (auto-graded)</option>
+                                        <option value="open_input">Open Submission (judged)</option>
+                                    </select>
+                                    <select v-if="editedQuestionValues.question_type == 'open_input'" v-model="editedQuestionValues.input_type" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 ml-2" >
+                                        <option value="string">String</option>
+                                        <option value="number">Number</option>
                                         <option value="image">Image</option>
-                                        <!--<option value="video">Video</option>
-                                        <option value="audio">Audio</option>-->
                                     </select>
                                 </template>
                                 <template v-else>
@@ -344,13 +346,19 @@
                             </div>
                             <div class="flex flex-col px-2 py-2">
                                 <label class="raleway font-semibold text-md" for="question_type">Question Type:</label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="question_type" id="question_type">
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="question_type" id="question_type"
+                                        onchange="document.getElementById('input_type_wrap').style.display = (this.value === 'open_input' ? 'flex' : 'none');">
                                     <option value="options">Options (A, B, C...)</option>
-                                    <option value="text_input">Text Input</option>
-                                    <option value="number_input">Number Input</option>
+                                    <option value="text_input">Text Input (auto-graded)</option>
+                                    <option value="open_input">Open Submission (judged)</option>
+                                </select>
+                            </div>
+                            <div id="input_type_wrap" class="flex flex-col px-2 py-2" style="display:none;">
+                                <label class="raleway font-semibold text-md" for="input_type">Input Format:</label>
+                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="input_type" id="input_type">
+                                    <option value="string">String</option>
+                                    <option value="number">Number</option>
                                     <option value="image">Image</option>
-                                    <!--<option value="video">Video</option>
-                                    <option value="audio">Audio</option>-->
                                 </select>
                             </div>
                         </div>
@@ -368,7 +376,7 @@
 
         let questionsList = {
             @foreach($questions as $question)
-            '{{ $question['id'] }}' :{ 'id' :{{ $question['id'] }}, 'order_nr':{{ $question['order_nr'] }}, 'question':'{{ $question['question'] }}', 'question_type': '{{ $question['question_type']  }}', 'new_answer' : '', 'new_answer_is_correct' : 0, 'answers':[
+            '{{ $question['id'] }}' :{ 'id' :{{ $question['id'] }}, 'order_nr':{{ $question['order_nr'] }}, 'question':'{{ $question['question'] }}', 'question_type': '{{ $question['question_type']  }}', 'input_type': '{{ $question['input_type'] }}', 'new_answer' : '', 'new_answer_is_correct' : 0, 'answers':[
                         @foreach($question->answers as $answer)
                     {
                         'id': {{ $answer['id'] }},
@@ -391,6 +399,7 @@
                     editedQuestionValues: {
                         question: '',
                         question_type: '',
+                        input_type: '',
                         answers: []
                     },
                     questions: questionsList
@@ -403,6 +412,7 @@
                     this.editedQuestionId = questionId;
                     this.editedQuestionValues.question = this.questions[questionId].question;
                     this.editedQuestionValues.question_type = this.questions[questionId].question_type;
+                    this.editedQuestionValues.input_type = this.questions[questionId].input_type || 'string';
                     this.editedQuestionValues.answers = this.questions[questionId].answers;
                 },
                 cancelEditQuestion() {
@@ -410,6 +420,7 @@
                     this.editedQuestionId = 0;
                     this.editedQuestionValues.question = '';
                     this.editedQuestionValues.question_type = '';
+                    this.editedQuestionValues.input_type = '';
                     this.editedQuestionValues.answers = [];
                 },
                 saveEditQuestion() {
@@ -424,6 +435,7 @@
                         body: JSON.stringify({
                             question: this.editedQuestionValues.question,
                             question_type: this.editedQuestionValues.question_type,
+                            input_type: this.editedQuestionValues.input_type,
                             answers: this.editedQuestionValues.answers
                         })
                     }).then(response => response.json())
@@ -432,10 +444,12 @@
                         if (data.success) {
                             this.questions[this.editedQuestionId].question = this.editedQuestionValues.question;
                             this.questions[this.editedQuestionId].question_type = this.editedQuestionValues.question_type;
+                            this.questions[this.editedQuestionId].input_type = this.editedQuestionValues.input_type;
                             this.questions[this.editedQuestionId].answers = this.editedQuestionValues.answers;
                             this.editedQuestionId = 0;
                             this.editedQuestionValues.question = '';
                             this.editedQuestionValues.question_type = '';
+                            this.editedQuestionValues.input_type = '';
                             this.editedQuestionValues.answers = [];
                         }
                     });
@@ -509,7 +523,8 @@
                 },
                 body: JSON.stringify({
                     question: document.querySelector('#question').value,
-                    question_type: document.querySelector('#question_type').value
+                    question_type: document.querySelector('#question_type').value,
+                    input_type: document.querySelector('#input_type').value
                 })
             }).then(response => response.json())
             .then(data => {

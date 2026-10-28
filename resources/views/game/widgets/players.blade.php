@@ -32,7 +32,7 @@
                     [[ player.points ]]p.
                 </div>
             </div>
-            <div class="answered-label hidden bg-rose-600 font-semibold fira-sans text-slate-100 text-sm absolute top-0 right-0 py-1 px-1 rounded">
+            <div class="answered-label hidden bg-main-accent font-semibold fira-sans text-slate-100 text-sm absolute top-0 right-0 py-1 px-1 rounded">
                 Answered
             </div>
         </div>

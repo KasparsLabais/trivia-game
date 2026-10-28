@@ -36,7 +36,7 @@
                         <label class="text-slate-600 font-bold text-normal px-2">Timer Settings</label>
                     </div>
                     <div class="flex flex-col justify-center" class="check-box">
-                        <input v-on:change="changeTimeLimitEnabled()"  class="custom-checkbox" type="checkbox" name="time_limit_enabled" id="time_limit_enabled" v-model="settings.timeLimitEnabled">
+                        <input v-on:change="changeTimeLimitEnabled()"  class="custom-checkbox" type="checkbox" name="time_limit_enabled" id="time_limit_enabled" v-model="settings.timeLimitEnabled" :true-value="1" :false-value="0">
                     </div>
                 </div>
                 <div class="flex flex-row  py-1">
@@ -56,7 +56,7 @@
                         <label class="text-slate-600 font-bold text-normal px-2" for="player_limit_enabled">Player Limit</label>
                     </div>
                     <div class="flex flex-col justify-center" class="check-box">
-                        <input v-on:change="changePlayerLimit()" class="custom-checkbox" type="checkbox" v-model="settings.playerLimitEnabled" name="player_limit_enabled" id="player_limit_enabled">
+                        <input v-on:change="changePlayerLimit()" class="custom-checkbox" type="checkbox" v-model="settings.playerLimitEnabled" name="player_limit_enabled" id="player_limit_enabled" :true-value="1" :false-value="0">
                     </div>
                 </div>
                 <div class="flex flex-row py-1">
@@ -98,6 +98,46 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <hr class="mx-6 my-2.5">
+
+        <div class="flex flex-col pb-4 px-2">
+            <div>
+                <span class="font-semibold text-main-dark">Send Notification</span>
+            </div>
+            <p class="text-slate-600 font-bold text-normal px-2 py-1">Send a one-time message to everyone, or to a single player.</p>
+            <div class="flex flex-row py-1">
+                <div class="flex flex-col justify-center">
+                    <label class="text-slate-600 font-bold text-normal px-2" for="notification_recipient">To:</label>
+                </div>
+                <select v-model="notificationTarget" id="notification_recipient" class="flex-1 text-normal border border-slate-500 rounded raleway px-2 py-1 bg-white">
+                    <option value="all">All players</option>
+                    <option v-for="player in playerInstances" :value="player.user_id">[[ player.username ]]</option>
+                </select>
+            </div>
+            <div class="flex flex-row py-1">
+                <div class="flex flex-col justify-center">
+                    <label class="text-slate-600 font-bold text-normal px-2" for="notification_action">Message:</label>
+                </div>
+                <select v-model="selectedActionId" id="notification_action" class="flex-1 text-normal border border-slate-500 rounded raleway px-2 py-1 bg-white">
+                    <option value="custom">Custom message</option>
+                    <option v-for="action in notificationActions" :value="action.id" :style="{ color: action.colour }">[[ action.message ]] ([[ action.level ]])</option>
+                </select>
+            </div>
+
+            <!-- Custom message input -->
+            <textarea v-if="selectedActionId == 'custom'" v-model="notificationMessage" v-on:keydown.enter.exact.prevent="sendNotification()" rows="2" maxlength="240" placeholder="Type a message for your players..." class="text-normal border border-slate-500 rounded raleway px-2 py-1 resize-none"></textarea>
+
+            <!-- Pre-set action preview, shown in its level colour -->
+            <div v-else-if="selectedAction" class="rounded px-3 py-2 raleway font-semibold text-white shadow" :style="{ backgroundColor: selectedAction.colour }">
+                [[ selectedAction.message ]]
+                <span class="uppercase text-xs opacity-90">— [[ selectedAction.level ]]</span>
+            </div>
+
+            <button type="button" v-on:click="sendNotification()" :disabled="selectedActionId == 'custom' && notificationMessage.trim() == ''" class="mt-2 text-center px-2 py-2 rounded font-semibold shadow bg-main-accent text-white disabled:opacity-50">
+                Send Notification
+            </button>
         </div>
 
         <hr class="mx-6 my-2.5">

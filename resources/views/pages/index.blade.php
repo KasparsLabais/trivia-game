@@ -36,19 +36,31 @@
                         </select>
                     </div>
                     <div class="flex flex-col w-10/12 md:w-2/6 px-2">
-                        <label for="selectedDifficulty" class="flex flex-row">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6" :class="{'fill-lime-600' : selectedDifficulty == 'easy', 'fill-amber-500' : selectedDifficulty == 'medium', 'fill-rose-600' : selectedDifficulty == 'hard', 'fill-zinc-300' : selectedDifficulty == 'any'}">
+                        <label class="flex flex-row items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 stroke-main-dark">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z" />
                             </svg>
                             <span class="px-5">Difficulty</span>
                         </label>
-                        <select class="w-full py-2 text-xl mt-2" v-model="selectedDifficulty" name="selectedDifficulty" id="selectedDifficulty">
-                            <option value="any">Select Difficulty</option>
-                            <option value="easy">Easy</option>
-                            <option value="medium">Medium</option>
-                            <option value="hard">Hard</option>
-                        </select>
+                        {{-- Difficulty tags: all on = show all; click to toggle a difficulty off (filtered out). --}}
+                        <div class="flex flex-row flex-wrap gap-2 mt-2">
+                            <button type="button" @click="toggleDifficulty('easy')"
+                                    class="border-4 border-main-dark px-4 py-1.5 russo text-sm uppercase tracking-wide transition-all duration-100"
+                                    :class="activeDifficulties.easy ? 'bg-green-500 text-main-dark shadow-[3px_3px_0_0_#14323B]' : 'bg-white text-main-dark opacity-50'">
+                                Easy
+                            </button>
+                            <button type="button" @click="toggleDifficulty('medium')"
+                                    class="border-4 border-main-dark px-4 py-1.5 russo text-sm uppercase tracking-wide transition-all duration-100"
+                                    :class="activeDifficulties.medium ? 'bg-amber-400 text-main-dark shadow-[3px_3px_0_0_#14323B]' : 'bg-white text-main-dark opacity-50'">
+                                Medium
+                            </button>
+                            <button type="button" @click="toggleDifficulty('hard')"
+                                    class="border-4 border-main-dark px-4 py-1.5 russo text-sm uppercase tracking-wide transition-all duration-100"
+                                    :class="activeDifficulties.hard ? 'bg-main-accent text-white shadow-[3px_3px_0_0_#14323B]' : 'bg-white text-main-dark opacity-50'">
+                                Hard
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -59,45 +71,41 @@
                 <div class="w-10/12 md:w-4/12 px-2" v-for="trivia in selectedTriviasByCategoryAndDifficulty">
 
 
-                    <div class="flex flex-row justify-between py-4 border-2 border-main-dark bg-main-dark mb-2 w-full shadow-md rounded">
-                        <div class="raleway flex flex-col justify-top px-4 w-3/6">
-                            <span class="font-semibold text-main-accent">[[ trivia.title ]] <!--([[ trivia.questions ]])-->  <span v-if="trivia.private" class="text-rose-600">Private</span> </span>
-                            <div class="font-normal fira-sans flex flex-row text-main-light">
-                                <div v-for="index in 4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6" :class="{'fill-amber-500' : trivia.rating >= index && trivia.rating != 0, 'stroke-amber-500' : trivia.rating >= index && trivia.rating != 0}">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                    <div class="relative mb-8">
+                        {{-- Folder tab — difficulty label + colour --}}
+                        <div class="inline-block ml-4 px-4 py-1 border-4 border-b-0 border-main-dark russo text-xs uppercase tracking-widest capitalize"
+                             :class="{'bg-green-500 text-main-dark' : trivia.difficulty == 'easy', 'bg-amber-400 text-main-dark' : trivia.difficulty == 'medium', 'bg-main-accent text-white' : trivia.difficulty == 'hard'}">
+                            [[ trivia.difficulty ]]
+                        </div>
+                        {{-- Folder body --}}
+                        <div class="bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] p-5 flex flex-col gap-3">
+                            {{-- Top row: category icon (colour = difficulty) + question count & rating --}}
+                            <div class="flex flex-row items-start justify-between gap-2">
+                                <div class="w-14 h-14 border-2 border-main-dark flex items-center justify-center shrink-0"
+                                     :class="{'bg-green-500' : trivia.difficulty == 'easy', 'bg-amber-400' : trivia.difficulty == 'medium', 'bg-main-accent' : trivia.difficulty == 'hard'}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" class="w-7 h-7" :class="{'stroke-white' : trivia.difficulty == 'hard', 'stroke-main-dark' : trivia.difficulty != 'hard'}">
+                                        <path stroke-linecap="round" stroke-linejoin="round" :d="getCategoryIcon(trivia.category_id)" />
                                     </svg>
                                 </div>
-                                ([[ trivia.rating ]])
-                            </div>
-                            @if(Auth::check())
-                                <div v-if="trivia.is_premium">
-                                    <a href="/premium" class="flex justify-center w-full fira-sans py-2 px-2 md:px-6 shadow bg-yellow-500 text-slate-100 font-semibold text-lg shadow-gray-900 my-2">Get Premium</a>
-                                </div>
-                                <div v-else>
-                                    <button type="button" v-on:click="startTriviaGame( trivia.id )" class="w-full fira-sans py-2 px-2 md:px-6 shadow btn-main-accent text-white font-semibold text-lg shadow-gray-900 my-2">Play</button>
-                                </div>
-                            @else
-                                <div>
-                                    <div>
-                                        <span class="">You Need To Login To Play</span>
+                                <div class="flex flex-col items-end gap-1">
+                                    <span class="fira-sans text-main-dark leading-none text-right"><span class="font-black text-xl">[[ trivia.questions ]]</span><br><span class="text-xs uppercase tracking-wide">questions</span></span>
+                                    <div class="flex flex-row">
+                                        <svg v-for="index in 4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="w-4 h-4" :class="{'fill-amber-400 stroke-amber-400' : trivia.rating >= index && trivia.rating != 0, 'stroke-main-dark' : !(trivia.rating >= index && trivia.rating != 0)}">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                                        </svg>
                                     </div>
                                 </div>
+                            </div>
+                            {{-- Title --}}
+                            <h3 class="russo text-lg text-main-dark leading-tight">[[ trivia.title ]]<span v-if="trivia.private" class="ml-1 align-middle text-main-accent text-xs">&middot; PRIVATE</span></h3>
+                            <div class="fira-sans text-sm text-main-dark">by <span class="font-bold text-brand">[[ trivia.author ]]</span></div>
+                            {{-- Play --}}
+                            @if(Auth::check())
+                                <a v-if="trivia.is_premium" href="/premium" class="block w-full text-center fira-sans py-2.5 border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] bg-pop text-main-dark font-black uppercase tracking-wide transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">Get Premium</a>
+                                <button v-else type="button" v-on:click="startTriviaGame( trivia.id )" class="w-full fira-sans py-2.5 border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] bg-main-accent text-white font-black uppercase tracking-wide transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">Play</button>
+                            @else
+                                <span class="fira-sans text-sm text-main-dark font-semibold">Log in to play</span>
                             @endif
-                        </div>
-                        <div class="flex flex-col justify-top px-4 w-3/6">
-                            <div class="text-main-light">
-                                <span  class="font-semibold text-main-accent">[[ trivia.questions ]]</span> Questions
-                            </div>
-                            <div class="text-main-light">
-                                Rated as <span class="capitalize text-semibold fira-sans" :class="{'text-amber-500' : trivia.difficulty == 'medium', 'text-rose-600' :  trivia.difficulty == 'hard', 'text-lime-600' : trivia.difficulty == 'easy' }">[[ trivia.difficulty ]] </span>
-                            </div>
-
-                            <hr class="my-2.5">
-
-                            <div class="flex flex-row">
-                                <span class="font-normal text-main-light">Created by</span>&nbsp;<span class="font-semibold  text-alternative-accent"> [[ trivia.author]]</span>
-                            </div>
                         </div>
                     </div>
 
@@ -269,10 +277,44 @@
                         @endforeach
                     ],
                     selectedCategory: 0,
-                    selectedDifficulty: 'any',
+                    // All difficulties on by default; toggling one off filters it out.
+                    activeDifficulties: { easy: true, medium: true, hard: true },
                 }
             },
             methods: {
+                // Toggle a difficulty tag on/off. On = that difficulty is shown.
+                toggleDifficulty(level) {
+                    this.activeDifficulties[level] = !this.activeDifficulties[level];
+                },
+                // Category -> outline icon (heroicons path). Unmapped categories
+                // fall back to a folder icon.
+                getCategoryIcon(categoryId) {
+                    const icons = {
+                        1:  'M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5',
+                        2:  'M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25',
+                        3:  'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.348c0-.717.772-1.167 1.395-.81l5.603 3.213c.63.36.63 1.267 0 1.627l-5.603 3.213c-.623.357-1.395-.093-1.395-.81V9.348Z',
+                        4:  'M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163V5.25a2.25 2.25 0 0 0-1.632-2.163l-1.32-.377a1.803 1.803 0 0 0-.99 3.467m-6 5.25v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 12.553V5.25',
+                        5:  'M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z',
+                        7:  'M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 0 1-.657.643 48.39 48.39 0 0 1-4.163-.3c.186 1.613.293 3.25.315 4.907a.656.656 0 0 1-.658.663v0c-.355 0-.676-.186-.959-.401a1.647 1.647 0 0 0-1.003-.349c-1.036 0-1.875 1.007-1.875 2.25s.84 2.25 1.875 2.25c.369 0 .713-.128 1.003-.349.283-.215.604-.401.959-.401v0c.31 0 .555.26.532.57a48.039 48.039 0 0 1-.642 5.056c1.518.19 3.058.309 4.616.354a.64.64 0 0 0 .657-.643v0c0-.355-.186-.676-.401-.959a1.647 1.647 0 0 1-.349-1.003c0-1.035 1.008-1.875 2.25-1.875 1.243 0 2.25.84 2.25 1.875 0 .369-.128.713-.349 1.003-.215.283-.4.604-.4.959v0c0 .333.277.599.61.58a48.1 48.1 0 0 0 5.427-.63 48.05 48.05 0 0 0 .582-4.717.532.532 0 0 0-.533-.57v0c-.355 0-.676.186-.959.401-.29.221-.634.349-1.003.349-1.035 0-1.875-1.007-1.875-2.25s.84-2.25 1.875-2.25c.37 0 .713.128 1.003.349.283.215.604.401.96.401v0a.656.656 0 0 0 .658-.663 48.422 48.422 0 0 0-.37-5.36c-1.886.342-3.81.574-5.766.689a.578.578 0 0 1-.61-.58v0Z',
+                        8:  'M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z',
+                        9:  'M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z',
+                        10: 'M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z',
+                        12: 'M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418',
+                        13: 'M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z',
+                        14: 'M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25',
+                        15: 'M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm2.498-6.75h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V13.5Zm0 2.25h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V18Zm2.504-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Zm0 2.25h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V18Zm2.498-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5ZM8.25 6h7.5v2.25h-7.5V6ZM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 0 0 2.25 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0 0 12 2.25Z',
+                        16: 'M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 0 1-.657.643 48.39 48.39 0 0 1-4.163-.3c.186 1.613.293 3.25.315 4.907a.656.656 0 0 1-.658.663v0c-.355 0-.676-.186-.959-.401a1.647 1.647 0 0 0-1.003-.349c-1.036 0-1.875 1.007-1.875 2.25s.84 2.25 1.875 2.25c.369 0 .713-.128 1.003-.349.283-.215.604-.401.959-.401v0c.31 0 .555.26.532.57a48.039 48.039 0 0 1-.642 5.056c1.518.19 3.058.309 4.616.354a.64.64 0 0 0 .657-.643v0c0-.355-.186-.676-.401-.959a1.647 1.647 0 0 1-.349-1.003c0-1.035 1.008-1.875 2.25-1.875 1.243 0 2.25.84 2.25 1.875 0 .369-.128.713-.349 1.003-.215.283-.4.604-.4.959v0c0 .333.277.599.61.58a48.1 48.1 0 0 0 5.427-.63 48.05 48.05 0 0 0 .582-4.717.532.532 0 0 0-.533-.57v0c-.355 0-.676.186-.959.401-.29.221-.634.349-1.003.349-1.035 0-1.875-1.007-1.875-2.25s.84-2.25 1.875-2.25c.37 0 .713.128 1.003.349.283.215.604.401.96.401v0a.656.656 0 0 0 .658-.663 48.422 48.422 0 0 0-.37-5.36c-1.886.342-3.81.574-5.766.689a.578.578 0 0 1-.61-.58v0Z',
+                        17: 'M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z',
+                        18: 'M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0',
+                        19: 'M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z',
+                        20: 'M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z',
+                        21: 'M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12',
+                        22: 'M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42',
+                        24: 'M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.87c1.355 0 2.697.055 4.024.165C17.155 8.51 18 9.473 18 10.608v2.513m-9 4.242 1.5.75a3.354 3.354 0 0 0 3 0 3.354 3.354 0 0 1 3 0 3.354 3.354 0 0 0 3 0L21 16.5m-18 0 1.5.75a3.354 3.354 0 0 0 3 0M3 16.5v4.125c0 .621.504 1.125 1.125 1.125h15.75c.621 0 1.125-.504 1.125-1.125V16.5M3 16.5l1.5-3.38m0 0A47.78 47.78 0 0 1 6 13.12m12 0c.513.065 1.022.148 1.526.246l.974 2.754',
+                        25: 'm10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802',
+                    };
+                    return icons[categoryId] || 'M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z';
+                },
                 getTrivias() {
                     if(this.selectedCategory == 0 && this.selectedDifficulty == 'any') {
                         this.message = 'All Trivia\'s';
@@ -439,68 +481,29 @@
             },
             computed: {
                 selectedTriviasByCategoryAndDifficulty() {
-
-                    //TODO: show all trivias if no category or difficulty is selected
+                    let triviaList = [];
                     if (this.selectedCategory == 0) {
-
-                        let triviaList = [];
-
                         this.trivias.forEach(category => {
-                            category.trivias.forEach(trivia => {
-                                triviaList.push(trivia);
-                            });
+                            category.trivias.forEach(trivia => triviaList.push(trivia));
                         });
-
-                        if (this.selectedDifficulty == 'any' || this.selectedDifficulty == 0) {
-                            return triviaList;
+                    } else {
+                        let filteredByCategory = this.trivias.filter(category => category.id == this.selectedCategory);
+                        if (filteredByCategory.length == 0) {
+                            return [];
                         }
-
-                        let filteredByDifficulty = triviaList.filter(trivia => trivia.difficulty == this.selectedDifficulty);
-                        return filteredByDifficulty;
+                        triviaList = filteredByCategory[0].trivias;
                     }
-
-
-                    let filteredByCategory = this.trivias.filter(trivia => trivia.id == this.selectedCategory);
-
-                    if (filteredByCategory.length == 0) {
-                        return [];
-                    }
-
-                    if (this.selectedDifficulty == 'any' || this.selectedDifficulty == 0) {
-                        return filteredByCategory[0].trivias;
-                    }
-
-                    let filteredByDifficulty = filteredByCategory[0].trivias.filter(trivia => trivia.difficulty == this.selectedDifficulty);
-                    return filteredByDifficulty;
+                    // Show everything except the difficulties toggled off.
+                    return triviaList.filter(trivia => this.activeDifficulties[trivia.difficulty]);
                 },
                 selectedOpenTriviasByCategoryAndDifficulty() {
-
+                    let list;
                     if (this.selectedCategory == 0) {
-                        let tmpOpentrivias = [];
-
-                        this.openTrivias.forEach(trivia => {
-                            tmpOpentrivias.push(trivia);
-                        });
-
-                        if (this.selectedDifficulty == 'any' || this.selectedDifficulty == 0) {
-                            return tmpOpentrivias;
-                        }
-
-                        let filteredByDifficulty = tmpOpentrivias.filter(trivia => trivia.difficulty == this.selectedDifficulty);
-                        return filteredByDifficulty;
+                        list = this.openTrivias.slice();
+                    } else {
+                        list = this.openTrivias.filter(trivia => trivia.category_id == this.selectedCategory);
                     }
-
-                    let filteredByCategory = this.openTrivias.filter(trivia => trivia.category_id == this.selectedCategory);
-                    if (filteredByCategory.length == 0) {
-                        return [];
-                    }
-
-                    if (this.selectedDifficulty == 'any' || this.selectedDifficulty == 0) {
-                        return filteredByCategory;
-                    }
-
-                    let filteredByDifficulty = filteredByCategory.filter(trivia => trivia.difficulty == this.selectedDifficulty);
-                    return filteredByDifficulty;
+                    return list.filter(trivia => this.activeDifficulties[trivia.difficulty]);
                 },
                 joinUrl(token) {
                     return '/join/' + token;

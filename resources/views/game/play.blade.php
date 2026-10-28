@@ -1,6 +1,8 @@
 @extends('game-api::layout')
 @section('body')
 
+    @include('game-api::partials.game-notification')
+
     <div id="timer-holder" class="hidden flex flex-col relative">
         <div id="timer-settings" class="flex flex-row justify-center bg-lime-300" style="width: 100%; height: 24.5px;">
         </div>
