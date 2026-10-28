@@ -1,4 +1,5 @@
 @extends('game-api::layout')
+@section('page-bg', 'bg-pop')
 @section('body')
     @php
         // Base URL for join links / QR codes. Defaults to the app's own URL;
@@ -10,209 +11,323 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
-    <div id="player-app" style="top: -65px; ">
+    <style>
+        .dotted-canvas {
+            background-color: #FFB900;
+            background-image: radial-gradient(#14323B 2.5px, transparent 2.6px);
+            background-size: 26px 26px;
+        }
+        .waiting-dot { animation: waiting-bounce 1.2s ease-in-out infinite; }
+        .waiting-dot:nth-child(2) { animation-delay: 0.15s; }
+        .waiting-dot:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes waiting-bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .waiting-dot { animation: none; }
+        }
+    </style>
+
+    <div id="player-app">
 
 
-        <div v-if="currentView == 'game_created' " class="py-4">
-            <x-section title="">
-                <div class="flex flex-col relative w-full z-20">
-                    <h1 class="px-4 z-20 text-center josefin-sans text-main-accent font-semibold text-6xl">[[ trivia.title ]]</h1>
-                    <p class="px-4 z-20 text-slate-400 text-center">(Hosted By  [[ gameInstance.user.username ]])</p>
-                    <div class="z-20 flex flex-row justify-between px-6 py-2 text-slate-200">
-                        <div>
-                            <span class="raleway font-normal text-base">Category:</span>
-                            <span class="raleway font-normal text-base capitalize">[[ trivia.category.name ]]</span>
+        {{-- Waiting room (joined, waiting for the game master to start) --}}
+        <div v-if="currentView == 'game_created' " class="dotted-canvas min-h-screen flex justify-center items-start px-4 py-8 md:py-12">
+            <div class="w-full max-w-2xl flex flex-col gap-8">
+
+                {{-- Neo-brutalist "waiting room" window --}}
+                <div class="w-full bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+
+                    {{-- Title bar --}}
+                    <div class="flex items-center gap-2.5 bg-main-dark px-5 py-3">
+                        <span class="w-4 h-4 rounded-full bg-main-accent shrink-0"></span>
+                        <span class="w-4 h-4 rounded-full bg-pop shrink-0"></span>
+                        <span class="w-4 h-4 rounded-full bg-green-500 shrink-0"></span>
+                        <span class="ml-2 russo uppercase tracking-widest text-white text-xs md:text-sm">Waiting Room</span>
+                    </div>
+
+                    {{-- Body --}}
+                    <div class="p-6 md:p-10 flex flex-col items-center gap-6">
+
+                        {{-- Game info --}}
+                        <div class="text-center">
+                            <h1 class="russo text-3xl md:text-4xl text-main-dark leading-tight break-words">[[ trivia.title ]]</h1>
+                            <p class="fira-sans text-main-dark/60 mt-1">Hosted by <span class="font-bold text-brand">[[ gameInstance.user.username ]]</span></p>
                         </div>
-                        <div>
-                            <span class="raleway font-normal text-base">Difficulty:</span>
-                            <span class="raleway font-semibold text-base capitalize" :class="{'text-amber-700': trivia.difficulty == 'medium', 'text-red-700': trivia.difficulty == 'hard', 'text-lime-600' : trivia.difficulty == 'easy'}">[[ trivia.difficulty ]]</span>
+
+                        {{-- Meta tags --}}
+                        <div class="flex flex-wrap justify-center gap-3">
+                            <span class="bg-pop text-main-dark border-4 border-main-dark px-4 py-1.5 russo text-xs md:text-sm uppercase tracking-wide">{{ $trivia->questions()->count() }} Questions</span>
+                            <span v-if="trivia.category" class="bg-brand text-white border-4 border-main-dark px-4 py-1.5 russo text-xs md:text-sm uppercase tracking-wide">[[ trivia.category.name ]]</span>
+                            <span v-if="trivia.difficulty" class="border-4 border-main-dark px-4 py-1.5 russo text-xs md:text-sm uppercase tracking-wide"
+                                  :class="{'bg-green-500 text-white': trivia.difficulty == 'easy', 'bg-main-light text-main-dark': trivia.difficulty == 'medium', 'bg-main-accent text-white': trivia.difficulty == 'hard'}">[[ trivia.difficulty ]]</span>
+                        </div>
+
+                        <p v-if="trivia.description" class="fira-sans text-center text-main-dark/70">[[ trivia.description ]]</p>
+
+                        {{-- Status --}}
+                        <div class="w-full bg-main-light border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] px-5 py-6 flex flex-col items-center gap-3 text-center">
+                            <div class="flex items-center gap-2" aria-hidden="true">
+                                <span class="waiting-dot w-4 h-4 bg-main-accent border-2 border-main-dark"></span>
+                                <span class="waiting-dot w-4 h-4 bg-pop border-2 border-main-dark"></span>
+                                <span class="waiting-dot w-4 h-4 bg-brand border-2 border-main-dark"></span>
+                            </div>
+                            <p class="fira-sans text-main-dark text-xl md:text-2xl font-bold">Waiting for <span class="text-main-accent">[[ gameInstance.user.username ]]</span> to start the game!</p>
+                            <p class="fira-sans text-main-dark/60 text-sm">Keep this page open &mdash; the first question will appear here automatically.</p>
+                        </div>
+
+                        {{-- Who you're playing as --}}
+                        <div v-if="player && player.user" class="flex flex-row items-stretch border-4 border-main-dark">
+                            <span class="flex items-center bg-main-dark text-white px-3 russo text-xs uppercase tracking-widest">Playing as</span>
+                            <span class="bg-white text-main-dark px-4 py-2 fira-sans font-bold text-lg break-all">[[ player.user.username ]]</span>
                         </div>
                     </div>
-                    <p class="z-20 text-slate-400 text-center">[[ trivia.description ]]</p>
-                    <div class="w-full flex flex-row bg-main-dark shadow-md h-24 skew-y-3 absolute -bottom-10 z-10">
-                    </div>
                 </div>
 
-                <div class="bg-panel pt-16 pb-6 relative z-10">
-                    <x-card title="" addHeader="{{ false }}">
-                        <div class="z-20 flex flex-col justify-around px-6">
-                            <!-- TODO: Add animation -->
-                            <p class="text-slate-200 font-semibold text-4xl text-center">Waiting <span class="text-main-accent">[[ gameInstance.user.username ]]</span> to start the game!</p>
+                {{-- Invite window: PIN, link & QR code --}}
+                <div class="w-full bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+                    <div class="flex items-center gap-2.5 bg-brand border-b-4 border-main-dark px-5 py-3">
+                        <span class="russo uppercase tracking-widest text-white text-xs md:text-sm">Invite Friends</span>
+                    </div>
+
+                    <div class="p-6 md:p-10 flex flex-col items-center gap-6">
+                        {{-- PIN --}}
+                        <div class="flex flex-col items-center gap-2">
+                            <span class="fira-sans text-xs uppercase tracking-widest text-main-dark/60">Game PIN</span>
+                            <span class="russo text-5xl md:text-6xl tracking-[0.2em] text-main-dark bg-pop border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] px-6 py-2">[[ gameInstance.pin ]]</span>
                         </div>
-                    </x-card>
 
-                    <div class="w-full flex flex-row bg-panel shadow-md h-24 skew-y-3 absolute -bottom-4 z-10">
-                    </div>
-                </div>
-
-                <div class="bg-main-dark pt-16 pb-6 relative z-20">
-                    <h2 class="px-4 z-20 text-center josefin-sans text-main-accent font-semibold text-4xl z-20 relative">Ways to join:</h2>
-                    <div class="text-slate-200 font-semibold text-2xl px-6 py-2">
-                        PIN: <span class="josefin-sans text-main-accent font-bold">[[ gameInstance.pin ]]</span>
-                    </div>
-                    <div class="text-slate-200 font-semibold text-2xl px-6" style="overflow-wrap: break-word;">
-                        <p>Link: {{ $joinUrlBase }}/join/[[ gameInstance.token ]]</p>
-                    </div>
-                    <p class="text-center text-slate-200 text-2xl px-6 py-4 font-semibold">OR</p>
-                    <div class="flex flex-row justify-center z-20 relative" id="qrcode"></div>
-                </div>
-            </x-section>
-        </div>
-
-        <div v-else-if="currentView == 'question_view'">
-
-            <div id="timer-holder" :class="{'hidden': (timerMode == 0) }" class="flex flex-col relative">
-                <div id="timer-settings" class="flex flex-row justify-center" :class="[timerClass]"  v-bind:["style"]="'width:' + timerSize + '; height: 24.5px;'">
-                </div>
-                <div class="w-full flex flex-row justify-center">
-                    <span id="timer-countdown-holder" class="bg-main-dark rounded-md text-xl text-slate-300 font-semibold">[[ timeLeft ]]</span>
-                </div>
-            </div>
-
-
-            <x-section title="">
-                <div class="flex flex-col py-4 px-2">
-                    <h1 v-if="questionLoaded == 0" id="question-holder" class="josefin-sans text-main-accent text-5xl text-center">Waiting For Question...</h1>
-                    <h1 v-else id="question-holder" class="josefin-sans text-main-accent text-4xl text-center">[[ question.question ]]</h1>
-                </div>
-
-                <div v-if="questionLoaded == 0" class="flex text-slate-200 text-xl text-center flex-col py-2 px-2 justify-center">
-                    <!-- todo: change different quotes for waiting -->
-                    <p>Give A moment and you will receive a question!</p>
-                </div>
-                <div v-else-if="questionLoaded == 1 && question.question_type == 'text_input' " class="flex text-slate-200 text-xl text-center flex-col py-2 px-2 justify-center">
-                    <div v-if="(question.id == lastAnsweredQuestionId) || (correctAnswer != '' )" class="py-4">
-                        <div>
-                            <p class="text-3xl josefin-sans font-semibold text-slate-200">Your Answer: <span class="text-main-accent">[[ correctInputTextAnswer ]]</span></p>
-                            <p class="text-3xl josefin-sans font-semibold text-slate-200">Correct Answer: <span class="text-main-accent">[[ correctAnswer ]]</span></p>
-                            <div v-if="correctAnswerFileUrl != ''" class="flex flex-row justify-center">
-                                <template v-if="correctAnswerFileUrlType == 'image'">
-                                    <img class="w-1/2" :src="correctAnswerFileUrl" alt="Correct Answer Image">
-                                </template>
-                                <template v-else-if="correctAnswerFileUrlType == 'video'">
-                                    <video class="w-1/2" controls>
-                                        <source :src="correctAnswerFileUrl" type="video/mp4">
-                                        Your browser does not support the video tag.
-                                    </video>
-                                </template>
+                        {{-- Link --}}
+                        <div class="w-full flex flex-col gap-2">
+                            <span class="fira-sans text-xs uppercase tracking-widest text-main-dark/60 text-center">Join link</span>
+                            <div class="flex flex-row items-stretch w-full border-4 border-main-dark">
+                                <span class="flex-1 min-w-0 bg-main-light px-3 py-2.5 fira-sans text-sm md:text-base font-bold text-main-dark break-all">{{ $joinUrlBase }}/join/[[ gameInstance.token ]]</span>
+                                <button type="button" @click="copyJoinLink()"
+                                        class="shrink-0 bg-main-accent text-white border-l-4 border-main-dark px-4 russo text-xs uppercase tracking-wide transition-colors hover:bg-secondly-accent">[[ linkCopied ? 'Copied!' : 'Copy' ]]</button>
                             </div>
                         </div>
-                    </div>
-                    <div v-else-if="answersRevealed">
-                        <input v-model="correctInputTextAnswer" class="text-center bg-slate-100 py-2 px-2 text-4xl w-full border-2 border-slate-400 text-main-accent rounded shadow placeholder:text-gray-400 font-semibold"  type="text" id="correct_answer" name="correct_answer" placeholder="Correct Answer">
-                        <button @click="answerInputText()" type="button" class="py-2 px-2 shadow-md text-left text-slate-100 text-3xl font-semibold mb-2 w-full rounded bg-brand flex justify-center text-center mt-2">Submit Answer</button>
-                    </div>
-                    <div v-else class="py-6">
-                        <h2 class="josefin-sans text-slate-200 text-3xl font-semibold">Get ready&hellip;</h2>
-                        <p class="raleway text-slate-400 text-xl mt-2">You'll be able to answer in a moment!</p>
+
+                        {{-- OR divider --}}
+                        <div class="flex items-center gap-3 w-full">
+                            <div class="flex-1 h-1 bg-main-dark"></div>
+                            <span class="shrink-0 russo text-sm bg-main-dark text-white rounded-full w-11 h-11 flex items-center justify-center">OR</span>
+                            <div class="flex-1 h-1 bg-main-dark"></div>
+                        </div>
+
+                        {{-- QR code --}}
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] p-3">
+                                <div id="qrcode"></div>
+                            </div>
+                            <span class="fira-sans text-sm text-main-dark/60">Scan to join</span>
+                        </div>
                     </div>
                 </div>
 
-                <div v-else-if="questionLoaded == 1 && question.question_type == 'open_input'" class="flex flex-col py-2 px-2">
-                    {{-- After the host reveals: show everyone's submissions --}}
-                    <div v-if="openSubmissionsRevealed">
-                        <h2 class="text-slate-200 text-2xl text-center josefin-sans mb-3">Submitted Answers</h2>
-                        <div class="flex flex-col gap-2">
-                            <div v-for="sub in openSubmissions" class="bg-panel rounded px-3 py-2 flex flex-row items-center gap-3">
-                                <span class="text-main-accent font-semibold raleway">[[ sub.username ]]</span>
+            </div>
+        </div>
+
+        {{-- Question (answering, waiting for options, revealed answers) --}}
+        <div v-else-if="currentView == 'question_view'" class="dotted-canvas min-h-screen flex justify-center items-start px-4 py-8 md:py-12">
+            <div class="w-full max-w-2xl bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+
+                {{-- Title bar: traffic lights + points --}}
+                <div class="flex items-center gap-2.5 bg-main-dark px-5 py-3">
+                    <span class="w-4 h-4 rounded-full bg-main-accent shrink-0"></span>
+                    <span class="w-4 h-4 rounded-full bg-pop shrink-0"></span>
+                    <span class="w-4 h-4 rounded-full bg-green-500 shrink-0"></span>
+                    <span class="ml-2 russo uppercase tracking-widest text-white text-xs md:text-sm truncate">[[ trivia.title ]]</span>
+                    <div class="ml-auto flex items-baseline gap-2 shrink-0">
+                        <span class="fira-sans text-xs uppercase tracking-widest text-white/60">Points</span>
+                        <span id="game-api-_points-holder" class="russo text-pop text-xl md:text-2xl">[[ player.points ]]</span>
+                    </div>
+                </div>
+
+                {{-- Timer bar --}}
+                <div id="timer-holder" :class="{'hidden': (timerMode == 0) }" class="w-full bg-main-light border-b-4 border-main-dark">
+                    <div class="flex flex-row items-center px-5 py-3 gap-4">
+                        <div class="flex-1 h-4 bg-white border-2 border-main-dark overflow-hidden">
+                            <div id="timer-settings" class="h-full" :class="[timerClass]" :style="{ width: timerSize, transition: 'width 1s linear' }"></div>
+                        </div>
+                        <span id="timer-countdown-holder" class="russo text-xl text-main-dark w-12 text-right">[[ timeLeft ]]</span>
+                    </div>
+                </div>
+
+                <div class="p-6 md:p-10 flex flex-col gap-6">
+
+                    {{-- Question text --}}
+                    <h1 v-if="questionLoaded == 0" id="question-holder" class="russo text-main-dark/40 text-3xl md:text-4xl text-center leading-tight">Waiting for question&hellip;</h1>
+                    <h1 v-else id="question-holder" class="russo text-main-dark text-2xl md:text-4xl text-center leading-tight break-words">[[ question.question ]]</h1>
+
+                    {{-- No question yet --}}
+                    <div v-if="questionLoaded == 0" class="bg-main-light border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] px-5 py-6 flex flex-col items-center gap-3 text-center">
+                        <div class="flex items-center gap-2" aria-hidden="true">
+                            <span class="waiting-dot w-4 h-4 bg-main-accent border-2 border-main-dark"></span>
+                            <span class="waiting-dot w-4 h-4 bg-pop border-2 border-main-dark"></span>
+                            <span class="waiting-dot w-4 h-4 bg-brand border-2 border-main-dark"></span>
+                        </div>
+                        <p class="fira-sans text-main-dark text-lg md:text-xl font-bold">Hang tight &mdash; your question is on its way!</p>
+                    </div>
+
+                    {{-- Text input question --}}
+                    <div v-else-if="questionLoaded == 1 && question.question_type == 'text_input' " class="flex flex-col gap-4">
+                        <div v-if="(question.id == lastAnsweredQuestionId) || (correctAnswer != '' )" class="flex flex-col gap-4">
+                            <div class="flex flex-row items-stretch border-4 border-main-dark">
+                                <span class="flex items-center bg-main-dark text-white px-3 russo text-xs uppercase tracking-widest shrink-0">Your answer</span>
+                                <span class="flex-1 min-w-0 bg-white text-main-dark px-4 py-3 fira-sans font-bold text-xl break-words">[[ correctInputTextAnswer || '—' ]]</span>
+                            </div>
+                            <div v-if="correctAnswer != ''" class="flex flex-row items-stretch border-4 border-main-dark shadow-[6px_6px_0_0_#14323B]">
+                                <span class="flex items-center bg-green-500 text-white px-3 russo text-xs uppercase tracking-widest shrink-0 border-r-4 border-main-dark">Correct</span>
+                                <span class="flex-1 min-w-0 bg-white text-main-dark px-4 py-3 fira-sans font-bold text-xl break-words">[[ correctAnswer ]]</span>
+                            </div>
+                            <p v-else class="fira-sans text-center text-main-dark/60">Answer locked in! Waiting for the host to reveal the correct answer&hellip;</p>
+                            <div v-if="correctAnswerFileUrl" class="flex flex-row justify-center">
+                                <div class="bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] p-2 w-full md:w-2/3">
+                                    <template v-if="correctAnswerFileUrlType == 'image'">
+                                        <img class="w-full" :src="correctAnswerFileUrl" alt="Correct Answer Image">
+                                    </template>
+                                    <template v-else-if="correctAnswerFileUrlType == 'video'">
+                                        <video class="w-full" controls>
+                                            <source :src="correctAnswerFileUrl" type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else-if="answersRevealed" class="flex flex-col gap-4">
+                            <input v-model="correctInputTextAnswer" @keyup.enter="answerInputText()" class="w-full bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] py-3.5 px-4 text-center text-2xl text-main-dark font-bold placeholder:text-base placeholder:font-medium placeholder:text-gray-400 focus:outline-none fira-sans" type="text" id="correct_answer" name="correct_answer" placeholder="Type your answer">
+                            <button @click="answerInputText()" type="button" class="w-full bg-main-accent text-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] py-3.5 text-2xl font-black uppercase tracking-wider fira-sans transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[8px_8px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">Submit Answer</button>
+                        </div>
+                        <div v-else class="bg-main-light border-4 border-main-dark px-5 py-6 text-center">
+                            <h2 class="russo text-main-dark text-2xl">Get ready&hellip;</h2>
+                            <p class="fira-sans text-main-dark/60 mt-1">You'll be able to answer in a moment!</p>
+                        </div>
+                    </div>
+
+                    {{-- Open input question (judged by the host) --}}
+                    <div v-else-if="questionLoaded == 1 && question.question_type == 'open_input'" class="flex flex-col gap-4">
+                        {{-- After the host reveals: show everyone's submissions --}}
+                        <div v-if="openSubmissionsRevealed" class="flex flex-col gap-3">
+                            <h2 class="russo text-main-dark text-xl uppercase tracking-wide text-center">Submitted Answers</h2>
+                            <div v-for="sub in openSubmissions" class="bg-main-light border-4 border-main-dark px-4 py-3 flex flex-row items-center gap-3">
+                                <span class="fira-sans text-brand font-bold whitespace-nowrap">[[ sub.username ]]</span>
                                 <template v-if="sub.is_image">
-                                    <img :src="sub.value" class="h-20 rounded border border-panel">
+                                    <img :src="sub.value" class="h-20 border-2 border-main-dark">
                                 </template>
                                 <template v-else>
-                                    <span class="text-slate-200 text-xl break-words">[[ sub.value ]]</span>
+                                    <span class="fira-sans text-main-dark text-lg break-words min-w-0">[[ sub.value ]]</span>
                                 </template>
                             </div>
-                            <p v-if="openSubmissions.length == 0" class="text-slate-400 text-center py-4">No answers were submitted.</p>
+                            <p v-if="openSubmissions.length == 0" class="fira-sans text-main-dark/60 text-center py-4">No answers were submitted.</p>
+                        </div>
+                        {{-- Before submit: input field for the required format --}}
+                        <div v-else-if="!openSubmitted" class="flex flex-col gap-4">
+                            <template v-if="question.input_type == 'image'">
+                                <label class="w-full bg-main-light border-4 border-dashed border-main-dark px-4 py-6 flex flex-col items-center gap-2 cursor-pointer text-center">
+                                    <span class="russo text-main-dark uppercase tracking-wide">[[ openImageFile ? 'Change image' : 'Choose an image' ]]</span>
+                                    <span v-if="openImageFile" class="fira-sans text-sm text-main-dark/60 break-all">[[ openImageFile.name ]]</span>
+                                    <input type="file" accept="image/*" @change="onOpenImageSelected($event)" class="sr-only">
+                                </label>
+                            </template>
+                            <template v-else>
+                                <input v-model="openInputValue" @keyup.enter="submitOpenInput()" :type="question.input_type == 'number' ? 'number' : 'text'"
+                                       class="w-full bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] py-3.5 px-4 text-center text-2xl text-main-dark font-bold placeholder:text-base placeholder:font-medium placeholder:text-gray-400 focus:outline-none fira-sans"
+                                       :placeholder="question.input_type == 'number' ? 'Enter a number' : 'Your answer'">
+                            </template>
+                            <button @click="submitOpenInput()" type="button" class="w-full bg-main-accent text-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] py-3.5 text-2xl font-black uppercase tracking-wider fira-sans transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[8px_8px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">Submit Answer</button>
+                        </div>
+                        {{-- After submit: waiting for the host to judge --}}
+                        <div v-else class="bg-main-light border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] px-5 py-6 text-center">
+                            <h2 class="russo text-green-600 text-2xl">Answer submitted!</h2>
+                            <p class="fira-sans text-main-dark/60 mt-1">Waiting for the host&hellip;</p>
                         </div>
                     </div>
-                    {{-- Before submit: input field for the required format --}}
-                    <div v-else-if="!openSubmitted">
-                        <template v-if="question.input_type == 'image'">
-                            <input type="file" accept="image/*" @change="onOpenImageSelected($event)" class="text-slate-200 w-full py-3">
-                        </template>
-                        <template v-else>
-                            <input v-model="openInputValue" :type="question.input_type == 'number' ? 'number' : 'text'"
-                                   class="text-center bg-slate-100 py-2 px-2 text-3xl w-full border-2 border-slate-400 text-yellow-600 rounded shadow font-semibold"
-                                   :placeholder="question.input_type == 'number' ? 'Enter a number' : 'Your answer'">
-                        </template>
-                        <button @click="submitOpenInput()" type="button" class="py-2 px-2 shadow-md text-slate-100 text-3xl font-semibold mb-2 w-full rounded bg-brand flex justify-center text-center mt-2">Submit Answer</button>
+
+                    {{-- Multiple choice --}}
+                    <div v-else class="flex flex-col gap-4 answer-holder">
+                        <div v-if="!answersRevealed" class="bg-main-light border-4 border-main-dark px-5 py-6 text-center">
+                            <h2 class="russo text-main-dark text-2xl">Get ready&hellip;</h2>
+                            <p class="fira-sans text-main-dark/60 mt-1">The answer options are coming up!</p>
+                        </div>
+                        <button v-else v-for="(answer, index) in answers" @click="answerQuestion(answer.id, index)" v-bind:["answer-id"]="answer.id" type="button"
+                                class="w-full flex flex-row items-stretch text-left border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] transition-all duration-100"
+                                :class="answerClass(answer)">
+                            <span class="flex items-center justify-center w-14 shrink-0 russo text-2xl border-r-4 border-main-dark" :class="answerLetterClass(answer)">[[ 'ABCDEF'.charAt(index) ]]</span>
+                            <span class="flex-1 min-w-0 px-4 py-4 fira-sans text-xl md:text-2xl font-bold break-words">[[ answer.answer ]]</span>
+                        </button>
                     </div>
-                    {{-- After submit: waiting for the host to judge --}}
-                    <div v-else class="text-center py-8">
-                        <h2 class="text-main-accent text-3xl josefin-sans">Answer submitted!</h2>
-                        <p class="text-slate-300 raleway mt-2">Waiting for the host&hellip;</p>
-                    </div>
-                </div>
 
-                <div v-else class="flex flex-col py-2 px-2 answer-holder">
-                    <div v-if="!answersRevealed" class="flex flex-col justify-center text-center py-10 px-2">
-                        <h2 class="josefin-sans text-slate-200 text-3xl font-semibold">Get ready&hellip;</h2>
-                        <p class="raleway text-slate-400 text-xl mt-2">The answer options are coming up!</p>
-                    </div>
-                    <button v-else v-for="(answer, index) in answers" @click="answerQuestion(answer.id, index)"  v-bind:["answer-id"]="answer.id"  class="py-2 px-2 shadow-md text-left text-slate-100 text-3xl font-semibold mb-2 w-full rounded h-24 flex flex-col justify-center text-center" :class="{'bg-green-600' : answer.is_correct, 'bg-main-accent' : !answer.is_correct && lastAnsweredAnswerId == answer.id, 'bg-brand' : !answer.is_correct && lastAnsweredAnswerId != answer.id}">
-                        <span class="flex flex-row w-full josefin-sans">
-                            <span v-if="index == 0" class="text-white">A)</span>
-                            <span v-if="index == 1" class="text-white">B)</span>
-                            <span v-if="index == 2" class="text-white">C)</span>
-                            <span v-if="index == 3" class="text-white">D)</span>
-                            <span v-if="index == 4" class="text-white">E)</span>
-                            <span v-if="index == 5" class="text-white">F)</span>
-                            [[ answer.answer ]]
-                        </span>
-                    </button>
-                </div>
-
-                <div class="flex flex-col justify-center w-24 h-24 bg-sky-700 rounded-full shadow-md text-center absolute bottom-2 right-2">
-                    <span id="game-api-_points-holder" class="josefin-sans font-semibold text-3xl text-slate-200">[[ player.points ]]</span>
-                    <span class="raleway text-slate-200 font-semibold">Points</span>
-                </div>
-
-            </x-section>
-        </div>
-
-        <div v-else-if="currentView == 'winners_view'" class="bg-main-dark h-screen flex flex-col justify-center">
-            <div>
-                <div class="py-2">
-                    <h1 class="text-4xl josefin-sans text-slate-200 text-center">WINNER</h1>
-                </div>
-                <div class="px-2 py-2 md:px-6 md:py-2">
-                    <p class="text-main-accent josefin-sans text-center text-6xl">[[ questionWinner ]]</p>
                 </div>
             </div>
         </div>
 
-        <div v-else-if="currentView == 'times_up'" class="bg-main-dark h-screen flex flex-col justify-center px-6" style="margin-top: -65px;">
-            <div class='w-full josefin-sans font-bold text-main-accent text-4xl text-center'>
-                <h1>TIME'S UP!</h1>
-            </div>
-            <div v-if="question" class="w-full text-center text-slate-200 text-2xl mt-6 px-4 raleway">
-                [[ question.question ]]
-            </div>
-            <div class="w-full text-center text-slate-400 text-lg mt-4 raleway">
-                Waiting for the correct answer&hellip;
+        {{-- Question winner --}}
+        <div v-else-if="currentView == 'winners_view'" class="dotted-canvas min-h-screen flex justify-center items-start px-4 py-8 md:py-12">
+            <div class="w-full max-w-2xl bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+                <div class="flex items-center gap-2.5 bg-main-dark px-5 py-3">
+                    <span class="w-4 h-4 rounded-full bg-main-accent shrink-0"></span>
+                    <span class="w-4 h-4 rounded-full bg-pop shrink-0"></span>
+                    <span class="w-4 h-4 rounded-full bg-green-500 shrink-0"></span>
+                    <span class="ml-2 russo uppercase tracking-widest text-white text-xs md:text-sm">Question Winner</span>
+                </div>
+                <div class="p-6 md:p-10 flex flex-col items-center gap-6 text-center">
+                    <span class="fira-sans text-xs uppercase tracking-widest text-main-dark/60">And the point goes to&hellip;</span>
+                    <p class="russo text-main-dark text-4xl md:text-6xl bg-pop border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] px-6 py-4 break-words max-w-full">[[ questionWinner ]]</p>
+                    <p class="fira-sans text-main-dark/60">Next question coming up&hellip;</p>
+                </div>
             </div>
         </div>
 
-        <div v-else-if="currentView == 'game_over'" class="bg-main-dark h-screen flex flex-col justify-center px-6" style="margin-top: -65px;">
-            <div class="w-full text-center">
-                <h1 class="josefin-sans font-bold text-main-accent text-5xl">GAME OVER</h1>
+        {{-- Time's up --}}
+        <div v-else-if="currentView == 'times_up'" class="dotted-canvas min-h-screen flex justify-center items-start px-4 py-8 md:py-12">
+            <div class="w-full max-w-2xl bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+                <div class="flex items-center gap-2.5 bg-main-accent border-b-4 border-main-dark px-5 py-3">
+                    <span class="russo uppercase tracking-widest text-white text-xs md:text-sm">Time's Up</span>
+                </div>
+                <div class="p-6 md:p-10 flex flex-col items-center gap-6 text-center">
+                    <h1 class="russo text-main-accent text-5xl md:text-6xl">TIME'S UP!</h1>
+                    <p v-if="question" class="fira-sans text-main-dark text-xl md:text-2xl font-bold break-words">[[ question.question ]]</p>
+                    <div class="w-full bg-main-light border-4 border-main-dark px-5 py-5 flex flex-col items-center gap-3">
+                        <div class="flex items-center gap-2" aria-hidden="true">
+                            <span class="waiting-dot w-4 h-4 bg-main-accent border-2 border-main-dark"></span>
+                            <span class="waiting-dot w-4 h-4 bg-pop border-2 border-main-dark"></span>
+                            <span class="waiting-dot w-4 h-4 bg-brand border-2 border-main-dark"></span>
+                        </div>
+                        <p class="fira-sans text-main-dark/70">Waiting for the correct answer&hellip;</p>
+                    </div>
+                </div>
             </div>
-            <div v-if="gameOver" class="w-full max-w-md mx-auto mt-8 text-slate-200 raleway">
-                <div class="flex flex-row justify-between border-b border-panel py-2">
-                    <span class="text-slate-400">Game</span><span class="font-semibold">[[ gameOver.name ]]</span>
+        </div>
+
+        {{-- Game over (host closed the game) --}}
+        <div v-else-if="currentView == 'game_over'" class="dotted-canvas min-h-screen flex justify-center items-start px-4 py-8 md:py-12">
+            <div class="w-full max-w-2xl bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+                <div class="flex items-center gap-2.5 bg-main-dark px-5 py-3">
+                    <span class="w-4 h-4 rounded-full bg-main-accent shrink-0"></span>
+                    <span class="w-4 h-4 rounded-full bg-pop shrink-0"></span>
+                    <span class="w-4 h-4 rounded-full bg-green-500 shrink-0"></span>
+                    <span class="ml-2 russo uppercase tracking-widest text-white text-xs md:text-sm">Game Over</span>
                 </div>
-                <div class="flex flex-row justify-between border-b border-panel py-2">
-                    <span class="text-slate-400">Questions</span><span class="font-semibold">[[ gameOver.questionCount ]]</span>
+                <div class="p-6 md:p-10 flex flex-col items-center gap-6">
+                    <h1 class="russo text-main-accent text-5xl md:text-6xl text-center">GAME OVER</h1>
+                    <div v-if="gameOver" class="w-full max-w-md border-4 border-main-dark">
+                        <div class="flex flex-row justify-between gap-4 px-4 py-2.5 border-b-4 border-main-dark bg-main-light">
+                            <span class="fira-sans text-xs uppercase tracking-widest text-main-dark/60 self-center">Game</span><span class="fira-sans font-bold text-main-dark text-right break-words min-w-0">[[ gameOver.name ]]</span>
+                        </div>
+                        <div class="flex flex-row justify-between gap-4 px-4 py-2.5 border-b-4 border-main-dark">
+                            <span class="fira-sans text-xs uppercase tracking-widest text-main-dark/60 self-center">Questions</span><span class="fira-sans font-bold text-main-dark">[[ gameOver.questionCount ]]</span>
+                        </div>
+                        <div class="flex flex-row justify-between gap-4 px-4 py-2.5 border-b-4 border-main-dark bg-main-light">
+                            <span class="fira-sans text-xs uppercase tracking-widest text-main-dark/60 self-center">Duration</span><span class="fira-sans font-bold text-main-dark">[[ gameOver.duration ]]</span>
+                        </div>
+                        <div class="flex flex-row justify-between gap-4 px-4 py-2.5">
+                            <span class="fira-sans text-xs uppercase tracking-widest text-main-dark/60 self-center">Players</span><span class="fira-sans font-bold text-main-dark">[[ gameOver.playerCount ]]</span>
+                        </div>
+                    </div>
+                    <a href="/" class="w-full max-w-sm text-center bg-brand text-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] py-3.5 text-2xl font-black uppercase tracking-wider fira-sans transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[8px_8px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">Back Home</a>
                 </div>
-                <div class="flex flex-row justify-between border-b border-panel py-2">
-                    <span class="text-slate-400">Duration</span><span class="font-semibold">[[ gameOver.duration ]]</span>
-                </div>
-                <div class="flex flex-row justify-between border-b border-panel py-2">
-                    <span class="text-slate-400">Players</span><span class="font-semibold">[[ gameOver.playerCount ]]</span>
-                </div>
-            </div>
-            <div class="w-full flex flex-row justify-center mt-8">
-                <a href="/" class="fira-sans py-3 px-8 rounded shadow-md bg-brand text-slate-100 font-semibold text-lg">Back Home</a>
             </div>
         </div>
 
@@ -227,7 +342,7 @@
             text: "{{ $joinUrlBase }}/join/{{ $gameInstance['token'] }}",
             width: 168,
             height: 168,
-            colorDark : "#000000",
+            colorDark : "#14323B",
             colorLight : "#ffffff",
             correctLevel : QRCode.CorrectLevel.H
         });
@@ -279,16 +394,45 @@
                     timeLimitTimer: null,
                     startTimer: 0,
                     timeLeft: 0,
-                    timerClass: 'bg-lime-300',
+                    timerClass: 'bg-green-500',
                     timerSize: '100%',
                     timerMode: 0,
                     gameOver: null,
+                    linkCopied: false,
                 }
             },
             delimiters: ['[[', ']]'],
             methods: {
                 changeView(view) {
                     this.currentView = view;
+                },
+                // Multiple-choice button colours: picked (teal) until the host
+                // reveals, then correct (green) / your wrong pick (red).
+                answerClass(answer) {
+                    let picked = this.lastAnsweredAnswerId == answer.id;
+                    let revealed = this.answers.some(a => a.is_correct);
+                    if (answer.is_correct) { return 'bg-green-500 text-white'; }
+                    if (picked) { return revealed ? 'bg-main-accent text-white' : 'bg-brand text-white'; }
+                    if (revealed || this.question.id == this.lastAnsweredQuestionId) { return 'bg-white text-main-dark opacity-50'; }
+                    return 'bg-white text-main-dark hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[8px_8px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]';
+                },
+                answerLetterClass(answer) {
+                    let picked = this.lastAnsweredAnswerId == answer.id;
+                    return (answer.is_correct || picked) ? 'bg-main-dark text-white' : 'bg-pop text-main-dark';
+                },
+                copyJoinLink() {
+                    let link = '{{ $joinUrlBase }}/join/' + this.gameInstance.token;
+                    // navigator.clipboard only exists on secure (https/localhost) origins.
+                    if (!navigator.clipboard) {
+                        GameApi.displayAlertNotification('error', 'Could not copy the link.');
+                        return;
+                    }
+                    navigator.clipboard.writeText(link).then(() => {
+                        this.linkCopied = true;
+                        setTimeout(() => { this.linkCopied = false; }, 2000);
+                    }).catch(() => {
+                        GameApi.displayAlertNotification('error', 'Could not copy the link.');
+                    });
                 },
                 answerQuestion(answerId, index) {
 
@@ -412,7 +556,7 @@
                     // remaining time instead of restarting from the beginning.
                     this.timeLeft = (typeof currentTime === 'undefined') ? initialTime : currentTime;
 
-                    this.timerClass = 'bg-lime-300';
+                    this.timerClass = 'bg-green-500';
                     this.timerSize = '100%';
 
                     this.updateTimer();
@@ -422,27 +566,27 @@
                     this.timerSize = timeLeftPercentage + '%';
 
                     if (timeLeftPercentage < 75) {
-                        this.timerClass = 'bg-amber-200';
+                        this.timerClass = 'bg-pop';
                     }
 
                     if (timeLeftPercentage < 55) {
-                        this.timerClass = 'bg-amber-300';
+                        this.timerClass = 'bg-pop';
                     }
 
                     if (timeLeftPercentage < 30) {
-                        this.timerClass = 'bg-amber-400';
+                        this.timerClass = 'bg-secondly-accent';
                     }
 
                     if (timeLeftPercentage < 20) {
-                        this.timerClass = 'bg-red-400';
+                        this.timerClass = 'bg-main-accent';
                     }
 
                     if (timeLeftPercentage < 10) {
-                        this.timerClass = 'bg-rose-500';
+                        this.timerClass = 'bg-main-accent';
                     }
 
                     if (timeLeftPercentage < 5) {
-                        this.timerClass = 'bg-rose-600';
+                        this.timerClass = 'bg-main-accent';
                     }
 
                     if (this.timeLeft <= 0) {
