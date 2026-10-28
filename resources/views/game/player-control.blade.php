@@ -1,4 +1,7 @@
 @extends('game-api::layout')
+{{-- Amber page behind the floating nav while in the waiting room; swapped back
+     client-side once the game starts (see watch.currentView). --}}
+@section('page-bg', $gameInstance['status'] == 'created' ? 'bg-pop' : 'bg-main-light')
 @section('body')
     @php
         // Base URL for join links / QR codes. Defaults to the app's own URL;
@@ -10,53 +13,121 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
+    <style>
+        .dotted-canvas {
+            background-color: #FFB900;
+            background-image: radial-gradient(#14323B 2.5px, transparent 2.6px);
+            background-size: 26px 26px;
+        }
+        .waiting-dot { animation: waiting-bounce 1.2s ease-in-out infinite; }
+        .waiting-dot:nth-child(2) { animation-delay: 0.15s; }
+        .waiting-dot:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes waiting-bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .waiting-dot { animation: none; }
+        }
+    </style>
+
     <div id="player-app" style="top: -65px; ">
 
 
-        <div v-if="currentView == 'game_created' " class="py-4">
-            <x-section title="">
-                <div class="flex flex-col relative w-full z-20">
-                    <h1 class="px-4 z-20 text-center josefin-sans text-main-accent font-semibold text-6xl">[[ trivia.title ]]</h1>
-                    <p class="px-4 z-20 text-slate-400 text-center">(Hosted By  [[ gameInstance.user.username ]])</p>
-                    <div class="z-20 flex flex-row justify-between px-6 py-2 text-slate-200">
-                        <div>
-                            <span class="raleway font-normal text-base">Category:</span>
-                            <span class="raleway font-normal text-base capitalize">[[ trivia.category.name ]]</span>
-                        </div>
-                        <div>
-                            <span class="raleway font-normal text-base">Difficulty:</span>
-                            <span class="raleway font-semibold text-base capitalize" :class="{'text-amber-700': trivia.difficulty == 'medium', 'text-red-700': trivia.difficulty == 'hard', 'text-lime-600' : trivia.difficulty == 'easy'}">[[ trivia.difficulty ]]</span>
-                        </div>
+        {{-- Waiting room (joined, waiting for the game master to start) --}}
+        <div v-if="currentView == 'game_created' " class="dotted-canvas min-h-screen flex justify-center items-start px-4 py-8 md:py-12">
+            <div class="w-full max-w-2xl flex flex-col gap-8">
+
+                {{-- Neo-brutalist "waiting room" window --}}
+                <div class="w-full bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+
+                    {{-- Title bar --}}
+                    <div class="flex items-center gap-2.5 bg-main-dark px-5 py-3">
+                        <span class="w-4 h-4 rounded-full bg-main-accent shrink-0"></span>
+                        <span class="w-4 h-4 rounded-full bg-pop shrink-0"></span>
+                        <span class="w-4 h-4 rounded-full bg-green-500 shrink-0"></span>
+                        <span class="ml-2 russo uppercase tracking-widest text-white text-xs md:text-sm">Waiting Room</span>
                     </div>
-                    <p class="z-20 text-slate-400 text-center">[[ trivia.description ]]</p>
-                    <div class="w-full flex flex-row bg-main-dark shadow-md h-24 skew-y-3 absolute -bottom-10 z-10">
+
+                    {{-- Body --}}
+                    <div class="p-6 md:p-10 flex flex-col items-center gap-6">
+
+                        {{-- Game info --}}
+                        <div class="text-center">
+                            <h1 class="russo text-3xl md:text-4xl text-main-dark leading-tight break-words">[[ trivia.title ]]</h1>
+                            <p class="fira-sans text-main-dark/60 mt-1">Hosted by <span class="font-bold text-brand">[[ gameInstance.user.username ]]</span></p>
+                        </div>
+
+                        {{-- Meta tags --}}
+                        <div class="flex flex-wrap justify-center gap-3">
+                            <span class="bg-pop text-main-dark border-4 border-main-dark px-4 py-1.5 russo text-xs md:text-sm uppercase tracking-wide">{{ $trivia->questions()->count() }} Questions</span>
+                            <span v-if="trivia.category" class="bg-brand text-white border-4 border-main-dark px-4 py-1.5 russo text-xs md:text-sm uppercase tracking-wide">[[ trivia.category.name ]]</span>
+                            <span v-if="trivia.difficulty" class="border-4 border-main-dark px-4 py-1.5 russo text-xs md:text-sm uppercase tracking-wide"
+                                  :class="{'bg-green-500 text-white': trivia.difficulty == 'easy', 'bg-main-light text-main-dark': trivia.difficulty == 'medium', 'bg-main-accent text-white': trivia.difficulty == 'hard'}">[[ trivia.difficulty ]]</span>
+                        </div>
+
+                        <p v-if="trivia.description" class="fira-sans text-center text-main-dark/70">[[ trivia.description ]]</p>
+
+                        {{-- Status --}}
+                        <div class="w-full bg-main-light border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] px-5 py-6 flex flex-col items-center gap-3 text-center">
+                            <div class="flex items-center gap-2" aria-hidden="true">
+                                <span class="waiting-dot w-4 h-4 bg-main-accent border-2 border-main-dark"></span>
+                                <span class="waiting-dot w-4 h-4 bg-pop border-2 border-main-dark"></span>
+                                <span class="waiting-dot w-4 h-4 bg-brand border-2 border-main-dark"></span>
+                            </div>
+                            <p class="fira-sans text-main-dark text-xl md:text-2xl font-bold">Waiting for <span class="text-main-accent">[[ gameInstance.user.username ]]</span> to start the game!</p>
+                            <p class="fira-sans text-main-dark/60 text-sm">Keep this page open &mdash; the first question will appear here automatically.</p>
+                        </div>
+
+                        {{-- Who you're playing as --}}
+                        <div v-if="player && player.user" class="flex flex-row items-stretch border-4 border-main-dark">
+                            <span class="flex items-center bg-main-dark text-white px-3 russo text-xs uppercase tracking-widest">Playing as</span>
+                            <span class="bg-white text-main-dark px-4 py-2 fira-sans font-bold text-lg break-all">[[ player.user.username ]]</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-panel pt-16 pb-6 relative z-10">
-                    <x-card title="" addHeader="{{ false }}">
-                        <div class="z-20 flex flex-col justify-around px-6">
-                            <!-- TODO: Add animation -->
-                            <p class="text-slate-200 font-semibold text-4xl text-center">Waiting <span class="text-main-accent">[[ gameInstance.user.username ]]</span> to start the game!</p>
+                {{-- Invite window: PIN, link & QR code --}}
+                <div class="w-full bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B] overflow-hidden">
+                    <div class="flex items-center gap-2.5 bg-brand border-b-4 border-main-dark px-5 py-3">
+                        <span class="russo uppercase tracking-widest text-white text-xs md:text-sm">Invite Friends</span>
+                    </div>
+
+                    <div class="p-6 md:p-10 flex flex-col items-center gap-6">
+                        {{-- PIN --}}
+                        <div class="flex flex-col items-center gap-2">
+                            <span class="fira-sans text-xs uppercase tracking-widest text-main-dark/60">Game PIN</span>
+                            <span class="russo text-5xl md:text-6xl tracking-[0.2em] text-main-dark bg-pop border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] px-6 py-2">[[ gameInstance.pin ]]</span>
                         </div>
-                    </x-card>
 
-                    <div class="w-full flex flex-row bg-panel shadow-md h-24 skew-y-3 absolute -bottom-4 z-10">
+                        {{-- Link --}}
+                        <div class="w-full flex flex-col gap-2">
+                            <span class="fira-sans text-xs uppercase tracking-widest text-main-dark/60 text-center">Join link</span>
+                            <div class="flex flex-row items-stretch w-full border-4 border-main-dark">
+                                <span class="flex-1 min-w-0 bg-main-light px-3 py-2.5 fira-sans text-sm md:text-base font-bold text-main-dark break-all">{{ $joinUrlBase }}/join/[[ gameInstance.token ]]</span>
+                                <button type="button" @click="copyJoinLink()"
+                                        class="shrink-0 bg-main-accent text-white border-l-4 border-main-dark px-4 russo text-xs uppercase tracking-wide transition-colors hover:bg-secondly-accent">[[ linkCopied ? 'Copied!' : 'Copy' ]]</button>
+                            </div>
+                        </div>
+
+                        {{-- OR divider --}}
+                        <div class="flex items-center gap-3 w-full">
+                            <div class="flex-1 h-1 bg-main-dark"></div>
+                            <span class="shrink-0 russo text-sm bg-main-dark text-white rounded-full w-11 h-11 flex items-center justify-center">OR</span>
+                            <div class="flex-1 h-1 bg-main-dark"></div>
+                        </div>
+
+                        {{-- QR code --}}
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] p-3">
+                                <div id="qrcode"></div>
+                            </div>
+                            <span class="fira-sans text-sm text-main-dark/60">Scan to join</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-main-dark pt-16 pb-6 relative z-20">
-                    <h2 class="px-4 z-20 text-center josefin-sans text-main-accent font-semibold text-4xl z-20 relative">Ways to join:</h2>
-                    <div class="text-slate-200 font-semibold text-2xl px-6 py-2">
-                        PIN: <span class="josefin-sans text-main-accent font-bold">[[ gameInstance.pin ]]</span>
-                    </div>
-                    <div class="text-slate-200 font-semibold text-2xl px-6" style="overflow-wrap: break-word;">
-                        <p>Link: {{ $joinUrlBase }}/join/[[ gameInstance.token ]]</p>
-                    </div>
-                    <p class="text-center text-slate-200 text-2xl px-6 py-4 font-semibold">OR</p>
-                    <div class="flex flex-row justify-center z-20 relative" id="qrcode"></div>
-                </div>
-            </x-section>
+            </div>
         </div>
 
         <div v-else-if="currentView == 'question_view'">
@@ -227,7 +298,7 @@
             text: "{{ $joinUrlBase }}/join/{{ $gameInstance['token'] }}",
             width: 168,
             height: 168,
-            colorDark : "#000000",
+            colorDark : "#14323B",
             colorLight : "#ffffff",
             correctLevel : QRCode.CorrectLevel.H
         });
@@ -283,12 +354,34 @@
                     timerSize: '100%',
                     timerMode: 0,
                     gameOver: null,
+                    linkCopied: false,
                 }
             },
             delimiters: ['[[', ']]'],
+            watch: {
+                currentView(view) {
+                    let waiting = view == 'game_created';
+                    document.body.classList.toggle('bg-pop', waiting);
+                    document.body.classList.toggle('bg-main-light', !waiting);
+                },
+            },
             methods: {
                 changeView(view) {
                     this.currentView = view;
+                },
+                copyJoinLink() {
+                    let link = '{{ $joinUrlBase }}/join/' + this.gameInstance.token;
+                    // navigator.clipboard only exists on secure (https/localhost) origins.
+                    if (!navigator.clipboard) {
+                        GameApi.displayAlertNotification('error', 'Could not copy the link.');
+                        return;
+                    }
+                    navigator.clipboard.writeText(link).then(() => {
+                        this.linkCopied = true;
+                        setTimeout(() => { this.linkCopied = false; }, 2000);
+                    }).catch(() => {
+                        GameApi.displayAlertNotification('error', 'Could not copy the link.');
+                    });
                 },
                 answerQuestion(answerId, index) {
 
