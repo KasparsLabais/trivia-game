@@ -4,8 +4,9 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <div id="game-app">
         {{-- Trivia folder: tabs switch between "All Categories" and "Public Games",
-             like opening different document folders. --}}
-        <div class="w-full max-w-6xl mx-auto px-4 md:px-8 pt-8 pb-28">
+             like opening different document folders. Side padding matches the
+             nav and footer (15px / 30px) so all blocks line up. --}}
+        <div class="w-full px-[15px] lg:px-[30px] pt-8 pb-28">
 
             {{-- Folder tabs --}}
             <div class="relative z-10 flex items-end gap-2 pl-3 md:pl-6" role="tablist">
