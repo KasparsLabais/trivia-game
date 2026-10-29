@@ -3,59 +3,77 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <div id="game-app">
-        <x-section title="">
-            <div class="flex flex-row justify-center mt-4">
-                <div class="flex flex-row bg-main-accent px-1 py-1 shadow-md" style="border-radius: 25px;">
-                    <div class="flex flex bg-main-light text-xl p-1" style="border-radius: 25px;">
-                        <div id="all-cats-btn-holder" onclick="switchVisibleSection('categories')" class="bg-main-accent px-2 py-2 rounded-lg text-slate-200 josefin-sans shadow-md" style="border-radius: 20px">
-                            All Categories
-                        </div>
-                        <div id="public-access-btn-holder" onclick="switchVisibleSection('public')" class=" px-2 py-2 josefin-sans font-normal" style="border-radius: 20px">
-                            Public Access Trivia's
-                        </div>
-                    </div>
-                </div>
+        {{-- Trivia folder: tabs switch between "All Categories" and "Public Games",
+             like opening different document folders. Side padding matches the
+             nav and footer (15px / 30px) so all blocks line up. --}}
+        <div class="w-full px-[15px] lg:px-[30px] pt-8 pb-28">
+
+            {{-- Folder tabs --}}
+            <div class="relative z-10 flex items-end gap-2 pl-3 md:pl-6" role="tablist">
+                <button type="button" role="tab" :aria-selected="activeSection == 'categories'" @click="setSection('categories')"
+                        class="flex items-center gap-2 md:gap-3 border-4 border-b-0 border-main-dark px-3 md:px-5 russo uppercase tracking-wide text-xs md:text-sm transition-all duration-100"
+                        :class="activeSection == 'categories' ? 'bg-white text-main-dark pt-3 pb-3 -mb-1' : 'bg-surface text-main-dark/60 pt-2 pb-2 hover:bg-main-light hover:text-main-dark'">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 md:w-5 md:h-5 shrink-0" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+                    </svg>
+                    <span>All Categories</span>
+                    <span class="min-w-[1.75rem] text-center border-2 border-main-dark px-1.5 py-0.5 text-[11px] leading-none"
+                          :class="activeSection == 'categories' ? 'bg-main-dark text-white' : 'bg-white text-main-dark'"
+                          :title="selectedTriviasByCategoryAndDifficulty.length + ' quizzes available'">[[ selectedTriviasByCategoryAndDifficulty.length ]]</span>
+                </button>
+                <button type="button" role="tab" :aria-selected="activeSection == 'public'" @click="setSection('public')"
+                        class="flex items-center gap-2 md:gap-3 border-4 border-b-0 border-main-dark px-3 md:px-5 russo uppercase tracking-wide text-xs md:text-sm transition-all duration-100"
+                        :class="activeSection == 'public' ? 'bg-white text-main-dark pt-3 pb-3 -mb-1' : 'bg-surface text-main-dark/60 pt-2 pb-2 hover:bg-main-light hover:text-main-dark'">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 md:w-5 md:h-5 shrink-0" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+                    </svg>
+                    <span>Public Games</span>
+                    {{-- Live games are worth a look: red badge with a pulsing dot. --}}
+                    <span class="relative min-w-[1.75rem] text-center border-2 border-main-dark px-1.5 py-0.5 text-[11px] leading-none"
+                          :class="selectedOpenTriviasByCategoryAndDifficulty.length ? 'bg-main-accent text-white' : (activeSection == 'public' ? 'bg-main-dark text-white' : 'bg-white text-main-dark')"
+                          :title="selectedOpenTriviasByCategoryAndDifficulty.length + ' public games open to join'">
+                        [[ selectedOpenTriviasByCategoryAndDifficulty.length ]]
+                        <span v-if="selectedOpenTriviasByCategoryAndDifficulty.length" class="absolute -top-1.5 -right-1.5 flex h-3 w-3" aria-hidden="true">
+                            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-main-accent opacity-75"></span>
+                            <span class="relative inline-flex h-3 w-3 rounded-full bg-main-accent border-2 border-main-dark"></span>
+                        </span>
+                    </span>
+                </button>
             </div>
-        </x-section>
 
-        <x-section title="">
-            <div class="flex flex-col py-4">
-                <h1 class="px-4 z-20 text-center josefin-sans text-main-dark font-semibold text-2xl">Select Trivia</h1>
+            {{-- Folder body --}}
+            <div class="relative bg-white border-4 border-main-dark shadow-[10px_10px_0_0_#14323B]">
 
-                <div class="flex flex-row py-4 justify-center flex-wrap">
-                    <div class="flex flex-col w-10/12 md:w-2/6 px-2">
-                        <label for="selectedCategory" class="flex flex-row">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-alternative-accent">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 0 0 5.304 0l6.401-6.402M6.75 21A3.75 3.75 0 0 1 3 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 0 0 3.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008Z" />
-                            </svg>
-                            <span class="px-5">Category</span>
-                        </label>
-                        <select class="w-full py-2 text-xl mt-2" v-model="selectedCategory" name="selectedCategory" id="selectedCategory">
-                            <option value="0">Select Category</option>
-                            <option v-for="category in categories" :value="category.id">[[ category.name ]]</option>
-                        </select>
+                {{-- Filters (apply to both folders) --}}
+                <div class="flex flex-col md:flex-row md:items-end gap-4 md:gap-8 px-5 md:px-8 py-5 border-b-4 border-main-dark bg-main-light">
+                    <div class="flex flex-col gap-1.5 w-full md:w-72">
+                        <label for="selectedCategory" class="fira-sans text-xs uppercase tracking-widest text-main-dark/60">Category</label>
+                        <div class="relative">
+                            <select v-model="selectedCategory" name="selectedCategory" id="selectedCategory"
+                                    class="w-full appearance-none bg-white border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] pl-3 pr-10 py-2 fira-sans font-bold text-main-dark focus:outline-none focus:shadow-[6px_6px_0_0_#14323B] cursor-pointer">
+                                <option value="0">All categories</option>
+                                <option v-for="category in categories" :value="category.id">[[ category.name ]]</option>
+                            </select>
+                            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center w-9 bg-main-dark text-white border-4 border-main-dark" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+                            </span>
+                        </div>
                     </div>
-                    <div class="flex flex-col w-10/12 md:w-2/6 px-2">
-                        <label class="flex flex-row items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 stroke-main-dark">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z" />
-                            </svg>
-                            <span class="px-5">Difficulty</span>
-                        </label>
+                    <div class="flex flex-col gap-1.5">
+                        <span class="fira-sans text-xs uppercase tracking-widest text-main-dark/60">Difficulty</span>
                         {{-- Difficulty tags: all on = show all; click to toggle a difficulty off (filtered out). --}}
-                        <div class="flex flex-row flex-wrap gap-2 mt-2">
-                            <button type="button" @click="toggleDifficulty('easy')"
+                        <div class="flex flex-row flex-wrap gap-2">
+                            <button type="button" @click="toggleDifficulty('easy')" :aria-pressed="activeDifficulties.easy"
                                     class="border-4 border-main-dark px-4 py-1.5 russo text-sm uppercase tracking-wide transition-all duration-100"
                                     :class="activeDifficulties.easy ? 'bg-green-500 text-main-dark shadow-[3px_3px_0_0_#14323B]' : 'bg-white text-main-dark opacity-50'">
                                 Easy
                             </button>
-                            <button type="button" @click="toggleDifficulty('medium')"
+                            <button type="button" @click="toggleDifficulty('medium')" :aria-pressed="activeDifficulties.medium"
                                     class="border-4 border-main-dark px-4 py-1.5 russo text-sm uppercase tracking-wide transition-all duration-100"
                                     :class="activeDifficulties.medium ? 'bg-amber-400 text-main-dark shadow-[3px_3px_0_0_#14323B]' : 'bg-white text-main-dark opacity-50'">
                                 Medium
                             </button>
-                            <button type="button" @click="toggleDifficulty('hard')"
+                            <button type="button" @click="toggleDifficulty('hard')" :aria-pressed="activeDifficulties.hard"
                                     class="border-4 border-main-dark px-4 py-1.5 russo text-sm uppercase tracking-wide transition-all duration-100"
                                     :class="activeDifficulties.hard ? 'bg-main-accent text-white shadow-[3px_3px_0_0_#14323B]' : 'bg-white text-main-dark opacity-50'">
                                 Hard
@@ -63,127 +81,111 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </x-section>
 
-        <x-section title="">
-            <div id="category-holder"  class="flex flex-row flex-wrap">
-                <div class="w-10/12 md:w-4/12 px-2" v-for="trivia in selectedTriviasByCategoryAndDifficulty">
-
-
-                    <div class="relative mb-8">
-                        {{-- Folder tab — difficulty label + colour --}}
-                        <div class="inline-block ml-4 px-4 py-1 border-4 border-b-0 border-main-dark russo text-xs uppercase tracking-widest capitalize"
-                             :class="{'bg-green-500 text-main-dark' : trivia.difficulty == 'easy', 'bg-amber-400 text-main-dark' : trivia.difficulty == 'medium', 'bg-main-accent text-white' : trivia.difficulty == 'hard'}">
-                            [[ trivia.difficulty ]]
-                        </div>
-                        {{-- Folder body --}}
-                        <div class="bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] p-5 flex flex-col gap-3">
-                            {{-- Top row: category icon (colour = difficulty) + question count & rating --}}
-                            <div class="flex flex-row items-start justify-between gap-2">
-                                <div class="w-14 h-14 border-2 border-main-dark flex items-center justify-center shrink-0"
-                                     :class="{'bg-green-500' : trivia.difficulty == 'easy', 'bg-amber-400' : trivia.difficulty == 'medium', 'bg-main-accent' : trivia.difficulty == 'hard'}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" class="w-7 h-7" :class="{'stroke-white' : trivia.difficulty == 'hard', 'stroke-main-dark' : trivia.difficulty != 'hard'}">
-                                        <path stroke-linecap="round" stroke-linejoin="round" :d="getCategoryIcon(trivia.category_id)" />
-                                    </svg>
+                {{-- ALL CATEGORIES folder --}}
+                <div v-show="activeSection == 'categories'" id="category-holder" class="p-5 md:p-8">
+                    <div v-if="selectedTriviasByCategoryAndDifficulty.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
+                        <div v-for="trivia in selectedTriviasByCategoryAndDifficulty">
+                            <div class="relative mb-6">
+                                {{-- Folder tab — difficulty label + colour --}}
+                                <div class="inline-block ml-4 px-4 py-1 border-4 border-b-0 border-main-dark russo text-xs uppercase tracking-widest capitalize"
+                                     :class="{'bg-green-500 text-main-dark' : trivia.difficulty == 'easy', 'bg-amber-400 text-main-dark' : trivia.difficulty == 'medium', 'bg-main-accent text-white' : trivia.difficulty == 'hard'}">
+                                    [[ trivia.difficulty ]]
                                 </div>
-                                <div class="flex flex-col items-end gap-1">
-                                    <span class="fira-sans text-main-dark leading-none text-right"><span class="font-black text-xl">[[ trivia.questions ]]</span><br><span class="text-xs uppercase tracking-wide">questions</span></span>
-                                    <div class="flex flex-row">
-                                        <svg v-for="index in 4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="w-4 h-4" :class="{'fill-amber-400 stroke-amber-400' : trivia.rating >= index && trivia.rating != 0, 'stroke-main-dark' : !(trivia.rating >= index && trivia.rating != 0)}">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-                                        </svg>
+                                {{-- Folder body --}}
+                                <div class="bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] p-5 flex flex-col gap-3">
+                                    {{-- Top row: category icon (colour = difficulty) + question count & rating --}}
+                                    <div class="flex flex-row items-start justify-between gap-2">
+                                        <div class="w-14 h-14 border-2 border-main-dark flex items-center justify-center shrink-0"
+                                             :class="{'bg-green-500' : trivia.difficulty == 'easy', 'bg-amber-400' : trivia.difficulty == 'medium', 'bg-main-accent' : trivia.difficulty == 'hard'}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" class="w-7 h-7" :class="{'stroke-white' : trivia.difficulty == 'hard', 'stroke-main-dark' : trivia.difficulty != 'hard'}">
+                                                <path stroke-linecap="round" stroke-linejoin="round" :d="getCategoryIcon(trivia.category_id)" />
+                                            </svg>
+                                        </div>
+                                        <div class="flex flex-col items-end gap-1">
+                                            <span class="fira-sans text-main-dark leading-none text-right"><span class="font-black text-xl">[[ trivia.questions ]]</span><br><span class="text-xs uppercase tracking-wide">questions</span></span>
+                                            <div class="flex flex-row">
+                                                <svg v-for="index in 4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="w-4 h-4" :class="{'fill-amber-400 stroke-amber-400' : trivia.rating >= index && trivia.rating != 0, 'stroke-main-dark' : !(trivia.rating >= index && trivia.rating != 0)}">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                                                </svg>
+                                            </div>
+                                        </div>
                                     </div>
+                                    {{-- Title --}}
+                                    <h3 class="russo text-lg text-main-dark leading-tight">[[ trivia.title ]]<span v-if="trivia.private" class="ml-1 align-middle text-main-accent text-xs">&middot; PRIVATE</span></h3>
+                                    <div class="fira-sans text-sm text-main-dark">by <span class="font-bold text-brand">[[ trivia.author ]]</span></div>
+                                    {{-- Play --}}
+                                    @if(Auth::check())
+                                        <a v-if="trivia.is_premium" href="/premium" class="block w-full text-center fira-sans py-2.5 border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] bg-pop text-main-dark font-black uppercase tracking-wide transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">Get Premium</a>
+                                        <button v-else type="button" v-on:click="startTriviaGame( trivia.id )" class="w-full fira-sans py-2.5 border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] bg-main-accent text-white font-black uppercase tracking-wide transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">Play</button>
+                                    @else
+                                        <span class="fira-sans text-sm text-main-dark font-semibold">Log in to play</span>
+                                    @endif
                                 </div>
                             </div>
-                            {{-- Title --}}
-                            <h3 class="russo text-lg text-main-dark leading-tight">[[ trivia.title ]]<span v-if="trivia.private" class="ml-1 align-middle text-main-accent text-xs">&middot; PRIVATE</span></h3>
-                            <div class="fira-sans text-sm text-main-dark">by <span class="font-bold text-brand">[[ trivia.author ]]</span></div>
-                            {{-- Play --}}
-                            @if(Auth::check())
-                                <a v-if="trivia.is_premium" href="/premium" class="block w-full text-center fira-sans py-2.5 border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] bg-pop text-main-dark font-black uppercase tracking-wide transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">Get Premium</a>
-                                <button v-else type="button" v-on:click="startTriviaGame( trivia.id )" class="w-full fira-sans py-2.5 border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] bg-main-accent text-white font-black uppercase tracking-wide transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">Play</button>
-                            @else
-                                <span class="fira-sans text-sm text-main-dark font-semibold">Log in to play</span>
-                            @endif
                         </div>
                     </div>
-
-
-
-
-                </div>
-            </div>
-            <div id="open-trivias-holder" class="hidden flex flex-col">
-                <div v-for="openTrivia in selectedOpenTriviasByCategoryAndDifficulty" class="mb-2">
-                    <div class="py-4 px-2 flex flex-row justify-between bg-slate-300 fira-sans shadow-md border-b rounded border-b-slate-400">
-                        <span class="flex flex-col px-4 w-3/6">
-                            <span class="font-semibold">[[ openTrivia.title ]]</span>
-                            <span class="hidden md:flex">[[ openTrivia.description ]]</span>
-                            <span class="flex md:hidden">[[ openTrivia.description ]]</span>
-                        </span>
-                        <div class="flex flex-col">
-                            <span>Date Created: [[ openTrivia.created_at_date ]]</span>
-                            <span>Time: [[ openTrivia.created_at_time ]]</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col md:flex-row justify-between py-4 border-b border-b-slate-300 bg-slate-200 px-2 fira-sans font-normal">
-                        <div class="flex flex-row w-full md:w-5/6">
-                            <div class="hidden md:flex">
-                                <div class="px-4 flex flex-col justify-center">
-                                    <div>
-                                        Created By: <span class="font-semibold">[[openTrivia.author ]]</span>
-                                    </div>
-                                </div>
-                                <div class="px-4 flex flex-col justify-center">
-                                    <div>
-                                        Difficulty: <span class="font-semibold capitalize" :class="{'text-amber-700' : openTrivia.difficulty == 'medium', 'text-red-700' :  openTrivia.difficulty == 'hard', 'text-lime-600' : openTrivia.difficulty == 'easy' }">[[ openTrivia.difficulty ]]</span>
-                                    </div>
-                                </div>
-                                <div class="px-4 flex flex-col justify-center">
-                                    <div>
-                                        <span class="font-semibold">[[ openTrivia.questions ]]</span> Questions
-                                    </div>
-                                </div>
-                                <div class="px-4 flex flex-col justify-center">
-                                    <div>
-                                        <span class="font-semibold">[[ openTrivia.connected_players ]]/ <span v-if="openTrivia.player_limit_enabled">[[ openTrivia.player_limit ]]</span> <span v-else>&infin;</span> Players </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex md:hidden">
-                                <div class="px-4 flex flex-col justify-center w-2/6">
-                                    <div>
-                                        Created By: <span class="font-semibold">[[openTrivia.author ]]</span>
-                                    </div>
-                                </div>
-                                <div class="px-4 flex flex-col justify-center w-2/6">
-                                    <div>
-                                        Difficulty: <span class="font-semibold capitalize" :class="{'text-amber-700' : openTrivia.difficulty == 'medium', 'text-red-700' :  openTrivia.difficulty == 'hard', 'text-lime-600' : openTrivia.difficulty == 'easy' }">[[ openTrivia.difficulty ]]</span>
-                                    </div>
-                                </div>
-                                <div class="px-4 flex flex-col justify-center w-2/6">
-                                    <div>
-                                        <span class="font-semibold">[[ openTrivia.questions ]]</span> Questions
-                                    </div>
-                                    <div>
-                                        <span class="font-semibold">[[ openTrivia.connected_players ]]/ <span v-if="openTrivia.player_limit_enabled">[[ openTrivia.player_limit ]]</span> <span v-else>&infin;</span>  Players </span> Players
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex flex-row w-full md:w-1/6">
-                            @if(Auth::check())
-                                <a v-bind:href="'/join/' + openTrivia.token" class="flex justify-center w-full fira-sans py-2 px-2 md:px-6 shadow bg-lime-600  text-slate-100 font-semibold text-lg shadow-gray-900 my-2">Join</a>
-                            @else
-                                <span>You Need To Login To Play</span>
-                            @endif
-                        </div>
+                    <div v-else class="bg-main-light border-4 border-dashed border-main-dark/40 px-5 py-10 text-center">
+                        <p class="russo text-main-dark/60 text-xl">This folder is empty</p>
+                        <p class="fira-sans text-main-dark/60 mt-1">No quizzes match these filters &mdash; try another category or difficulty.</p>
                     </div>
                 </div>
 
+                {{-- PUBLIC GAMES folder: live games anyone can join --}}
+                <div v-show="activeSection == 'public'" id="open-trivias-holder" class="p-5 md:p-8">
+                    <div v-if="selectedOpenTriviasByCategoryAndDifficulty.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
+                        <div v-for="openTrivia in selectedOpenTriviasByCategoryAndDifficulty">
+                            <div class="relative mb-6">
+                                {{-- Folder tab — difficulty label + colour --}}
+                                <div class="inline-block ml-4 px-4 py-1 border-4 border-b-0 border-main-dark russo text-xs uppercase tracking-widest capitalize"
+                                     :class="{'bg-green-500 text-main-dark' : openTrivia.difficulty == 'easy', 'bg-amber-400 text-main-dark' : openTrivia.difficulty == 'medium', 'bg-main-accent text-white' : openTrivia.difficulty == 'hard'}">
+                                    [[ openTrivia.difficulty ]]
+                                </div>
+                                <div class="bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] p-5 flex flex-col gap-3">
+                                    <div class="flex flex-row items-start justify-between gap-2">
+                                        <div class="w-14 h-14 border-2 border-main-dark flex items-center justify-center shrink-0"
+                                             :class="{'bg-green-500' : openTrivia.difficulty == 'easy', 'bg-amber-400' : openTrivia.difficulty == 'medium', 'bg-main-accent' : openTrivia.difficulty == 'hard'}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" class="w-7 h-7" :class="{'stroke-white' : openTrivia.difficulty == 'hard', 'stroke-main-dark' : openTrivia.difficulty != 'hard'}">
+                                                <path stroke-linecap="round" stroke-linejoin="round" :d="getCategoryIcon(openTrivia.category_id)" />
+                                            </svg>
+                                        </div>
+                                        <div class="flex flex-col items-end gap-1.5">
+                                            <span class="flex items-center gap-1.5 bg-green-500 text-white border-2 border-main-dark px-1.5 py-0.5 russo text-[10px] uppercase tracking-wide">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse" aria-hidden="true"></span>Live
+                                            </span>
+                                            <span class="fira-sans text-main-dark leading-none text-right"><span class="font-black text-xl">[[ openTrivia.questions ]]</span> <span class="text-xs uppercase tracking-wide">questions</span></span>
+                                        </div>
+                                    </div>
+                                    <h3 class="russo text-lg text-main-dark leading-tight break-words">[[ openTrivia.title ]]</h3>
+                                    <p v-if="openTrivia.description" class="fira-sans text-sm text-main-dark/70 line-clamp-2">[[ openTrivia.description ]]</p>
+                                    <div class="fira-sans text-sm text-main-dark">hosted by <span class="font-bold text-brand">[[ openTrivia.author ]]</span></div>
+                                    {{-- Players + opened at --}}
+                                    <div class="flex flex-row items-stretch border-2 border-main-dark text-main-dark">
+                                        <div class="flex-1 px-3 py-1.5 border-r-2 border-main-dark">
+                                            <div class="fira-sans text-[10px] uppercase tracking-widest text-main-dark/60">Players</div>
+                                            <div class="russo text-base">[[ openTrivia.connected_players ]] / <span v-if="openTrivia.player_limit_enabled">[[ openTrivia.player_limit ]]</span><span v-else>&infin;</span></div>
+                                        </div>
+                                        <div class="flex-1 px-3 py-1.5 bg-main-light">
+                                            <div class="fira-sans text-[10px] uppercase tracking-widest text-main-dark/60">Opened</div>
+                                            <div class="fira-sans font-bold text-sm">[[ openTrivia.created_at_date ]] [[ openTrivia.created_at_time ]]</div>
+                                        </div>
+                                    </div>
+                                    @if(Auth::check())
+                                        <a :href="'/join/' + openTrivia.token" class="block w-full text-center fira-sans py-2.5 border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] bg-green-500 text-white font-black uppercase tracking-wide transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">Join</a>
+                                    @else
+                                        <span class="fira-sans text-sm text-main-dark font-semibold">Log in to play</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="bg-main-light border-4 border-dashed border-main-dark/40 px-5 py-10 text-center">
+                        <p class="russo text-main-dark/60 text-xl">No public games right now</p>
+                        <p class="fira-sans text-main-dark/60 mt-1">Check back soon, or start a quiz from the All Categories folder.</p>
+                    </div>
+                </div>
             </div>
-        </x-section>
+        </div>
 
         @if(Auth::check())
         <div class="fixed bottom-0 left-2 flex flex-row justify-center">
@@ -276,12 +278,19 @@
                         },
                         @endforeach
                     ],
+                    // Open folder: 'categories' | 'public' (kept in the URL hash).
+                    activeSection: window.location.hash == '#public' ? 'public' : 'categories',
                     selectedCategory: 0,
                     // All difficulties on by default; toggling one off filters it out.
                     activeDifficulties: { easy: true, medium: true, hard: true },
                 }
             },
             methods: {
+                // Switch folder tab; remember it in the URL so reload/links keep it.
+                setSection(section) {
+                    this.activeSection = section;
+                    try { history.replaceState(null, '', section == 'public' ? '#public' : window.location.pathname + window.location.search); } catch (e) {}
+                },
                 // Toggle a difficulty tag on/off. On = that difficulty is shown.
                 toggleDifficulty(level) {
                     this.activeDifficulties[level] = !this.activeDifficulties[level];
@@ -571,54 +580,6 @@
                 document.getElementById('open-trivias-nav').classList.add('bg-slate-300');
                 document.getElementById('open-trivias-nav').classList.remove('bg-slate-100');
             }
-        }
-
-        function switchVisibleSection(sectionName = 'categories')
-        {
-
-            //first change outlined button
-            if (sectionName == 'categories') {
-
-                let allCatsBtnHolder = document.getElementById('all-cats-btn-holder');
-                allCatsBtnHolder.classList.add('shadow-md');
-                allCatsBtnHolder.classList.add('text-slate-200');
-                //allCatsBtnHolder.classList.add('border-2');
-                allCatsBtnHolder.classList.add('bg-main-accent');
-
-                let publicAccessBtnHolder = document.getElementById('public-access-btn-holder');
-                publicAccessBtnHolder.classList.remove('shadow-md');
-                publicAccessBtnHolder.classList.remove('text-slate-200');
-                //publicAccessBtnHolder.classList.remove('border-2');
-                publicAccessBtnHolder.classList.remove('bg-main-accent');
-
-
-                document.getElementById('category-holder').classList.remove('hidden');
-                document.getElementById('open-trivias-holder').classList.add('hidden');
-
-            }
-
-            if (sectionName == 'public') {
-
-                let publicAccessBtnHolder = document.getElementById('public-access-btn-holder');
-                publicAccessBtnHolder.classList.add('shadow-md');
-                publicAccessBtnHolder.classList.add('bg-main-accent');
-                publicAccessBtnHolder.classList.add('text-slate-200');
-                //publicAccessBtnHolder.classList.add('border-2');
-                //publicAccessBtnHolder.classList.add('border-lime-700');
-                //bg-main-accent px-2 py-2 rounded-lg text-slate-200 josefin-sans shadow-md
-
-                let allCatsBtnHolder = document.getElementById('all-cats-btn-holder');
-                allCatsBtnHolder.classList.remove('shadow-md');
-                allCatsBtnHolder.classList.remove('bg-main-accent');
-                allCatsBtnHolder.classList.remove('text-slate-200');
-                //allCatsBtnHolder.classList.remove('border-2');
-                //allCatsBtnHolder.classList.remove('border-lime-700');
-
-                document.getElementById('category-holder').classList.add('hidden');
-                document.getElementById('open-trivias-holder').classList.remove('hidden');
-
-            }
-
         }
 
     </script>
