@@ -8,11 +8,13 @@
              nav and footer (15px / 30px) so all blocks line up. --}}
         <div class="w-full px-[15px] lg:px-[30px] pt-8 pb-28">
 
-            {{-- Folder tabs --}}
+            {{-- Folder tabs. Fixed heights so switching never changes the row height:
+                 active = 52px with -mb-1 (overlaps the folder's top border, so it
+                 reads as part of the folder), inactive = 44px sitting behind. --}}
             <div class="relative z-10 flex items-end gap-2 pl-3 md:pl-6" role="tablist">
                 <button type="button" role="tab" :aria-selected="activeSection == 'categories'" @click="setSection('categories')"
-                        class="flex items-center gap-2 md:gap-3 border-4 border-b-0 border-main-dark px-3 md:px-5 russo uppercase tracking-wide text-xs md:text-sm transition-all duration-100"
-                        :class="activeSection == 'categories' ? 'bg-white text-main-dark pt-3 pb-3 -mb-1' : 'bg-surface text-main-dark/60 pt-2 pb-2 hover:bg-main-light hover:text-main-dark'">
+                        class="flex items-center gap-2 md:gap-3 border-4 border-b-0 border-main-dark px-3 md:px-5 russo uppercase tracking-wide text-xs md:text-sm transition-colors duration-100"
+                        :class="activeSection == 'categories' ? 'bg-white text-main-dark h-[52px] -mb-1' : 'bg-surface text-main-dark/60 h-11 hover:bg-main-light hover:text-main-dark'">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 md:w-5 md:h-5 shrink-0" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
                     </svg>
@@ -22,8 +24,8 @@
                           :title="selectedTriviasByCategoryAndDifficulty.length + ' quizzes available'">[[ selectedTriviasByCategoryAndDifficulty.length ]]</span>
                 </button>
                 <button type="button" role="tab" :aria-selected="activeSection == 'public'" @click="setSection('public')"
-                        class="flex items-center gap-2 md:gap-3 border-4 border-b-0 border-main-dark px-3 md:px-5 russo uppercase tracking-wide text-xs md:text-sm transition-all duration-100"
-                        :class="activeSection == 'public' ? 'bg-white text-main-dark pt-3 pb-3 -mb-1' : 'bg-surface text-main-dark/60 pt-2 pb-2 hover:bg-main-light hover:text-main-dark'">
+                        class="flex items-center gap-2 md:gap-3 border-4 border-b-0 border-main-dark px-3 md:px-5 russo uppercase tracking-wide text-xs md:text-sm transition-colors duration-100"
+                        :class="activeSection == 'public' ? 'bg-white text-main-dark h-[52px] -mb-1' : 'bg-surface text-main-dark/60 h-11 hover:bg-main-light hover:text-main-dark'">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 md:w-5 md:h-5 shrink-0" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
                     </svg>
