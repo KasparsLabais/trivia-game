@@ -113,8 +113,11 @@
                                             </div>
                                         </div>
                                     </div>
-                                    {{-- Title --}}
-                                    <h3 class="russo text-lg text-main-dark leading-tight">[[ trivia.title ]]<span v-if="trivia.private" class="ml-1 align-middle text-main-accent text-xs">&middot; PRIVATE</span></h3>
+                                    {{-- Title with the highlighter-marker swash (same motif as the profile page's x-card headers) --}}
+                                    <h3 class="relative self-start inline-block max-w-full mt-1">
+                                        <span aria-hidden="true" class="absolute inset-0 -rotate-2 bg-green-300"></span>
+                                        <span class="relative block russo text-main-dark text-sm md:text-base tracking-wider uppercase leading-snug px-3 py-1 break-words">[[ trivia.title ]]<span v-if="trivia.private" class="ml-1 text-main-accent text-xs">&middot; PRIVATE</span></span>
+                                    </h3>
                                     <div class="fira-sans text-sm text-main-dark">by <span class="font-bold text-brand">[[ trivia.author ]]</span></div>
                                     {{-- Play --}}
                                     @if(Auth::check())
@@ -158,7 +161,11 @@
                                             <span class="fira-sans text-main-dark leading-none text-right"><span class="font-black text-xl">[[ openTrivia.questions ]]</span> <span class="text-xs uppercase tracking-wide">questions</span></span>
                                         </div>
                                     </div>
-                                    <h3 class="russo text-lg text-main-dark leading-tight break-words">[[ openTrivia.title ]]</h3>
+                                    {{-- Title with the highlighter-marker swash (same motif as the profile page's x-card headers) --}}
+                                    <h3 class="relative self-start inline-block max-w-full mt-1">
+                                        <span aria-hidden="true" class="absolute inset-0 -rotate-2 bg-green-300"></span>
+                                        <span class="relative block russo text-main-dark text-sm md:text-base tracking-wider uppercase leading-snug px-3 py-1 break-words">[[ openTrivia.title ]]</span>
+                                    </h3>
                                     <p v-if="openTrivia.description" class="fira-sans text-sm text-main-dark/70 line-clamp-2">[[ openTrivia.description ]]</p>
                                     <div class="fira-sans text-sm text-main-dark">hosted by <span class="font-bold text-brand">[[ openTrivia.author ]]</span></div>
                                     {{-- Players + opened at --}}
