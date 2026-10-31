@@ -2,11 +2,34 @@
 @section('body')
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        /* Play Random Quiz: constant pulse + a short twitch every ~4s. */
+        .random-quiz-pulse { animation: random-quiz-pulse 1.4s ease-in-out infinite; }
+        .random-quiz-twitch { animation: random-quiz-twitch 4s ease-in-out infinite; }
+        .random-quiz-twitch:hover, .random-quiz-twitch:hover .random-quiz-pulse { animation-play-state: paused; }
+        @keyframes random-quiz-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes random-quiz-twitch {
+            0%, 84%, 100% { transform: rotate(0); }
+            86% { transform: rotate(-4deg); }
+            88% { transform: rotate(4deg); }
+            90% { transform: rotate(-3deg); }
+            92% { transform: rotate(3deg); }
+            94% { transform: rotate(-1deg); }
+            96% { transform: rotate(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .random-quiz-pulse, .random-quiz-twitch { animation: none; }
+        }
+    </style>
     <div id="game-app">
         {{-- Trivia folder: tabs switch between "All Categories" and "Public Games",
              like opening different document folders. Side padding matches the
              nav and footer (15px / 30px) so all blocks line up. --}}
-        <div class="w-full px-[15px] lg:px-[30px] pt-8 pb-28">
+        <div class="w-full px-[15px] lg:px-[30px] pt-8 pb-8">
 
             {{-- Folder tabs. Fixed heights so switching never changes the row height:
                  active = 52px with -mb-1 (overlaps the folder's top border, so it
@@ -82,6 +105,26 @@
                             </button>
                         </div>
                     </div>
+
+                    @if(Auth::check())
+                        {{-- Play Random Quiz: right-aligned on desktop, full width on mobile.
+                             Outer = occasional twitch, inner = constant pulse, button = hover/press. --}}
+                        <div class="random-quiz-twitch w-full md:w-auto md:ml-auto">
+                            <div class="random-quiz-pulse">
+                                <button type="button" v-on:click="openRandomTriviaModal()"
+                                        class="w-full flex items-center justify-center gap-2.5 bg-pop text-main-dark border-4 border-main-dark shadow-[5px_5px_0_0_#14323B] px-5 py-2.5 russo uppercase tracking-wide text-sm md:text-base transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">
+                                    {{-- Die --}}
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 shrink-0" aria-hidden="true">
+                                        <rect x="3" y="3" width="18" height="18" fill="#fff" stroke="#14323B" stroke-width="2.5"/>
+                                        <circle cx="8" cy="8" r="1.6" fill="#14323B"/><circle cx="16" cy="8" r="1.6" fill="#14323B"/>
+                                        <circle cx="12" cy="12" r="1.6" fill="#14323B"/>
+                                        <circle cx="8" cy="16" r="1.6" fill="#14323B"/><circle cx="16" cy="16" r="1.6" fill="#14323B"/>
+                                    </svg>
+                                    Play Random Quiz
+                                </button>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- ALL CATEGORIES folder --}}
@@ -196,14 +239,6 @@
             </div>
         </div>
 
-        @if(Auth::check())
-        <div class="fixed bottom-0 left-2 flex flex-row justify-center">
-
-            <div>
-                <button type="button" v-on:click="openRandomTriviaModal()" class="w-full text-center fira-sans py-4 px-2 md:px-6 shadow bg-yellow-500 text-zinc-900 font-semibold text-xl shadow-md shadow-zinc-900">Play Random Quiz</button>
-            </div>
-        </div>
-        @endif
     </div>
 
     @if(Auth::check())
