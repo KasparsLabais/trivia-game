@@ -48,12 +48,23 @@
                 <span class="w-4 h-4 rounded-full bg-main-accent shrink-0"></span>
                 <span class="w-4 h-4 rounded-full bg-pop shrink-0"></span>
                 <span class="w-4 h-4 rounded-full bg-green-500 shrink-0"></span>
-                <h1 class="russo text-white text-xl lg:text-2xl tracking-wide ml-2 truncate">{{ $trivia->title ?? 'Trivia' }}</h1>
+                @if(!empty($event))
+                    @if($event->logo_path)
+                        <img src="{{ asset($event->logo_path) }}" class="w-9 h-9 object-contain bg-white border-2 border-white/40 ml-2 shrink-0" alt="">
+                    @endif
+                    <h1 class="russo text-white text-xl lg:text-2xl tracking-wide ml-2 truncate">{{ $event->name }}</h1>
+                    <span class="hidden lg:inline-flex items-center fira-sans text-[11px] uppercase tracking-widest text-main-dark px-2 py-0.5 shrink-0" style="background-color: {{ $event->accent_color }};">Event</span>
+                @else
+                    <h1 class="russo text-white text-xl lg:text-2xl tracking-wide ml-2 truncate">{{ $trivia->title ?? 'Trivia' }}</h1>
+                @endif
                 <div class="ml-auto flex items-baseline gap-2 shrink-0">
                     <span class="fira-sans text-xs uppercase tracking-widest text-white/60">PIN</span>
                     <span class="russo text-pop text-2xl lg:text-3xl tracking-widest">{{ $gameInstance['pin'] }}</span>
                 </div>
             </div>
+            @if(!empty($event))
+                <div class="h-2 shrink-0" style="background-color: {{ $event->accent_color }};"></div>
+            @endif
 
             {{-- Timer bar --}}
             <div id="timer-wrap" class="w-full bg-main-light border-b-4 border-main-dark shrink-0" style="display:none;">
@@ -394,7 +405,7 @@
         function addPlayer(p) {
             if (!p || !p.username) return;
             if (playersMap[p.username]) return;
-            playersMap[p.username] = { username: p.username, avatar: p.avatar || '/images/default-avatar.jpg' };
+            playersMap[p.username] = { username: p.username, avatar: p.avatar || '/images/default-avatar.jpg', border: p.border || '' };
             renderPlayers();
         }
         function renderPlayers() {
@@ -408,8 +419,12 @@
                 var chip = document.createElement('div');
                 chip.setAttribute('data-player', '1');
                 chip.className = 'flex flex-row items-center gap-2 pl-1 pr-3 py-1 bg-main-light border-2 border-main-dark';
+                // A chosen border cosmetic frames the avatar in its colour (border + hard shadow).
+                var hasBorder = !!p.border;
+                var imgClass = hasBorder ? 'w-8 h-8 object-cover border-4' : 'w-8 h-8 rounded-full border-2 border-main-dark';
+                var imgStyle = hasBorder ? ('border-color:' + p.border + ';box-shadow:3px 3px 0 0 ' + p.border + ';') : '';
                 chip.innerHTML =
-                    '<img src="' + p.avatar + '" class="w-8 h-8 rounded-full border-2 border-main-dark" onerror="this.src=\'/images/default-avatar.jpg\'">' +
+                    '<img src="' + p.avatar + '" class="' + imgClass + '" style="' + imgStyle + '" onerror="this.src=\'/images/default-avatar.jpg\'">' +
                     '<span class="fira-sans text-sm font-semibold">' + p.username + '</span>';
                 list.appendChild(chip);
             });

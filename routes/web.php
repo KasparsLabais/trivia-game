@@ -30,6 +30,26 @@ Route::group(['middleware' => ['web']], function() {
     Route::delete('/management/trivia/{id}/question/{questionId}/answer/{answerId}', 'TriviaController@deleteTriviaAnswer');
     Route::put('/' . config('settings.prefix') . '/management/trivia/{id}/question/{questionId}/order', 'TriviaController@updateQuestionOrder');
 
+    //Seasons — Tier-3 host feature (multi-quiz events with a running leaderboard)
+    Route::get('/' . config('settings.prefix') . '/seasons', 'SeasonController@index');
+    Route::post('/' . config('settings.prefix') . '/seasons', 'SeasonController@store');
+    Route::get('/' . config('settings.prefix') . '/seasons/{id}', 'SeasonController@show');
+    Route::post('/' . config('settings.prefix') . '/seasons/{id}/trivia', 'SeasonController@addTrivia');
+    Route::delete('/' . config('settings.prefix') . '/seasons/{id}/trivia/{triviaId}', 'SeasonController@removeTrivia');
+    Route::post('/' . config('settings.prefix') . '/seasons/{id}/launch', 'SeasonController@launch');
+    Route::post('/' . config('settings.prefix') . '/seasons/{id}/pot', 'SeasonController@setPot');
+    Route::post('/' . config('settings.prefix') . '/seasons/{id}/complete', 'SeasonController@complete');
+    //public, read-only season leaderboard (guest accessible, for the big screen)
+    Route::get('/season/{code}', 'SeasonController@publicLeaderboard');
+
+    //Events — Tier-3 host feature (branded one-off game + permanent winner badge)
+    Route::get('/' . config('settings.prefix') . '/events', 'EventController@index');
+    Route::post('/' . config('settings.prefix') . '/events', 'EventController@store');
+    Route::get('/' . config('settings.prefix') . '/events/{id}', 'EventController@show');
+    Route::post('/' . config('settings.prefix') . '/events/{id}', 'EventController@update');
+    Route::post('/' . config('settings.prefix') . '/events/{id}/launch', 'EventController@launch');
+    Route::post('/' . config('settings.prefix') . '/events/{id}/award', 'EventController@award');
+
     Route::post('/csv-upload/trivia', 'TriviaController@csvUpload');
     Route::post('/' . config('settings.prefix') . '/api-single-upload/trivia', 'TriviaController@apiSingleAnswerQuestionCreator');
     Route::post('/' . config('settings.prefix') . '/management/api-trivia', 'TriviaController@createTriviaFromApi');

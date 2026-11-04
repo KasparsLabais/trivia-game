@@ -3,368 +3,294 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
-    <div class="flex flex-row justify-center" id="question-editor">
-        <div class="flex flex-col mt-2 px-2  w-11/12">
-            <div>
+    @php
+        // Shared field styling so every input/select matches the rest of the app.
+        $label  = 'fira-sans text-xs uppercase tracking-widest text-main-dark/60 mb-1.5';
+        $input  = 'w-full bg-white border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] px-3 py-2.5 fira-sans text-main-dark placeholder:text-main-dark/40 focus:outline-none focus:shadow-[6px_6px_0_0_#14323B] transition-all';
+        $select = 'w-full appearance-none bg-white border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] pl-3 pr-10 py-2.5 fira-sans font-bold text-main-dark focus:outline-none focus:shadow-[6px_6px_0_0_#14323B] cursor-pointer transition-all';
+    @endphp
 
-                <h1 class="josefin-sans font-semibold text-4xl text-yellow-500 mt-2">{{ $trivia['title'] }}</h1>
-                <div class="bg-slate-100 rounded shadow">
-                    <form action="" method="POST" class="flex flex-row px-2 py-4 bg-slate-200 shadow">
+    <div id="question-editor" class="w-full px-[15px] lg:px-[30px] pt-8 pb-12">
+        <div class="max-w-5xl mx-auto flex flex-col gap-8">
+
+            {{-- Header: highlighter title + back link --}}
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h1 class="relative self-start inline-block max-w-full">
+                    <span aria-hidden="true" class="absolute inset-0 -rotate-2 bg-green-300"></span>
+                    <span class="relative block russo text-main-dark text-lg md:text-2xl tracking-widest uppercase px-4 py-1.5 break-words">{{ $trivia['title'] }}</span>
+                </h1>
+                <a href="/trv/management" class="shrink-0 self-start inline-flex items-center gap-2 fira-sans font-black uppercase text-xs tracking-wide bg-white text-main-dark border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] px-4 py-2.5 transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#14323B] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[0px_0px_0_0_#14323B]">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" class="w-4 h-4 stroke-main-dark"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
+                    Back
+                </a>
+            </div>
+
+            {{-- Trivia settings window --}}
+            <div class="bg-white border-4 border-main-dark shadow-[8px_8px_0_0_#14323B]">
+                <div class="flex items-center gap-2.5 bg-main-dark px-4 py-2.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-main-accent shrink-0"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-pop shrink-0"></span>
+                    <span class="w-3.5 h-3.5 rounded-full bg-green-500 shrink-0"></span>
+                    <span class="ml-2 russo uppercase tracking-widest text-white text-xs">Trivia Settings</span>
+                </div>
+                <div class="p-5 md:p-6">
+                    <form action="" method="POST" class="flex flex-col gap-5">
                         {{ csrf_field() }}
-                        <div class="flex flex-col w-2/6">
-                            <div class="flex flex-col px-2 py-2">
-                                <label class="raleway font-semibold text-md" for="title">Title:</label>
-                                <input value="{{ $trivia['title'] }}" class="px-2 bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 text-lg" type="text" name="title" id="title">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="flex flex-col">
+                                <label class="{{ $label }}" for="title">Title</label>
+                                <input value="{{ $trivia['title'] }}" class="{{ $input }}" type="text" name="title" id="title">
                             </div>
-                            <div class="flex flex-col px-2 py-2">
-                                <label class="raleway font-semibold text-md" for="question">Description:</label>
-                                <input value="{{ $trivia['description'] }}"  class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" type="text" name="description" id="description">
+                            <div class="flex flex-col">
+                                <label class="{{ $label }}" for="description">Description</label>
+                                <input value="{{ $trivia['description'] }}" class="{{ $input }}" type="text" name="description" id="description">
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="{{ $label }}" for="difficulty">Difficulty</label>
+                                <div class="relative">
+                                    <select class="{{ $select }}" name="difficulty" id="difficulty">
+                                        <option value="easy" @if($trivia['difficulty'] == 'easy') selected @endif>Easy</option>
+                                        <option value="medium" @if($trivia['difficulty'] == 'medium') selected @endif>Medium</option>
+                                        <option value="hard" @if($trivia['difficulty'] == 'hard') selected @endif>Hard</option>
+                                    </select>
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center w-9 bg-main-dark text-white border-4 border-main-dark" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="{{ $label }}" for="category">Category</label>
+                                <div class="relative">
+                                    <select class="{{ $select }}" name="category" id="category">
+                                        @foreach($categories as $cat)
+                                            <option value="{{ $cat['id'] }}" @if($trivia['category_id'] == $cat['id']) selected @endif>{{ $cat['name'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center w-9 bg-main-dark text-white border-4 border-main-dark" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <div class="flex flex-col w-2/6">
-                            <div class="flex flex-col px-2 py-2">
-                                <label class="raleway font-semibold text-md" for="difficulty">Difficulty</label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" name="difficulty" id="difficulty">
-                                    <option value="easy" @if($trivia['difficulty'] == 'easy') selected="selected" @endif>Easy</option>
-                                    <option value="medium" @if($trivia['difficulty'] == 'medium') selected="selected" @endif>Medium</option>
-                                    <option value="hard" @if($trivia['difficulty'] == 'hard') selected="selected" @endif>Hard</option>
-                                </select>
-                            </div>
-                            <div class="flex flex-col px-2 py-2">
-                                <label class="raleway font-semibold text-md" for="category">Category</label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" name="category" id="category">
-                                    @foreach($categories as $cat)
-                                        <option value="{{ $cat['id'] }}" @if($trivia['category_id'] == $cat['id']) selected="selected" @endif>{{ $cat['name'] }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="flex flex-col w-1/6">
-                            <div class="flex flex-col px-2 py-2">
-                                <label class="raleway font-semibold text-md" for="is_active">Is Active: </label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" name="is_active" id="is_active">
-                                    <option value="0" @if($trivia['is_active'] == 0) selected="selected" @endif>0</option>
-                                    <option value="1" @if($trivia['is_active'] == 1) selected="selected" @endif>1</option>
-                                </select>
-                            </div>
 
-                            <div class="flex flex-col px-2 py-2">
-                                <label class="raleway font-semibold text-md" for="is_active">Private: </label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" name="private" id="private">
-                                    <option value="0" @if($trivia['private'] == 0) selected="selected" @endif>0</option>
-                                    <option value="1" @if($trivia['private'] == 1) selected="selected" @endif>1</option>
-                                </select>
+                        {{-- Flags --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="flex flex-col">
+                                <label class="{{ $label }}" for="is_active">Active</label>
+                                <div class="relative">
+                                    <select class="{{ $select }}" name="is_active" id="is_active">
+                                        <option value="1" @if($trivia['is_active'] == 1) selected @endif>Yes</option>
+                                        <option value="0" @if($trivia['is_active'] == 0) selected @endif>No</option>
+                                    </select>
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center w-9 bg-main-dark text-white border-4 border-main-dark" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+                                    </span>
+                                </div>
                             </div>
-
-                            <div class="flex flex-col px-2 py-2">
-                                <label class="raleway font-semibold text-md" for="is_premium">Is Premium: </label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2 text-lg" name="is_premium" id="is_premium">
-                                    <option value="0" @if($trivia['is_premium'] == 0) selected="selected" @endif>0</option>
-                                    <option value="1" @if($trivia['is_premium'] == 1) selected="selected" @endif>1</option>
-                                </select>
+                            <div class="flex flex-col">
+                                <label class="{{ $label }}" for="private">Private</label>
+                                <div class="relative">
+                                    <select class="{{ $select }}" name="private" id="private">
+                                        <option value="1" @if($trivia['private'] == 1) selected @endif>Yes</option>
+                                        <option value="0" @if($trivia['private'] == 0) selected @endif>No</option>
+                                    </select>
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center w-9 bg-main-dark text-white border-4 border-main-dark" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+                                    </span>
+                                </div>
                             </div>
-
+                            <div class="flex flex-col">
+                                <label class="{{ $label }}" for="is_premium">Premium</label>
+                                <div class="relative">
+                                    <select class="{{ $select }}" name="is_premium" id="is_premium">
+                                        <option value="1" @if($trivia['is_premium'] == 1) selected @endif>Yes</option>
+                                        <option value="0" @if($trivia['is_premium'] == 0) selected @endif>No</option>
+                                    </select>
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center w-9 bg-main-dark text-white border-4 border-main-dark" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex flex-row px-2">
-                            <div class="flex flex-col justify-center">
-                                <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-lg text-slate-100 font-semibold">Save Changes</button>
-                            </div>
-                        </div>
+
+                        <button type="submit" class="self-start fira-sans font-black uppercase tracking-wider bg-main-accent text-white border-4 border-main-dark shadow-[5px_5px_0_0_#14323B] px-6 py-2.5 transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">Save Changes</button>
                     </form>
                 </div>
+            </div>
 
-
-
-                <h2 class="josefin-sans font-semibold text-2xl text-yellow-500 mt-2">Questions</h2>
-
-                <div v-for="question in sortedQuestions" class="flex flex-col bg-slate-100 shadow rounded mt-4">
-                    <div class="flex flex-row justify-between bg-slate-300 py-2 px-4">
-                        <div class="flex flex-col justify-center">
-                            <div class="flex flex-row text-xl josefin-sans font-semibold">
-                                <template v-if="question.id == editedQuestionId">
-                                    <input v-model="editedQuestionValues.question" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded px-2 py-2" type="text" placeholder="Enter Question">
-                                </template>
-                                <template v-else>
-                                    [[ question.question ]]
-                                </template>
-                                <span class="px-2">|</span>
-                                <template v-if="question.id == editedQuestionId">
-                                    <select v-model="editedQuestionValues.question_type" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2" >
-                                        <option value="options">Options (A, B, C...)</option>
-                                        <option value="text_input">Text Input (auto-graded)</option>
-                                        <option value="open_input">Open Submission (judged)</option>
-                                    </select>
-                                    <select v-if="editedQuestionValues.question_type == 'open_input'" v-model="editedQuestionValues.input_type" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 ml-2" >
-                                        <option value="string">String</option>
-                                        <option value="number">Number</option>
-                                        <option value="image">Image</option>
-                                    </select>
-                                </template>
-                                <template v-else>
-                                    <span class="font-normal">Question Type: [[ question.question_type ]]</span>
-                                </template>
-
-                                <div v-if="question.id == editedQuestionId" class="flex flex-row px-2">
-                                    <div>
-                                        <button v-on:click="saveEditQuestion()" class="py-2 px-6 shadow-md bg-lime-500 text-lg text-slate-100 font-semibold mx-1">Save</button>
-                                        <button v-on:click="cancelEditQuestion()"  class="py-2 px-6 shadow-md bg-rose-500 text-lg text-slate-100 font-semibold mx-1">Cancel</button>
-                                    </div>
-                                    <!--
-                                    <svg v-on:click="saveEditQuestion()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="stroke-lime-600 mx-2 w-6 h-6 cursor-pointer">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                                    </svg>
-                                    <svg v-on:click="cancelEditQuestion()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="stroke-rose-600 mx-2 w-6 h-6 cursor-pointer">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                    </svg>
-                                    -->
-                                </div>
-                                <div v-else v-on:click="editQuestion(question.id)" class="px-2">
-                                    <svg  xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" data-slot="icon" class="stroke-cyan-600 w-6 h-6 mx-2 cursor-pointer">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex flex-row">
-                            <div class="flex flex-col rounded  px-1 cursor-pointer" v-on:click="moveQuestionOrderNrUp(question.id)">
-                                <div class="flex flex-row justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="stroke-lime-600 w-6 h-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-                                    </svg>
-                                </div>
-                                Move Up
-                            </div>
-                            <div class="rounded px-1 cursor-pointer" v-on:click="moveQuestionOrderNrDown(question.id)">
-                                <div class="flex flex-row justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="stroke-rose-600 w-6 h-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                    </svg>
-                                </div>
-                                Move Down
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex flex-row py-4 px-4">
-
-                        <template v-if="question.id == editedQuestionId">
-                            <template v-if="question.question_type == 'options'">
-                                <div v-for="(answer, index) in editedQuestionValues.answers" class="flex flex-col pr-2">
-                                    <div class="flex flex-col">
-                                        <div class="flex flex-row">
-                                            <div class="flex flex-col px-2 py-1">
-                                                <label class="raleway font-semibold text-sm" >Answer:</label>
-                                                <input v-model="answer.answer" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2" type="text" placeholder="Enter Answer">
-                                            </div>
-                                            <div class="flex flex-col px-2 py-1">
-                                                <label class="raleway font-semibold text-sm" >Is Correct:</label>
-                                                <select v-model="answer.is_correct" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2" >
-                                                    <option value="0">No</option>
-                                                    <option value="1">Yes</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="flex flex-row justify-start px-2 h-full">
-                                            <button v-on:click="removeAnswer(index)" class="py-2 px-2 shadow-md bg-rose-600 text-left text-slate-100 text-lg font-semibold rounded">Remove Answer</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
-                            <template v-if="question.question_type == 'text_input'">
-                                <div v-for="(answer, index) in editedQuestionValues.answers" class="flex flex-col pr-2">
-                                    <div class="flex flex-col">
-                                        <div class="flex flex-row">
-                                            <div class="flex flex-col px-2 py-1">
-                                                <label class="raleway font-semibold text-sm" >Answer:</label>
-                                                <input v-model="answer.answer" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2" type="text" placeholder="Enter Answer">
-                                            </div>
-                                            <div class="flex flex-col px-2 py-1">
-                                                <label class="raleway font-semibold text-sm" >Is Correct:</label>
-                                                <select v-model="answer.is_correct" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2 px-2" >
-                                                    <option value="0">No</option>
-                                                    <option value="1">Yes</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="flex flex-row justify-start px-2 h-full">
-                                            <button v-on:click="removeAnswer(index)" class="py-2 px-2 shadow-md bg-rose-600 text-left text-slate-100 text-lg font-semibold rounded">Remove Answer</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
-                        </template>
-
-                        <template v-else v-for="answer in question.answers">
-                            <template v-if="question.question_type == 'options'">
-                                <div v-if="answer.is_correct" class="flex flex-row border-lime-500 bg-lime-500 text-slate-100 font-semibold border-2 px-4 py-2 rounded shadow mx-1">
-                                    [[ answer.answer ]]
-                                </div>
-                                <div v-else class="border-slate-500 bg-slate-500 text-slate-100 font-semibold border-2 px-4 py-2 rounded shadow mx-1">
-                                    [[ answer.answer ]]
-                                </div>
-                            </template>
-                            <template v-if="question.question_type == 'text_input'">
-
-                                <div class="flex flex-col pr-2">
-                                    <div v-if="answer.is_correct" class="text-center border-lime-500 bg-lime-500 text-slate-100 font-semibold border-2 px-4 py-2 rounded shadow mx-1">
-                                        [[ answer.answer ]]
-                                    </div>
-                                    <div v-else class="text-center border-slate-500 bg-slate-500 text-slate-100 font-semibold border-2 px-4 py-2 rounded shadow mx-1">
-                                        [[ answer.answer ]]
-                                    </div>
-
-                                    <div v-if="answer.file_url_type != '' " class="flex flex-col">
-                                        <a class="font-semibold text-cyan-700" v-bind:["href"]="answer.file_url" target="_blank">Open Attached File</a>
-                                    </div>
-                                </div>
-
-                                <form class="px-3 border-l-2 border-l-slate-300" method="POST" v-bind:["action"]="'/admin/trv/answer-image/' + answer.id" enctype="multipart/form-data">
-                                    <div class="flex flex-row">
-                                        {{ csrf_field() }}
-                                        <div class="flex flex-col pr-2">
-                                            <label>Upload Image/Video For Correct answer (optional): </label>
-                                            <input type="file" name="answer-image" id="answer-image">
-                                        </div>
-                                        <button class="py-2 px-2 shadow-md bg-lime-600 text-left text-slate-100 text-lg font-semibold mb-2 rounded" type="submit">Upload Image</button>
-                                    </div>
-                                </form>
-                            </template>
-                        </template>
-
-                    </div>
-
-                    <div class="flex flex-row bg-slate-300 py-2 px-2">
-                        <template v-if="question.id == editedQuestionId">
-                            <span class="text-lg josefin-sans font-semibold">Question is in edit mode.</span>
-                        </template>
-                        <div v-else class="flex flex-row">
-                            <div class="flex flex-col px-2 py-1">
-                                <label class="raleway font-semibold text-sm" >Answer:</label>
-                                <input v-model="question.new_answer" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded px-2 py-2" type="text" placeholder="Enter Answer">
-                            </div>
-                            <template v-if="question.question_type == 'options'">
-                                <div class="flex flex-col px-2 py-1">
-                                    <label class="raleway font-semibold text-sm" >Is Correct:</label>
-                                    <select v-model="question.new_answer_is_correct" class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-2" >
-                                        <option value="0">No</option>
-                                        <option value="1">Yes</option>
-                                    </select>
-                                </div>
-                            </template>
-                            <div class="flex flex-col justify-end pb-2 h-full">
-                                <button v-on:click="addAnswer(question.id)" class="py-2 px-2 shadow-md bg-cyan-500 text-slate-100 font-semibold">Add Answer</button>
-                            </div>
-                        </div>
-                    </div>
+            {{-- Questions --}}
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-row flex-wrap items-center justify-between gap-3">
+                    <h2 class="russo text-main-dark text-base uppercase tracking-widest">Questions</h2>
+                    <span class="fira-sans text-xs uppercase tracking-widest border-2 border-main-dark px-3 py-1 {{ $tierMaxQuestions === null ? 'bg-green-500 text-white' : 'bg-pop text-main-dark' }}">
+                        {{ $tierName }} plan ·
+                        @if($tierMaxQuestions === null) Unlimited questions @else <span v-text="questionCount"></span>/{{ $tierMaxQuestions }} questions @endif
+                    </span>
                 </div>
 
-                <div class="bg-slate-100 rounded shadow">
-                    <div class="flex flex-col px-4">
-                        <h2 class="raleway">Questions:</h2>
+                <div v-for="question in sortedQuestions" :key="question.id" class="bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B]">
 
-
-
-
-
-                        <h2 class="raleway">Questions:</h2>
-                        <div id="question-holder">
-                        @foreach($questions as $question)
-                            <div id="question-{{ $question['id'] }}" question-type="{{ $question['question_type'] }}"  class="flex flex-col bg-slate-200 shadow rounded mt-4">
-                                <div class="flex flex-row bg-slate-300  py-2 px-2">
-                                    <div id="move-question-up-{{ $question['id'] }}" class="rounded bg-lime-600 px-1 cursor-pointer" onclick="moveQuestionOrderNrUp()" data-questionid="{{ $question['id'] }}">
-                                        <svg data-questionid="{{ $question['id'] }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="stroke-slate-200 w-6 h-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-                                        </svg>
-                                    </div>
-                                     <span>
-                                         Order Nr: {{ $question['order_nr'] }}
-                                     </span>
-                                    <div id="move-question-down-{{ $question['id'] }}" class="rounded bg-rose-600 px-1 cursor-pointer" onclick="moveQuestionOrderNrDown()" data-questionid="{{ $question['id'] }}">
-                                        <svg data-questionid="{{ $question['id'] }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="stroke-slate-200 w-6 h-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                        </svg>
-                                    </div>
-                                    |
-                                    <span class="text-xl px-4">{{ $question['question'] }}</span>
-                                </div>
-                                <div id="answer-holder-{{ $question['id'] }}" class="flex flex-row py-4">
-                                @foreach($question->answers as $answer)
-                                    <div class="@if($answer['is_correct']) border-lime-500 bg-lime-500 @else border-slate-500 bg-slate-500 @endif text-slate-100 font-semibold border-2 px-4 py-2 rounded shadow mx-1">
-                                        {{ $answer['answer'] }}
-                                    </div>
-
-                                    @if ($question['question_type'] == 'text_input')
-                                        <form method="POST" action="/admin/trv/answer-image/{{ $answer['id'] }}" enctype="multipart/form-data">
-                                            <div class="flex flex-row">
-                                                {{ csrf_field() }}
-                                                <div class="flex flex-col">
-                                                    @if($answer['file_url_type'])
-                                                        <div class="flex flex-col">
-                                                            <a class="font-semibold text-cyan-700" href="{{ $answer['file_url'] }}" target="_blank">Current File</a>
-                                                        </div>
-                                                    @endif
-                                                    <label>Upload Image For Correct answer: </label>
-                                                    <input type="file" name="answer-image" id="answer-image">
-                                                </div>
-                                                <button class="py-2 px-2 shadow-md bg-lime-600 text-left text-slate-100 text-lg font-semibold mb-2 rounded" type="submit">Upload Image</button>
-                                            </div>
-                                        </form>
-                                    @endif
-
-                                @endforeach
-                                </div>
-                                <div class="flex flex-row bg-slate-300 py-2 px-2">
-                                    <div class="flex flex-row">
-                                        <div class="flex flex-col px-2 py-1">
-                                            <label class="raleway font-semibold text-sm" for="answer-{{ $question['id'] }}">Answer:</label>
-                                            <input class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded" type="text" name="answer-{{ $question['id'] }}" id="answer-{{ $question['id'] }}">
-                                        </div>
-                                        @if($question['question_type'] == 'options')
-                                        <div class="flex flex-col px-2 py-1">
-                                            <label class="raleway font-semibold text-sm" for="is_correct-{{ $question['id'] }}">Is Correct:</label>
-                                            <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded" id="is_correct-{{ $question['id'] }}" name="is_correct-{{ $question['id'] }}">
-                                                <option value="0">No</option>
-                                                <option value="1">Yes</option>
-                                            </select>
-                                        </div>
-                                        @endif
-                                    </div>
-                                    <div class="flex flex-col justify-center">
-                                        <button data-questionid="{{ $question['id'] }}" onclick="addAnswer()" class="py-2 px-2 shadow-md bg-cyan-500 text-slate-100 font-semibold">Add Answer</button>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
+                    {{-- Card header (dark bar) --}}
+                    <div class="flex flex-col md:flex-row md:items-center gap-3 bg-main-dark px-4 py-3">
+                        <div class="flex flex-1 items-center gap-3 min-w-0">
+                            <span class="russo text-pop text-sm shrink-0">Q[[ question.order_nr ]]</span>
+                            <template v-if="question.id == editedQuestionId">
+                                <input v-model="editedQuestionValues.question" class="flex-1 min-w-0 bg-white border-2 border-main-dark px-3 py-1.5 fira-sans text-main-dark text-sm focus:outline-none" type="text" placeholder="Enter question">
+                            </template>
+                            <template v-else>
+                                <span class="fira-sans font-bold text-white truncate">[[ question.question ]]</span>
+                            </template>
                         </div>
-                    </div>
-
-                    <div class="flex flex-col px-2 py-4 bg-slate-200 shadow-md mt-4">
-                        {{ csrf_field() }}
-                        <div class="flex flex-row">
-                            <div class="flex flex-col px-2 py-2">
-                                <label class="raleway font-semibold text-md" for="question">Question:</label>
-                                <input class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" type="text" name="question" id="question">
-                            </div>
-                            <div class="flex flex-col px-2 py-2">
-                                <label class="raleway font-semibold text-md" for="question_type">Question Type:</label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="question_type" id="question_type"
-                                        onchange="document.getElementById('input_type_wrap').style.display = (this.value === 'open_input' ? 'flex' : 'none');">
-                                    <option value="options">Options (A, B, C...)</option>
-                                    <option value="text_input">Text Input (auto-graded)</option>
-                                    <option value="open_input">Open Submission (judged)</option>
+                        <div class="flex items-center gap-2 shrink-0">
+                            {{-- Type: badge (view) / selects (edit) --}}
+                            <template v-if="question.id == editedQuestionId">
+                                <select v-model="editedQuestionValues.question_type" class="bg-white border-2 border-main-dark px-2 py-1.5 fira-sans text-main-dark text-xs font-bold focus:outline-none cursor-pointer">
+                                    <option value="options">Options</option>
+                                    <option v-if="typeAllowed('text_input') || question.question_type == 'text_input'" value="text_input">Text Input</option>
+                                    <option v-if="typeAllowed('open_input') || question.question_type == 'open_input'" value="open_input">Open Submission</option>
                                 </select>
-                            </div>
-                            <div id="input_type_wrap" class="flex flex-col px-2 py-2" style="display:none;">
-                                <label class="raleway font-semibold text-md" for="input_type">Input Format:</label>
-                                <select class="bg-slate-100 border border-zinc-400 shadow shadow-zinc-400 rounded py-1" name="input_type" id="input_type">
+                                <select v-if="editedQuestionValues.question_type == 'open_input'" v-model="editedQuestionValues.input_type" class="bg-white border-2 border-main-dark px-2 py-1.5 fira-sans text-main-dark text-xs font-bold focus:outline-none cursor-pointer">
                                     <option value="string">String</option>
                                     <option value="number">Number</option>
                                     <option value="image">Image</option>
                                 </select>
+                                <button type="button" v-on:click="saveEditQuestion()" class="fira-sans font-black uppercase text-xs tracking-wide bg-green-500 text-white border-2 border-main-dark px-3 py-1.5 hover:bg-green-600 transition-colors">Save</button>
+                                <button type="button" v-on:click="cancelEditQuestion()" class="fira-sans font-black uppercase text-xs tracking-wide bg-main-accent text-white border-2 border-main-dark px-3 py-1.5 hover:brightness-110 transition-all">Cancel</button>
+                            </template>
+                            <template v-else>
+                                <span class="bg-pop text-main-dark border-2 border-main-dark px-2.5 py-1 russo text-[10px] uppercase tracking-wide shrink-0">[[ typeLabel(question.question_type) ]]</span>
+                                <button type="button" v-on:click="editQuestion(question.id)" title="Edit question" class="w-8 h-8 flex items-center justify-center bg-brand text-white border-2 border-main-dark hover:bg-white hover:text-main-dark transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg>
+                                </button>
+                                <button type="button" v-on:click="moveQuestionUp(question.id)" title="Move up" class="w-8 h-8 flex items-center justify-center bg-white text-main-dark border-2 border-main-dark hover:bg-pop transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>
+                                </button>
+                                <button type="button" v-on:click="moveQuestionDown(question.id)" title="Move down" class="w-8 h-8 flex items-center justify-center bg-white text-main-dark border-2 border-main-dark hover:bg-pop transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Card body --}}
+                    <div class="p-4 md:p-5">
+                        {{-- EDIT MODE: answer editors --}}
+                        <template v-if="question.id == editedQuestionId">
+                            <template v-if="editedQuestionValues.question_type == 'options' || editedQuestionValues.question_type == 'text_input'">
+                                <div class="flex flex-row flex-wrap gap-3">
+                                    <div v-for="(answer, index) in editedQuestionValues.answers" class="flex flex-col gap-2 border-2 border-main-dark p-3 bg-main-light">
+                                        <div class="flex flex-col">
+                                            <label class="fira-sans text-[10px] uppercase tracking-widest text-main-dark/60 mb-1">Answer</label>
+                                            <input v-model="answer.answer" class="bg-white border-2 border-main-dark px-2.5 py-1.5 fira-sans text-main-dark text-sm focus:outline-none" type="text" placeholder="Answer">
+                                        </div>
+                                        <div v-if="editedQuestionValues.question_type == 'options'" class="flex flex-col">
+                                            <label class="fira-sans text-[10px] uppercase tracking-widest text-main-dark/60 mb-1">Correct?</label>
+                                            <select v-model="answer.is_correct" class="bg-white border-2 border-main-dark px-2.5 py-1.5 fira-sans text-main-dark text-sm focus:outline-none cursor-pointer">
+                                                <option value="0">No</option>
+                                                <option value="1">Yes</option>
+                                            </select>
+                                        </div>
+                                        <button type="button" v-on:click="removeAnswer(index)" class="fira-sans font-black uppercase text-[11px] tracking-wide bg-main-accent text-white border-2 border-main-dark px-2.5 py-1.5 hover:brightness-110 transition-all">Remove</button>
+                                    </div>
+                                </div>
+                            </template>
+                            <p v-else class="fira-sans text-sm text-main-dark/60">Open submissions are judged live during the game — no preset answers.</p>
+                        </template>
+
+                        {{-- VIEW MODE: answer pills --}}
+                        <template v-else>
+                            <div v-if="question.question_type == 'open_input'" class="fira-sans text-sm text-main-dark/60">Open submission ([[ question.input_type || 'string' ]]) — judged live during the game.</div>
+                            <div v-else class="flex flex-row flex-wrap gap-2">
+                                <template v-for="answer in question.answers">
+                                    <template v-if="question.question_type == 'options'">
+                                        <span class="border-2 border-main-dark px-3 py-2 fira-sans font-bold text-sm" :class="answer.is_correct == 1 || answer.is_correct === true ? 'bg-green-500 text-white' : 'bg-surface text-main-dark'">[[ answer.answer ]]</span>
+                                    </template>
+                                    <template v-else>
+                                        <div class="flex flex-col gap-2 border-2 border-main-dark p-2 bg-main-light">
+                                            <span class="text-center border-2 border-main-dark bg-green-500 text-white px-3 py-1.5 fira-sans font-bold text-sm">[[ answer.answer ]]</span>
+                                            <a v-if="answer.file_url_type != ''" class="fira-sans text-xs font-bold text-brand underline text-center" v-bind:href="answer.file_url" target="_blank">Open attached file</a>
+                                            <form method="POST" v-bind:action="'/admin/trv/answer-image/' + answer.id" enctype="multipart/form-data" class="flex flex-col gap-1.5">
+                                                {{ csrf_field() }}
+                                                <label class="fira-sans text-[10px] uppercase tracking-widest text-main-dark/60">Image / video (optional)</label>
+                                                <div class="flex items-stretch bg-white border-2 border-main-dark">
+                                                    <label v-bind:for="'answer-image-' + answer.id" class="flex items-center bg-main-dark text-white fira-sans font-bold uppercase text-[11px] tracking-wide px-2.5 py-1.5 cursor-pointer whitespace-nowrap">File</label>
+                                                    <input v-bind:id="'answer-image-' + answer.id" class="hidden" type="file" name="answer-image" v-on:change="$event.target.nextElementSibling.textContent = $event.target.files.length ? $event.target.files[0].name : 'No file'">
+                                                    <span class="flex items-center px-2 py-1.5 fira-sans text-main-dark text-xs truncate min-w-0" style="max-width:9rem">No file</span>
+                                                </div>
+                                                <button type="submit" class="fira-sans font-black uppercase text-[11px] tracking-wide bg-pop text-main-dark border-2 border-main-dark px-3 py-1.5 hover:brightness-105 transition-all">Upload</button>
+                                            </form>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Card footer: add answer (view mode, not open_input) --}}
+                    <div class="bg-main-light border-t-4 border-main-dark px-4 py-3">
+                        <template v-if="question.id == editedQuestionId">
+                            <span class="fira-sans text-sm font-bold text-main-dark/60">Question is in edit mode.</span>
+                        </template>
+                        <template v-else>
+                            <div v-if="question.question_type == 'open_input'" class="fira-sans text-sm text-main-dark/60">No answers to add for open submissions.</div>
+                            <div v-else class="flex flex-row flex-wrap items-end gap-3">
+                                <div class="flex flex-col">
+                                    <label class="fira-sans text-[10px] uppercase tracking-widest text-main-dark/60 mb-1">Answer</label>
+                                    <input v-model="question.new_answer" class="bg-white border-2 border-main-dark px-2.5 py-1.5 fira-sans text-main-dark text-sm focus:outline-none" type="text" placeholder="Enter answer">
+                                </div>
+                                <div v-if="question.question_type == 'options'" class="flex flex-col">
+                                    <label class="fira-sans text-[10px] uppercase tracking-widest text-main-dark/60 mb-1">Correct?</label>
+                                    <select v-model="question.new_answer_is_correct" class="bg-white border-2 border-main-dark px-2.5 py-1.5 fira-sans text-main-dark text-sm focus:outline-none cursor-pointer">
+                                        <option value="0">No</option>
+                                        <option value="1">Yes</option>
+                                    </select>
+                                </div>
+                                <button type="button" v-on:click="addAnswer(question.id)" class="fira-sans font-black uppercase text-xs tracking-wide bg-brand text-white border-2 border-main-dark px-4 py-2 hover:bg-main-dark transition-colors">Add Answer</button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                {{-- Add a question --}}
+                <div class="bg-white border-4 border-main-dark shadow-[6px_6px_0_0_#14323B] p-5 md:p-6 flex flex-col gap-4">
+                    <h3 class="russo text-main-dark text-sm uppercase tracking-widest">Add a Question</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex flex-col sm:col-span-2">
+                            <label class="{{ $label }}">Question</label>
+                            <input v-model="newQuestion" class="{{ $input }}" type="text" placeholder="Type your question">
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="{{ $label }}">Question Type</label>
+                            <div class="relative">
+                                <select v-model="newQuestionType" class="{{ $select }}">
+                                    <option v-if="typeAllowed('options')" value="options">Options (A, B, C...)</option>
+                                    <option v-if="typeAllowed('text_input')" value="text_input">Text Input (auto-graded)</option>
+                                    <option v-if="typeAllowed('open_input')" value="open_input">Open Submission (judged)</option>
+                                </select>
+                                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center w-9 bg-main-dark text-white border-4 border-main-dark" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+                                </span>
                             </div>
                         </div>
-                        <div class="flex flex-row px-2">
-                            <button type="submit" class="py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold" onclick="addQuestion()">Add Question</button>
+                        <div v-if="newQuestionType == 'open_input'" class="flex flex-col">
+                            <label class="{{ $label }}">Input Format</label>
+                            <div class="relative">
+                                <select v-model="newInputType" class="{{ $select }}">
+                                    <option value="string">String</option>
+                                    <option value="number">Number</option>
+                                    <option value="image">Image</option>
+                                </select>
+                                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center w-9 bg-main-dark text-white border-4 border-main-dark" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+                                </span>
+                            </div>
                         </div>
+                    </div>
+                    <div class="flex flex-row flex-wrap items-center gap-3">
+                        <button type="button" v-on:click="addQuestion()" :disabled="atQuestionCap"
+                                class="self-start fira-sans font-black uppercase tracking-wider border-4 border-main-dark px-6 py-2.5 transition-all duration-100"
+                                :class="atQuestionCap ? 'bg-surface text-main-dark/40 cursor-not-allowed' : 'bg-main-accent text-white shadow-[5px_5px_0_0_#14323B] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]'">Add Question</button>
+                        <p v-if="atQuestionCap" class="fira-sans text-sm text-main-accent font-bold">Question limit reached for the {{ $tierName }} plan — upgrade to add more.</p>
                     </div>
                 </div>
             </div>
@@ -372,43 +298,53 @@
     </div>
 
     <script>
-
-
+        @php $jsonFlags = JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP; @endphp
         let questionsList = {
             @foreach($questions as $question)
-            '{{ $question['id'] }}' :{ 'id' :{{ $question['id'] }}, 'order_nr':{{ $question['order_nr'] }}, 'question':'{{ $question['question'] }}', 'question_type': '{{ $question['question_type']  }}', 'input_type': '{{ $question['input_type'] }}', 'new_answer' : '', 'new_answer_is_correct' : 0, 'answers':[
+            '{{ $question['id'] }}' :{ 'id' :{{ $question['id'] }}, 'order_nr':{{ $question['order_nr'] }}, 'question': {!! json_encode($question['question'], $jsonFlags) !!}, 'question_type': {!! json_encode($question['question_type'], $jsonFlags) !!}, 'input_type': {!! json_encode($question['input_type'] ?? '', $jsonFlags) !!}, 'new_answer' : '', 'new_answer_is_correct' : 0, 'answers':[
                         @foreach($question->answers as $answer)
                     {
                         'id': {{ $answer['id'] }},
-                        'answer': '{{ $answer['answer'] }}',
-                        'is_correct': {{ $answer['is_correct'] }},
-                        'file_url': '{{ $answer['file_url'] }}',
-                        'file_url_type': '{{ $answer['file_url_type'] }}'
+                        'answer': {!! json_encode($answer['answer'], $jsonFlags) !!},
+                        'is_correct': {{ (int) $answer['is_correct'] }},
+                        'file_url': {!! json_encode($answer['file_url'] ?? '', $jsonFlags) !!},
+                        'file_url_type': {!! json_encode($answer['file_url_type'] ?? '', $jsonFlags) !!}
                     },
                     @endforeach
                 ]},
             @endforeach
         };
 
-
         const { createApp } = Vue;
         createApp({
             data() {
                 return {
+                    triviaId: {{ $trivia['id'] }},
                     editedQuestionId: 0,
-                    editedQuestionValues: {
-                        question: '',
-                        question_type: '',
-                        input_type: '',
-                        answers: []
-                    },
-                    questions: questionsList
+                    editedQuestionValues: { question: '', question_type: '', input_type: '', answers: [] },
+                    questions: questionsList,
+                    newQuestion: '',
+                    newQuestionType: 'options',
+                    newInputType: 'string',
+                    // Plan limits (null = unlimited) for this quiz's owner.
+                    maxQuestions: @json($tierMaxQuestions),
+                    allowedTypes: @json($tierQuestionTypes),
                 }
             },
             delimiters: ['[[', ']]'],
             methods: {
+                csrf() {
+                    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                },
+                typeLabel(type) {
+                    if (type === 'text_input') return 'Text Input';
+                    if (type === 'open_input') return 'Open Submission';
+                    return 'Options';
+                },
+                typeAllowed(type) {
+                    return this.allowedTypes.includes(type);
+                },
                 editQuestion(questionId) {
-                    console.log('edit question', questionId);
                     this.editedQuestionId = questionId;
                     this.editedQuestionValues.question = this.questions[questionId].question;
                     this.editedQuestionValues.question_type = this.questions[questionId].question_type;
@@ -416,22 +352,13 @@
                     this.editedQuestionValues.answers = this.questions[questionId].answers;
                 },
                 cancelEditQuestion() {
-                    console.log('cancel edit question');
                     this.editedQuestionId = 0;
-                    this.editedQuestionValues.question = '';
-                    this.editedQuestionValues.question_type = '';
-                    this.editedQuestionValues.input_type = '';
-                    this.editedQuestionValues.answers = [];
+                    this.editedQuestionValues = { question: '', question_type: '', input_type: '', answers: [] };
                 },
                 saveEditQuestion() {
-                    console.log('save edit question');
-                    console.log(this.editedQuestionValues);
-                    fetch('/management/trivia/{{ $trivia['id'] }}/question/' + this.editedQuestionId, {
+                    fetch('/management/trivia/' + this.triviaId + '/question/' + this.editedQuestionId, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrf() },
                         body: JSON.stringify({
                             question: this.editedQuestionValues.question,
                             question_type: this.editedQuestionValues.question_type,
@@ -440,601 +367,108 @@
                         })
                     }).then(response => response.json())
                     .then(data => {
-                        console.log(data);
                         if (data.success) {
                             this.questions[this.editedQuestionId].question = this.editedQuestionValues.question;
                             this.questions[this.editedQuestionId].question_type = this.editedQuestionValues.question_type;
                             this.questions[this.editedQuestionId].input_type = this.editedQuestionValues.input_type;
                             this.questions[this.editedQuestionId].answers = this.editedQuestionValues.answers;
-                            this.editedQuestionId = 0;
-                            this.editedQuestionValues.question = '';
-                            this.editedQuestionValues.question_type = '';
-                            this.editedQuestionValues.input_type = '';
-                            this.editedQuestionValues.answers = [];
+                            this.cancelEditQuestion();
                         }
                     });
                 },
                 addAnswer(questionId) {
-                    console.log('add answer', questionId);
-                    console.log(this.questions[questionId]);
-                    fetch('/management/trivia/{{ $trivia['id'] }}/question/' + questionId + '/answer', {
+                    const q = this.questions[questionId];
+                    fetch('/management/trivia/' + this.triviaId + '/question/' + questionId + '/answer', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrf() },
                         body: JSON.stringify({
-                            answer: this.questions[questionId].new_answer,
-                            is_correct: this.questions[questionId].new_answer_is_correct
+                            answer: q.new_answer,
+                            is_correct: q.question_type === 'options' ? q.new_answer_is_correct : 1
                         })
                     }).then(response => response.json())
                     .then(data => {
-                        console.log(data);
                         if (data.success) {
-                            this.questions[questionId].answers.push(data.payload);
-                            this.questions[questionId].new_answer = '';
-                            this.questions[questionId].new_answer_is_correct = 0;
+                            q.answers.push(data.payload);
+                            q.new_answer = '';
+                            q.new_answer_is_correct = 0;
                         }
                     });
                 },
                 removeAnswer(index) {
-                    console.log('remove answer', index);
-                    console.log(this.questions[this.editedQuestionId].answers[index]);
-                    fetch('/management/trivia/{{ $trivia['id'] }}/question/' + this.editedQuestionId + '/answer/' + this.questions[this.editedQuestionId].answers[index].id, {
+                    const q = this.questions[this.editedQuestionId];
+                    fetch('/management/trivia/' + this.triviaId + '/question/' + this.editedQuestionId + '/answer/' + q.answers[index].id, {
                         method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrf() }
                     }).then(response => response.json())
                     .then(data => {
-                        console.log(data);
                         if (data.success) {
-                            this.questions[this.editedQuestionId].answers.splice(index, 1);
+                            q.answers.splice(index, 1);
                         }
                     });
+                },
+                addQuestion() {
+                    if (!this.newQuestion.trim()) return;
+                    if (this.atQuestionCap) return;
+                    fetch('/trv/management/trivia/' + this.triviaId + '/question', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrf() },
+                        body: JSON.stringify({
+                            question: this.newQuestion,
+                            question_type: this.newQuestionType,
+                            input_type: this.newInputType
+                        })
+                    }).then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const q = data.payload;
+                            q.answers = [];
+                            q.new_answer = '';
+                            q.new_answer_is_correct = 0;
+                            if (!q.input_type) q.input_type = this.newInputType;
+                            // Reactive add — Vue 3 Proxy picks up the new key and the list re-sorts.
+                            this.questions[q.id] = q;
+                            this.newQuestion = '';
+                        }
+                    }).catch(error => console.log(error));
+                },
+                updateOrder(questionId, orderNr) {
+                    fetch('/trv/management/trivia/' + this.triviaId + '/question/' + questionId + '/order', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrf() },
+                        body: JSON.stringify({ order_nr: orderNr })
+                    }).then(response => response.json()).catch(error => console.log(error));
+                },
+                // Swap order_nr with the neighbour above/below, then persist both.
+                moveQuestionUp(questionId) {
+                    const q = this.questions[questionId];
+                    const neighbour = Object.values(this.questions).find(x => x.order_nr === q.order_nr - 1);
+                    if (!neighbour) return;
+                    neighbour.order_nr = q.order_nr;
+                    q.order_nr = q.order_nr - 1;
+                    this.updateOrder(q.id, q.order_nr);
+                    this.updateOrder(neighbour.id, neighbour.order_nr);
+                },
+                moveQuestionDown(questionId) {
+                    const q = this.questions[questionId];
+                    const neighbour = Object.values(this.questions).find(x => x.order_nr === q.order_nr + 1);
+                    if (!neighbour) return;
+                    neighbour.order_nr = q.order_nr;
+                    q.order_nr = q.order_nr + 1;
+                    this.updateOrder(q.id, q.order_nr);
+                    this.updateOrder(neighbour.id, neighbour.order_nr);
                 },
             },
             computed: {
                 sortedQuestions() {
                     return Object.values(this.questions).sort((a, b) => a.order_nr - b.order_nr);
+                },
+                questionCount() {
+                    return Object.keys(this.questions).length;
+                },
+                atQuestionCap() {
+                    return this.maxQuestions !== null && this.questionCount >= this.maxQuestions;
                 }
-            },
-            mount() {
-                console.log('mounted');
-            },
+            }
         }).mount('#question-editor');
-
-
-
-
-
-
-
-
-        const addQuestion = () => {
-            console.log('add question');
-
-            fetch('/trv/management/trivia/{{ $trivia['id'] }}/question', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    question: document.querySelector('#question').value,
-                    question_type: document.querySelector('#question_type').value,
-                    input_type: document.querySelector('#input_type').value
-                })
-            }).then(response => response.json())
-            .then(data => {
-                document.querySelector('#question').value = '';
-                console.log(data);
-                if (data.success) {
-                    let questionHolder = document.querySelector('#question-holder');
-                    let question = data.payload;
-
-                    //add question to questionsList
-                    console.log("QUESTION LIST", questionsList);
-                    questionsList[question.id] = question;
-                    questionsList[question.id]['answers'] = [];
-                    console.log("QUESTION LIST New", questionsList);
-
-
-                    let questionDiv = document.createElement('div');
-                    questionDiv.setAttribute('id', 'question-' + question.id);
-                    questionDiv.setAttribute('question-type', question.question_type);
-                    questionDiv.classList.add('flex', 'flex-col', 'bg-slate-200', 'shadow', 'rounded', 'mt-4');
-
-                    let questionHeader = document.createElement('div');
-                    questionHeader.classList.add('flex', 'flex-row', 'bg-slate-300', 'py-2', 'px-2');
-
-                    let questionHeaderUpButton = document.createElement('div');
-                    questionHeaderUpButton.classList.add('px-1', 'cursor-pointer', 'rounded', 'bg-lime-600');
-                    questionHeaderUpButton.setAttribute('data-questionid', question.id);
-                    questionHeaderUpButton.id = 'move-question-up-' + question.id;
-                    questionHeaderUpButton.addEventListener('click', moveQuestionOrderNrUp);
-
-                    let questionHeaderUpButtonSvg = document.createElement('svg');
-                    questionHeaderUpButtonSvg.classList.add('stroke-lime-600', 'w-6', 'h-6');
-                    questionHeaderUpButtonSvg.setAttribute('data-questionid', question.id);
-                    questionHeaderUpButtonSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-                    questionHeaderUpButtonSvg.setAttribute('fill', 'none');
-                    questionHeaderUpButtonSvg.setAttribute('viewBox', '0 0 24 24');
-                    questionHeaderUpButtonSvg.setAttribute('stroke-width', '1.5');
-                    questionHeaderUpButtonSvg.setAttribute('stroke', 'currentColor');
-                    questionHeaderUpButtonSvg.setAttribute('class', 'stroke-slate-200 w-6 h-6');
-                    questionHeaderUpButtonSvg.setAttribute('stroke-linecap', 'round');
-                    questionHeaderUpButtonSvg.setAttribute('stroke-linejoin', 'round');
-                    questionHeaderUpButtonSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />';
-
-                    questionHeaderUpButton.appendChild(questionHeaderUpButtonSvg);
-
-                    let questionHeaderDownButton = document.createElement('div');
-                    questionHeaderDownButton.classList.add('px-1', 'cursor-pointer', 'rounded', 'bg-rose-600');
-                    questionHeaderDownButton.setAttribute('data-questionid', question.id);
-                    questionHeaderDownButton.id = 'move-question-down-' + question.id;
-                    questionHeaderDownButton.addEventListener('click', moveQuestionOrderNrDown);
-
-                    let questionHeaderDownButtonSvg = document.createElement('svg');
-                    questionHeaderDownButtonSvg.classList.add('stroke-rose-600', 'w-6', 'h-6');
-                    questionHeaderDownButtonSvg.setAttribute('data-questionid', question.id);
-                    questionHeaderDownButtonSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-                    questionHeaderDownButtonSvg.setAttribute('fill', 'none');
-                    questionHeaderDownButtonSvg.setAttribute('viewBox', '0 0 24 24');
-                    questionHeaderDownButtonSvg.setAttribute('stroke-width', '1.5');
-                    questionHeaderDownButtonSvg.setAttribute('stroke', 'currentColor');
-                    questionHeaderDownButtonSvg.setAttribute('class', 'stroke-slate-200	w-6 h-6');
-                    questionHeaderDownButtonSvg.setAttribute('stroke-linecap', 'round');
-                    questionHeaderDownButtonSvg.setAttribute('stroke-linejoin', 'round');
-                    questionHeaderDownButtonSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />';
-
-                    questionHeaderDownButton.appendChild(questionHeaderDownButtonSvg);
-
-                    let questionHeaderNr = document.createElement('span');
-                    questionHeaderNr.innerText = 'Order Nr: ' + question.order_nr;
-
-                    let questionHeaderQuestion = document.createElement('span');
-                    questionHeaderQuestion.classList.add('text-xl', 'px-4');
-                    questionHeaderQuestion.innerText = question.question;
-
-                    let questionHeaderSeparator = document.createElement('span');
-                    questionHeaderSeparator.innerText = ' | ';
-
-                    questionHeader.appendChild(questionHeaderUpButton);
-                    questionHeader.appendChild(questionHeaderNr);
-                    questionHeader.appendChild(questionHeaderDownButton);
-                    questionHeader.appendChild(questionHeaderSeparator);
-                    questionHeader.appendChild(questionHeaderQuestion);
-
-                    let answerHolder = document.createElement('div');
-                    answerHolder.classList.add('flex', 'flex-row', 'py-4');
-                    answerHolder.id = 'answer-holder-' + question.id;
-
-                    if (question.answers) {
-                        question.answers.forEach(answer => {
-                            let answerDiv = document.createElement('div');
-                            answerDiv.classList.add('border-slate-500', 'bg-slate-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
-                            answerDiv.innerText = answer.answer;
-
-                            answerHolder.appendChild(answerDiv);
-                        });
-                    }
-
-                    let questionFooter = document.createElement('div');
-                    questionFooter.classList.add('flex', 'flex-row', 'bg-slate-300', 'py-2', 'px-2');
-
-                    let questionFooterAnswer = document.createElement('div');
-                    questionFooterAnswer.classList.add('flex', 'flex-row');
-
-                    let questionFooterAnswerAnswer = document.createElement('div');
-                    questionFooterAnswerAnswer.classList.add('flex', 'flex-col', 'px-2', 'py-1');
-
-                    let questionFooterAnswerAnswerLabel = document.createElement('label');
-                    questionFooterAnswerAnswerLabel.classList.add('raleway', 'font-semibold', 'text-sm');
-                    questionFooterAnswerAnswerLabel.setAttribute('for', 'answer');
-                    questionFooterAnswerAnswerLabel.innerText = 'Answer:';
-
-                    let questionFooterAnswerAnswerInput = document.createElement('input');
-                    questionFooterAnswerAnswerInput.classList.add('bg-slate-100', 'border', 'border-zinc-400', 'shadow', 'shadow-zinc-400', 'rounded');
-                    questionFooterAnswerAnswerInput.setAttribute('type', 'text');
-                    questionFooterAnswerAnswerInput.setAttribute('name', 'answer-' + question.id);
-                    questionFooterAnswerAnswerInput.setAttribute('id', 'answer-' + question.id);
-
-                    questionFooterAnswerAnswer.appendChild(questionFooterAnswerAnswerLabel);
-                    questionFooterAnswerAnswer.appendChild(questionFooterAnswerAnswerInput);
-
-
-
-                    if (question.question_type == 'options') {
-
-                        let questionFooterAnswerIsCorrect = document.createElement('div');
-                        questionFooterAnswerIsCorrect.classList.add('flex', 'flex-col', 'px-2', 'py-1');
-
-                        let questionFooterAnswerIsCorrectLabel = document.createElement('label');
-                        questionFooterAnswerIsCorrectLabel.classList.add('raleway', 'font-semibold', 'text-sm');
-                        questionFooterAnswerIsCorrectLabel.setAttribute('for', 'is_correct-' + question.id);
-                        questionFooterAnswerIsCorrectLabel.innerText = 'Is Correct:';
-
-                        let questionFooterAnswerIsCorrectSelect = document.createElement('select');
-                        questionFooterAnswerIsCorrectSelect.classList.add('bg-slate-100', 'border', 'border-zinc-400', 'shadow', 'shadow-zinc-400', 'rounded');
-                        questionFooterAnswerIsCorrectSelect.setAttribute('name', 'is_correct-' + question.id);
-                        questionFooterAnswerIsCorrectSelect.setAttribute('id', 'is_correct-' + question.id);
-
-                        let questionFooterAnswerIsCorrectSelectOptionNo = document.createElement('option');
-                        questionFooterAnswerIsCorrectSelectOptionNo.setAttribute('value', '0');
-                        questionFooterAnswerIsCorrectSelectOptionNo.innerText = 'No';
-
-                        let questionFooterAnswerIsCorrectSelectOptionYes = document.createElement('option');
-                        questionFooterAnswerIsCorrectSelectOptionYes.setAttribute('value', '1');
-                        questionFooterAnswerIsCorrectSelectOptionYes.innerText = 'Yes';
-
-                        questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionNo);
-                        questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionYes);
-
-                        questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectLabel);
-                        questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectSelect);
-
-                        questionFooterAnswer.appendChild(questionFooterAnswerIsCorrect);
-                    }
-
-                    questionFooterAnswer.appendChild(questionFooterAnswerAnswer);
-
-                    let questionFooterAddAnswer = document.createElement('div');
-                    questionFooterAddAnswer.classList.add('flex', 'flex-col', 'justify-center');
-
-                    let questionFooterAddAnswerButton = document.createElement('button');
-                    questionFooterAddAnswerButton.classList.add('py-2', 'px-2', 'shadow-md', 'bg-cyan-500', 'text-slate-100', 'font-semibold');
-                    questionFooterAddAnswerButton.setAttribute('data-questionid', question.id);
-                    questionFooterAddAnswerButton.innerText = 'Add Answer';
-                    questionFooterAddAnswerButton.addEventListener('click', addAnswer);
-
-                    questionFooterAddAnswer.appendChild(questionFooterAddAnswerButton);
-
-                    questionFooter.appendChild(questionFooterAnswer);
-                    questionFooter.appendChild(questionFooterAddAnswer);
-
-                    questionDiv.appendChild(questionHeader);
-                    questionDiv.appendChild(answerHolder);
-                    questionDiv.appendChild(questionFooter);
-
-                    questionHolder.appendChild(questionDiv);
-
-                    $("#move-question-up-" + question.id).html($("#move-question-up-" + question.id).html());
-                    $("#move-question-down-" + question.id).html($("#move-question-down-" + question.id).html());
-                }
-            })
-            .catch(error => console.log(error));
-        }
-
-        const addAnswer = () => {
-
-            let questionId = event.target.getAttribute('data-questionid');
-            let questionType = document.querySelector('#question-' + questionId).getAttribute('question-type');
-
-            fetch('/management/trivia/{{ $trivia['id'] }}/question/' + questionId + '/answer', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    answer: document.querySelector('#answer-'+questionId).value,
-                    is_correct: (questionType != 'options') ? 1 :  document.querySelector('#is_correct-'+questionId).value
-                })
-            }).then(response => response.json())
-            .then(data => {
-                console.log(data);
-                if (data.success) {
-
-                    let answerHolder = document.querySelector('#answer-holder-' + questionId);
-                    let answer = data.payload;
-
-                    let answerDiv = document.createElement('div');
-
-                    if (questionType == 'options') {
-                        if(answer.is_correct == "1") {
-                            answerDiv.classList.add('border-lime-500', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
-                        } else {
-                            answerDiv.classList.add('border-slate-500', 'bg-slate-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
-                        }
-
-                        answerDiv.innerText = answer.answer;
-                        answerHolder.appendChild(answerDiv);
-
-                    } else if (questionType == 'text_input') {
-
-                        answerDiv.classList.add('border-lime-500', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
-                        answerDiv.innerText = answer.answer;
-
-                        let answerImageForm = document.createElement('form');
-                        answerImageForm.setAttribute('method', 'POST');
-                        answerImageForm.setAttribute('action', '/admin/trv/answer-image/' + answer.id);
-                        answerImageForm.setAttribute('enctype', 'multipart/form-data');
-
-                        let answerImageFormFlex = document.createElement('div');
-                        answerImageFormFlex.classList.add('flex', 'flex-row');
-
-                        let answerImageFormToken = document.createElement('input');
-                        answerImageFormToken.setAttribute('type', 'hidden');
-                        answerImageFormToken.setAttribute('name', '_token');
-                        answerImageFormToken.setAttribute('value', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-
-                        let answerImageFormInputHolder = document.createElement('div');
-                        answerImageFormInputHolder.classList.add('flex', 'flex-col');
-
-                        let answerImageFormLabel = document.createElement('label');
-                        answerImageFormLabel.innerText = 'Upload Image For Correct answer: ';
-
-                        let answerImageFormInput = document.createElement('input');
-                        answerImageFormInput.setAttribute('type', 'file');
-                        answerImageFormInput.setAttribute('name', 'answer-image');
-                        answerImageFormInput.setAttribute('id', 'answer-image');
-
-                        let answerImageFormButtonHolder = document.createElement('button');
-                        answerImageFormButtonHolder.classList.add('py-2', 'px-2', 'shadow-md', 'bg-lime-600', 'text-left', 'text-slate-100', 'text-lg', 'font-semibold', 'mb-2', 'rounded');
-
-                        let answerImageFormButton = document.createElement('button');
-                        answerImageFormButton.setAttribute('type', 'submit');
-                        answerImageFormButton.innerText = 'Upload Image';
-
-                        answerImageFormButtonHolder.appendChild(answerImageFormButton);
-                        answerImageFormInputHolder.appendChild(answerImageFormLabel);
-                        answerImageFormInputHolder.appendChild(answerImageFormInput);
-                        answerImageFormFlex.appendChild(answerImageFormToken);
-                        answerImageFormFlex.appendChild(answerImageFormInputHolder);
-                        answerImageFormFlex.appendChild(answerImageFormButtonHolder);
-                        answerImageForm.appendChild(answerImageFormFlex);
-
-                        answerHolder.appendChild(answerDiv);
-                        answerHolder.appendChild(answerImageForm);
-                    }
-                    //add answer to questionsList
-                    questionsList[questionId]['answers'].push(answer);
-                }
-
-                document.querySelector('#answer-' + questionId).value = '';
-                document.querySelector('#is_correct-'+questionId).value = 0;
-
-            })
-            .catch(error => console.log(error));
-        }
-
-        const moveQuestionOrderNrUp = (e) => {
-
-            let questionId = event.target.getAttribute('data-questionid');
-            let question = questionsList[questionId];
-
-            if (question['order_nr'] == 0) {
-                return;
-            }
-
-            question['order_nr'] = question['order_nr'] - 1;
-
-            let questionToReplace = Object.values(questionsList).find(q => q['order_nr'] == question['order_nr']);
-            questionToReplace['order_nr'] = questionToReplace['order_nr'] + 1;
-
-            questionsList[questionToReplace['id']] = questionToReplace;
-            questionsList[question['id']] = question;
-
-            updateQuestionOrderNr(question['id'], question['order_nr']);
-            updateQuestionOrderNr(questionToReplace['id'], questionToReplace['order_nr']);
-
-            redrawQuestionsUI();
-        }
-
-        const moveQuestionOrderNrDown = () => {
-            let questionId = event.target.getAttribute('data-questionid');
-            let question = questionsList[questionId];
-
-            let totalQuestions = Object.keys(questionsList).length;
-
-            if (question['order_nr'] >= totalQuestions) {
-                return;
-            }
-
-            question['order_nr'] = question['order_nr'] + 1;
-
-            //find question with order_nr + 1 and replace by current questions old order_nr
-            let questionToReplace = Object.values(questionsList).find(q => q['order_nr'] == question['order_nr']);
-            questionToReplace['order_nr'] = questionToReplace['order_nr'] - 1;
-            //update questionList with new values
-            questionsList[questionToReplace['id']] = questionToReplace;
-            questionsList[question['id']] = question;
-
-            updateQuestionOrderNr(question['id'], question['order_nr']);
-            updateQuestionOrderNr(questionToReplace['id'], questionToReplace['order_nr']);
-            //order questionList by order_nr
-            redrawQuestionsUI();
-        }
-
-        const updateQuestionOrderNr = (questionId, orderNr) => {
-            fetch('/trv/management/trivia/{{ $trivia['id'] }}/question/' + questionId + '/order', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    order_nr: orderNr
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                if (data.success) {
-                    console.log('question order nr updated');
-                }
-            })
-        }
-
-        const redrawQuestionsUI = () => {
-            //redraw content of question-holder from questionsList
-            let questionHolder = document.querySelector('#question-holder');
-            questionHolder.innerHTML = '';
-
-            let orderedQuestionsList = Object.values(questionsList).sort((a, b) => a['order_nr'] - b['order_nr']);
-            orderedQuestionsList.map((question) => {
-
-                let questionDiv = document.createElement('div');
-                questionDiv.classList.add('flex', 'flex-col', 'bg-slate-200', 'shadow', 'rounded', 'mt-4');
-
-                let questionHeader = document.createElement('div');
-                questionHeader.classList.add('flex', 'flex-row', 'bg-slate-300', 'py-2', 'px-2');
-
-                let questionHeaderUpButton = document.createElement('div');
-                questionHeaderUpButton.classList.add('px-1', 'cursor-pointer');
-                questionHeaderUpButton.setAttribute('data-questionid', question.id);
-                questionHeaderUpButton.id = 'move-question-up-' + question.id;
-                questionHeaderUpButton.addEventListener('click', moveQuestionOrderNrUp);
-
-                let questionHeaderUpButtonSvg = document.createElement('svg');
-                questionHeaderUpButtonSvg.classList.add('stroke-lime-600', 'w-6', 'h-6');
-                questionHeaderUpButtonSvg.setAttribute('data-questionid', question.id);
-                questionHeaderUpButtonSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-                questionHeaderUpButtonSvg.setAttribute('fill', 'none');
-                questionHeaderUpButtonSvg.setAttribute('viewBox', '0 0 24 24');
-                questionHeaderUpButtonSvg.setAttribute('stroke-width', '1.5');
-                questionHeaderUpButtonSvg.setAttribute('stroke', 'currentColor');
-                questionHeaderUpButtonSvg.setAttribute('class', 'stroke-lime-600 w-6 h-6');
-                questionHeaderUpButtonSvg.setAttribute('stroke-linecap', 'round');
-                questionHeaderUpButtonSvg.setAttribute('stroke-linejoin', 'round');
-                questionHeaderUpButtonSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />';
-
-                questionHeaderUpButton.appendChild(questionHeaderUpButtonSvg);
-
-                let questionHeaderDownButton = document.createElement('div');
-                questionHeaderDownButton.classList.add('px-1', 'cursor-pointer');
-                questionHeaderDownButton.setAttribute('data-questionid', question.id);
-                questionHeaderDownButton.id = 'move-question-down-' + question.id;
-                questionHeaderDownButton.addEventListener('click', moveQuestionOrderNrDown);
-
-                let questionHeaderDownButtonSvg = document.createElement('svg');
-                questionHeaderDownButtonSvg.classList.add('stroke-rose-600', 'w-6', 'h-6');
-                questionHeaderDownButtonSvg.setAttribute('data-questionid', question.id);
-                questionHeaderDownButtonSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-                questionHeaderDownButtonSvg.setAttribute('fill', 'none');
-                questionHeaderDownButtonSvg.setAttribute('viewBox', '0 0 24 24');
-                questionHeaderDownButtonSvg.setAttribute('stroke-width', '1.5');
-                questionHeaderDownButtonSvg.setAttribute('stroke', 'currentColor');
-                questionHeaderDownButtonSvg.setAttribute('class', 'stroke-rose-600	w-6 h-6');
-                questionHeaderDownButtonSvg.setAttribute('stroke-linecap', 'round');
-                questionHeaderDownButtonSvg.setAttribute('stroke-linejoin', 'round');
-                questionHeaderDownButtonSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />';
-
-                questionHeaderDownButton.appendChild(questionHeaderDownButtonSvg);
-
-                let questionHeaderNr = document.createElement('span');
-                questionHeaderNr.innerText = 'Order Nr: ' + question.order_nr;
-
-                let questionHeaderQuestion = document.createElement('span');
-                questionHeaderQuestion.classList.add('text-xl', 'px-4');
-                questionHeaderQuestion.innerText = question.question;
-
-                let questionHeaderSeparator = document.createElement('span');
-                questionHeaderSeparator.innerText = ' | ';
-
-                questionHeader.appendChild(questionHeaderUpButton);
-                questionHeader.appendChild(questionHeaderNr);
-                questionHeader.appendChild(questionHeaderDownButton);
-                questionHeader.appendChild(questionHeaderSeparator);
-                questionHeader.appendChild(questionHeaderQuestion);
-
-                let answerHolder = document.createElement('div');
-                answerHolder.classList.add('flex', 'flex-row', 'py-4');
-                answerHolder.id = 'answer-holder-' + question.id;
-
-                if (question.answers) {
-                    question.answers.forEach(answer => {
-                        let answerDiv = document.createElement('div');
-                        if (answer.is_correct == "1") {
-                            answerDiv.classList.add('border-lime-500', 'bg-lime-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
-                        } else {
-                            answerDiv.classList.add('border-slate-500', 'bg-slate-500', 'text-slate-100', 'font-semibold', 'border-2', 'px-4', 'py-2', 'rounded', 'shadow', 'mx-1');
-                        }
-                        answerDiv.innerText = answer.answer;
-
-                        answerHolder.appendChild(answerDiv);
-                    });
-                }
-
-                let questionFooter = document.createElement('div');
-                questionFooter.classList.add('flex', 'flex-row', 'bg-slate-300', 'py-2', 'px-2');
-
-                let questionFooterAnswer = document.createElement('div');
-                questionFooterAnswer.classList.add('flex', 'flex-row');
-
-                let questionFooterAnswerAnswer = document.createElement('div');
-                questionFooterAnswerAnswer.classList.add('flex', 'flex-col', 'px-2', 'py-1');
-
-                let questionFooterAnswerAnswerLabel = document.createElement('label');
-                questionFooterAnswerAnswerLabel.classList.add('raleway', 'font-semibold', 'text-sm');
-                questionFooterAnswerAnswerLabel.setAttribute('for', 'answer');
-                questionFooterAnswerAnswerLabel.innerText = 'Answer:';
-
-                let questionFooterAnswerAnswerInput = document.createElement('input');
-                questionFooterAnswerAnswerInput.classList.add('bg-slate-100', 'border', 'border-zinc-400', 'shadow', 'shadow-zinc-400', 'rounded');
-                questionFooterAnswerAnswerInput.setAttribute('type', 'text');
-                questionFooterAnswerAnswerInput.setAttribute('name', 'answer-' + question.id);
-                questionFooterAnswerAnswerInput.setAttribute('id', 'answer-' + question.id);
-
-                questionFooterAnswerAnswer.appendChild(questionFooterAnswerAnswerLabel);
-                questionFooterAnswerAnswer.appendChild(questionFooterAnswerAnswerInput);
-
-                let questionFooterAnswerIsCorrect = document.createElement('div');
-                questionFooterAnswerIsCorrect.classList.add('flex', 'flex-col', 'px-2', 'py-1');
-
-                let questionFooterAnswerIsCorrectLabel = document.createElement('label');
-                questionFooterAnswerIsCorrectLabel.classList.add('raleway', 'font-semibold', 'text-sm');
-                questionFooterAnswerIsCorrectLabel.setAttribute('for', 'is_correct-' + question.id);
-                questionFooterAnswerIsCorrectLabel.innerText = 'Is Correct:';
-
-                let questionFooterAnswerIsCorrectSelect = document.createElement('select');
-                questionFooterAnswerIsCorrectSelect.classList.add('bg-slate-100', 'border', 'border-zinc-400', 'shadow', 'shadow-zinc-400', 'rounded');
-                questionFooterAnswerIsCorrectSelect.setAttribute('name', 'is_correct-' + question.id);
-                questionFooterAnswerIsCorrectSelect.setAttribute('id', 'is_correct-' + question.id);
-
-                let questionFooterAnswerIsCorrectSelectOptionNo = document.createElement('option');
-                questionFooterAnswerIsCorrectSelectOptionNo.setAttribute('value', '0');
-                questionFooterAnswerIsCorrectSelectOptionNo.innerText = 'No';
-
-                let questionFooterAnswerIsCorrectSelectOptionYes = document.createElement('option');
-                questionFooterAnswerIsCorrectSelectOptionYes.setAttribute('value', '1');
-                questionFooterAnswerIsCorrectSelectOptionYes.innerText = 'Yes';
-
-                questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionNo);
-                questionFooterAnswerIsCorrectSelect.appendChild(questionFooterAnswerIsCorrectSelectOptionYes);
-
-                questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectLabel);
-                questionFooterAnswerIsCorrect.appendChild(questionFooterAnswerIsCorrectSelect);
-
-                questionFooterAnswer.appendChild(questionFooterAnswerAnswer);
-                questionFooterAnswer.appendChild(questionFooterAnswerIsCorrect);
-
-                let questionFooterAddAnswer = document.createElement('div');
-                questionFooterAddAnswer.classList.add('flex', 'flex-col', 'justify-center');
-
-                let questionFooterAddAnswerButton = document.createElement('button');
-                questionFooterAddAnswerButton.classList.add('py-2', 'px-2', 'shadow-md', 'bg-cyan-500', 'text-slate-100', 'font-semibold');
-                questionFooterAddAnswerButton.setAttribute('data-questionid', question.id);
-                questionFooterAddAnswerButton.innerText = 'Add Answer';
-                questionFooterAddAnswerButton.addEventListener('click', addAnswer);
-
-                questionFooterAddAnswer.appendChild(questionFooterAddAnswerButton);
-
-                questionFooter.appendChild(questionFooterAnswer);
-                questionFooter.appendChild(questionFooterAddAnswer);
-
-                questionDiv.appendChild(questionHeader);
-                questionDiv.appendChild(answerHolder);
-                questionDiv.appendChild(questionFooter);
-
-                questionHolder.appendChild(questionDiv);
-
-                $("#move-question-up-" + question.id).html($("#move-question-up-" + question.id).html());
-                $("#move-question-down-" + question.id).html($("#move-question-down-" + question.id).html());
-            });
-        }
-
     </script>
 @endsection

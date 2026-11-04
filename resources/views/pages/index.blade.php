@@ -241,29 +241,6 @@
 
     </div>
 
-    @if(Auth::check())
-
-    <x-section title="">
-        <div class="flex flex-col bg-zinc-700 py-4">
-            <h1 class="px-4 z-20 text-center josefin-sans text-yellow-400 font-semibold text-2xl">Manage your Quizzes</h1>
-
-            <div class="flex flex-row raleway py-2 px-2 text-slate-200 font-bold">
-                <div>Total Trivia's: <span class="pr-4 pl-2">{{ $usersTrivias->count() }}</span></div>
-                <div>Active Trivia's: <span class="pr-4 pl-2">{{ $usersTrivias->where('is_active', 1)->count() }}</span></div>
-                <div>Total Times Played: <span class="pr-4 pl-2">0</span></div>
-            </div>
-            <div class="flex flex-row py-2 px-2">
-                <div>
-                    <x-btn-primary isALink="{{ true }}" link="/trv/management">Manage</x-btn-primary>
-                </div>
-            </div>
-        </div>
-    </x-section>
-
-    @endif
-
-
-
     <script>
         const { createApp } = Vue
         createApp({
@@ -411,11 +388,11 @@
                     form.setAttribute('method', 'POST');
                     form.setAttribute('action', '/trivia/random');
                     form.setAttribute('id', 'random-trivia-form');
-                    form.setAttribute('class', 'flex flex-row flex-wrap justify-center w-full');
+                    form.setAttribute('class', 'w-full');
 
                     //create div to hold trivia title and description
                     let triviaInfoDiv = document.createElement('div');
-                    triviaInfoDiv.setAttribute('class', 'flex flex-col w-full md:w-4/6 px-2');
+                    triviaInfoDiv.setAttribute('class', 'flex flex-col gap-3 w-full');
 
                     //create input for trivia title
                     let titleInput = document.createElement('input');
@@ -423,7 +400,7 @@
                     titleInput.setAttribute('name', 'title');
                     titleInput.setAttribute('id', 'title');
                     titleInput.setAttribute('placeholder', 'Trivia Title');
-                    titleInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
+                    titleInput.setAttribute('class', 'w-full bg-white border-4 border-main-dark shadow-[3px_3px_0_0_#14323B] px-3 py-2.5 fira-sans text-main-dark placeholder:text-main-dark/40 focus:outline-none');
 
                     //create input for trivia description
                     let descriptionInput = document.createElement('input');
@@ -431,7 +408,7 @@
                     descriptionInput.setAttribute('name', 'description');
                     descriptionInput.setAttribute('id', 'description');
                     descriptionInput.setAttribute('placeholder', 'Trivia Description');
-                    descriptionInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
+                    descriptionInput.setAttribute('class', 'w-full bg-white border-4 border-main-dark shadow-[3px_3px_0_0_#14323B] px-3 py-2.5 fira-sans text-main-dark placeholder:text-main-dark/40 focus:outline-none');
 
                     triviaInfoDiv.appendChild(titleInput);
                     triviaInfoDiv.appendChild(descriptionInput);
@@ -440,7 +417,7 @@
                     let categoryInput = document.createElement('select');
                     categoryInput.setAttribute('name', 'category');
                     categoryInput.setAttribute('id', 'category');
-                    categoryInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
+                    categoryInput.setAttribute('class', 'w-full bg-white border-4 border-main-dark shadow-[3px_3px_0_0_#14323B] px-3 py-2.5 fira-sans font-bold text-main-dark focus:outline-none cursor-pointer');
 
                     //create options for category input
                     let anyCategoryOption = document.createElement('option');
@@ -472,7 +449,7 @@
                     let difficultyInput = document.createElement('select');
                     difficultyInput.setAttribute('name', 'difficulty');
                     difficultyInput.setAttribute('id', 'difficulty');
-                    difficultyInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
+                    difficultyInput.setAttribute('class', 'w-full bg-white border-4 border-main-dark shadow-[3px_3px_0_0_#14323B] px-3 py-2.5 fira-sans font-bold text-main-dark focus:outline-none cursor-pointer');
 
                     //create options for difficulty input
 
@@ -504,7 +481,7 @@
                     questionCountInput.setAttribute('name', 'question_count');
                     questionCountInput.setAttribute('id', 'question_count');
                     questionCountInput.setAttribute('placeholder', 'Number of Questions');
-                    questionCountInput.setAttribute('class', 'border border-slate-400 shadow shadow-slate-400 rounded py-1 px-2 mb-2 text-xl');
+                    questionCountInput.setAttribute('class', 'w-full bg-white border-4 border-main-dark shadow-[3px_3px_0_0_#14323B] px-3 py-2.5 fira-sans text-main-dark placeholder:text-main-dark/40 focus:outline-none');
 
 
                     triviaInfoDiv.appendChild(difficultyInput);
@@ -520,7 +497,7 @@
                     //create submit button
                     let submitButton = document.createElement('button');
                     submitButton.setAttribute('type', 'submit');
-                    submitButton.setAttribute('class', 'py-2 px-4 shadow-md bg-lime-500 text-slate-100 font-semibold');
+                    submitButton.setAttribute('class', 'self-start mt-1 fira-sans font-black uppercase tracking-wider bg-main-accent text-white border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] px-6 py-2.5 transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]');
                     submitButton.innerText = 'Create Trivia';
 
                     triviaInfoDiv.appendChild(submitButton);

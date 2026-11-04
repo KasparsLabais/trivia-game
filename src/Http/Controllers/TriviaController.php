@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use PartyGames\GameApi\GameApi;
+use PartyGames\GameApi\Tiers;
 use PartyGames\GameApi\Models\Game;
 use PartyGames\GameApi\Models\TmpUsers;
 use PartyGames\TriviaGame\Models\Questions;
@@ -43,14 +44,23 @@ class TriviaController
 
     public function createGame(Request $request)
     {
-        $trivia = Trivia::where('id', $request->get('trivia_id'))->where(function($q) {
-            $q->where('user_id', Auth::user()->id)->orWhere('is_premium', 0);
-        })->first();
+        $trivia = Trivia::where('id', $request->get('trivia_id'))->first();
 
         if(!$trivia) {
             return new JsonResponse([
                 'success' => false,
                 'message' => 'Trivia not found',
+                'data' => NULL
+            ]);
+        }
+
+        // Premium gate: you can always run your own quiz; otherwise a premium
+        // quiz needs a plan that grants premium access (Tier 1+).
+        $isOwner = $trivia->user_id == Auth::user()->id;
+        if ($trivia->is_premium && !$isOwner && !Tiers::allows(Auth::user(), 'premium_access')) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'This is a premium quiz. Upgrade your plan to play premium quizzes.',
                 'data' => NULL
             ]);
         }
@@ -231,6 +241,12 @@ class TriviaController
 
         $trivia = $isTemporary ? TmpTrivia::find($triviaId) : Trivia::find($triviaId);
 
+        // Branded display when this game belongs to an Event.
+        $event = null;
+        if (!empty($remoteData['event_id'])) {
+            $event = \PartyGames\TriviaGame\Models\Event::find($remoteData['event_id']);
+        }
+
         // Seed the current question (+ answers) so the screen is not blank on load.
         // The correct answer is never sent here — it only arrives via a live event.
         $currentQuestion = null;
@@ -254,6 +270,7 @@ class TriviaController
         // Initial player list (username, avatar, points).
         $players = [];
         foreach ($gameInstance->playerInstances as $playerInstance) {
+            $border = '';
             if ($playerInstance->user_type == 'guest') {
                 $user = $playerInstance->tmpUser;
                 $username = $user->username ?? 'Guest';
@@ -262,8 +279,9 @@ class TriviaController
                 $user = $playerInstance->user;
                 $username = $user->username ?? 'Player';
                 $avatar = ($user && $user->avatar) ? $user->avatar : '/images/default-avatar.jpg';
+                $border = ($user && $user->border) ? $user->border->color : '';
             }
-            $players[] = ['username' => $username, 'avatar' => $avatar, 'points' => $playerInstance->points];
+            $players[] = ['username' => $username, 'avatar' => $avatar, 'points' => $playerInstance->points, 'border' => $border];
         }
 
         return view('trivia-game::game.display')->with([
@@ -272,6 +290,7 @@ class TriviaController
             'currentQuestion' => $currentQuestion,
             'players' => $players,
             'token' => $token,
+            'event' => $event,
         ]);
     }
 
@@ -860,7 +879,17 @@ class TriviaController
         $questions = TrvQuestions::where('trivia_id', $id)->orderBy('order_nr')->get();
         $categories = Categories::where('is_active', 1)->get();
 
-        return view('trivia-game::pages.edit')->with(['trivia' => $trivia, 'questions' => $questions, 'categories' => $categories]);
+        // The owner's plan caps how many questions and which types this quiz may use.
+        $owner = $trivia->user ?: Auth::user();
+
+        return view('trivia-game::pages.edit')->with([
+            'trivia' => $trivia,
+            'questions' => $questions,
+            'categories' => $categories,
+            'tierMaxQuestions' => Tiers::limit($owner, 'max_questions'),
+            'tierQuestionTypes' => Tiers::limit($owner, 'question_types'),
+            'tierName' => Tiers::name($owner),
+        ]);
     }
 
     public function updateTrivia($id, Request $request)
@@ -882,6 +911,33 @@ class TriviaController
     {
 
         $trivia = Trivia::where('id', $id)->first();
+
+        if (!$trivia) {
+            return new JsonResponse(['success' => false, 'message' => 'Trivia not found', 'payload' => NULL]);
+        }
+
+        // The quiz owner's plan governs its limits.
+        $owner = $trivia->user ?: Auth::user();
+
+        // Question-count cap.
+        $maxQuestions = Tiers::limit($owner, 'max_questions');
+        if ($maxQuestions !== null && TrvQuestions::where('trivia_id', $id)->count() >= $maxQuestions) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => "Your plan allows up to {$maxQuestions} questions per quiz. Upgrade to add more.",
+                'payload' => NULL
+            ]);
+        }
+
+        // Question-type gate.
+        $allowedTypes = Tiers::limit($owner, 'question_types');
+        if (!in_array($request->question_type, $allowedTypes)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Your plan can\'t use that question type. Upgrade to unlock more question types.',
+                'payload' => NULL
+            ]);
+        }
 
         //create first global question
         $originalQuestion = Questions::create([
@@ -913,6 +969,18 @@ class TriviaController
 
     public function updateTriviaQuestion($id, $questionId, Request $request)
     {
+        // Question-type gate (same plan rules as creating a question).
+        $trivia = Trivia::where('id', $id)->first();
+        $owner = ($trivia && $trivia->user) ? $trivia->user : Auth::user();
+        $allowedTypes = Tiers::limit($owner, 'question_types');
+        if (!in_array($request->question_type, $allowedTypes)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Your plan can\'t use that question type. Upgrade to unlock more question types.',
+                'payload' => NULL
+            ]);
+        }
+
         $question = TrvQuestions::where('id', $questionId)->first();
         $question->question = $request->question;
         $question->question_type = $request->question_type;
@@ -1301,7 +1369,12 @@ class TriviaController
         $description = !is_null($request->get('description')) ? $request->get('description') : '';
         $category = $request->get('category');
         $difficulty = $request->get('difficulty');
-        $questionCount = is_null($request->get('question_count')) ? 10 : $request->get('question_count');
+        $questionCount = is_null($request->get('question_count')) ? 10 : (int) $request->get('question_count');
+        // Clamp to the plan's per-quiz question cap.
+        $maxQuestions = Tiers::limit(Auth::user(), 'max_questions');
+        if ($maxQuestions !== null && $questionCount > $maxQuestions) {
+            $questionCount = $maxQuestions;
+        }
         //    protected $fillable = ['title', 'category_id', 'difficulty', 'private', 'question_count'];
 
         $questions = [];
