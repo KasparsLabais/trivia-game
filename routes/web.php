@@ -61,6 +61,10 @@ Route::group(['middleware' => ['web']], function() {
 
     Route::post('/' . config('settings.prefix') . '/trivia/rating', 'TriviaController@rateTrivia');
     Route::post('/trivia/random', 'TriviaController@createRandomTrivia');
+    //Random Quiz: host-less, auto-timed quiz (questions picked from the bank)
+    Route::post('/trivia/solo', 'SoloQuizController@create');
+    Route::get('/trivia/solo/{id}', 'SoloQuizController@show')->where('id', '[0-9]+');
+    Route::post('/trivia/solo/{id}/answer', 'SoloQuizController@answer')->where('id', '[0-9]+');
 
     Route::get('/' . config('settings.prefix') . '/trivia/{token}', 'TriviaController@game');
 
