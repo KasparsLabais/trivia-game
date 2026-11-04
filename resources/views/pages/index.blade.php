@@ -407,6 +407,26 @@
                     intro.textContent = 'No game master needed: every question is timed, the answer is revealed when the time runs out, and you get your score at the end.';
                     form.appendChild(intro);
 
+                    // Play solo (/trivia/solo) or challenge friends (/trivia/battle: a lobby you invite friends to).
+                    const modes = [
+                        { action: '/trivia/solo', label: 'Play solo', submit: 'Start Quiz' },
+                        { action: '/trivia/battle', label: 'Challenge friends', submit: 'Create Battle' },
+                    ];
+                    const modeRow = document.createElement('div');
+                    modeRow.className = 'grid grid-cols-2 border-4 border-main-dark';
+                    modeRow.setAttribute('role', 'radiogroup');
+                    const modeBtns = modes.map((m, i) => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.setAttribute('role', 'radio');
+                        b.textContent = m.label;
+                        b.className = 'px-3 py-2 russo uppercase tracking-wide text-xs md:text-sm' + (i === 0 ? ' border-r-4 border-main-dark' : '');
+                        b.addEventListener('click', () => setMode(i));
+                        modeRow.appendChild(b);
+                        return b;
+                    });
+                    form.appendChild(modeRow);
+
                     const field = (labelText, el) => {
                         const label = document.createElement('label');
                         label.className = 'flex flex-col gap-1.5';
@@ -436,6 +456,19 @@
                     submit.className = 'self-start mt-1 fira-sans font-black uppercase tracking-wider bg-main-accent text-white border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] px-6 py-2.5 transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]';
                     submit.textContent = 'Start Quiz';
                     form.appendChild(submit);
+
+                    function setMode(i) {
+                        form.action = modes[i].action;
+                        submit.textContent = modes[i].submit;
+                        modeBtns.forEach((b, j) => {
+                            b.setAttribute('aria-checked', j === i ? 'true' : 'false');
+                            b.classList.toggle('bg-main-dark', j === i);
+                            b.classList.toggle('text-white', j === i);
+                            b.classList.toggle('bg-white', j !== i);
+                            b.classList.toggle('text-main-dark', j !== i);
+                        });
+                    }
+                    setMode(0);
 
                     GameApi.openModal('game-modal', 'Random Quiz', form);
                 },
