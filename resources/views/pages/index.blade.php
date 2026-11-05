@@ -4,7 +4,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
     <style>
-        /* Play Random Quiz: constant pulse + a short twitch every ~4s. */
+        /* Random Quiz button: constant pulse + a short twitch every ~4s. */
         .random-quiz-pulse { animation: random-quiz-pulse 1.4s ease-in-out infinite; }
         .random-quiz-twitch { animation: random-quiz-twitch 4s ease-in-out infinite; }
         .random-quiz-twitch:hover, .random-quiz-twitch:hover .random-quiz-pulse { animation-play-state: paused; }
@@ -107,22 +107,33 @@
                     </div>
 
                     @if(Auth::check())
-                        {{-- Play Random Quiz: right-aligned on desktop, full width on mobile.
-                             Outer = occasional twitch, inner = constant pulse, button = hover/press. --}}
-                        <div class="random-quiz-twitch w-full md:w-auto md:ml-auto">
-                            <div class="random-quiz-pulse">
-                                <button type="button" v-on:click="openRandomTriviaModal()"
-                                        class="w-full flex items-center justify-center gap-2.5 bg-pop text-main-dark border-4 border-main-dark shadow-[5px_5px_0_0_#14323B] px-5 py-2.5 russo uppercase tracking-wide text-sm md:text-base transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">
-                                    {{-- Die --}}
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 shrink-0" aria-hidden="true">
-                                        <rect x="3" y="3" width="18" height="18" fill="#fff" stroke="#14323B" stroke-width="2.5"/>
-                                        <circle cx="8" cy="8" r="1.6" fill="#14323B"/><circle cx="16" cy="8" r="1.6" fill="#14323B"/>
-                                        <circle cx="12" cy="12" r="1.6" fill="#14323B"/>
-                                        <circle cx="8" cy="16" r="1.6" fill="#14323B"/><circle cx="16" cy="16" r="1.6" fill="#14323B"/>
-                                    </svg>
-                                    Play Random Quiz
-                                </button>
+                        {{-- Quick-play actions, right-aligned on desktop, stacked full width on mobile.
+                             Random Quiz = plays itself (no game master); Create Quick Trivia = you host it. --}}
+                        <div class="w-full md:w-auto md:ml-auto flex flex-col sm:flex-row gap-3">
+                            {{-- Outer = occasional twitch, inner = constant pulse, button = hover/press. --}}
+                            <div class="random-quiz-twitch w-full sm:w-auto">
+                                <div class="random-quiz-pulse">
+                                    <button type="button" v-on:click="openSoloQuizModal()" title="Jump straight in — questions are timed and the answers reveal themselves, no game master needed"
+                                            class="w-full flex items-center justify-center gap-2.5 bg-pop text-main-dark border-4 border-main-dark shadow-[5px_5px_0_0_#14323B] px-5 py-2.5 russo uppercase tracking-wide text-sm md:text-base transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">
+                                        {{-- Die --}}
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 shrink-0" aria-hidden="true">
+                                            <rect x="3" y="3" width="18" height="18" fill="#fff" stroke="#14323B" stroke-width="2.5"/>
+                                            <circle cx="8" cy="8" r="1.6" fill="#14323B"/><circle cx="16" cy="8" r="1.6" fill="#14323B"/>
+                                            <circle cx="12" cy="12" r="1.6" fill="#14323B"/>
+                                            <circle cx="8" cy="16" r="1.6" fill="#14323B"/><circle cx="16" cy="16" r="1.6" fill="#14323B"/>
+                                        </svg>
+                                        Random Quiz
+                                    </button>
+                                </div>
                             </div>
+                            <button type="button" v-on:click="openRandomTriviaModal()" title="Build a trivia from random questions and run it as the game master"
+                                    class="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-white text-main-dark border-4 border-main-dark shadow-[5px_5px_0_0_#14323B] px-5 py-2.5 russo uppercase tracking-wide text-sm md:text-base transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]">
+                                {{-- Microphone: you're the host --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 shrink-0" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+                                </svg>
+                                Create Quick Trivia
+                            </button>
                         </div>
                     @endif
                 </div>
@@ -380,8 +391,89 @@
                         })
                         .catch(error => console.log(error));
                 },
+                // Random Quiz: no game master, so only category / difficulty / length.
+                // Submitting creates the quiz and goes straight to the auto-play page.
+                openSoloQuizModal() {
+                    const fieldClass = 'w-full bg-white border-4 border-main-dark shadow-[3px_3px_0_0_#14323B] px-3 py-2.5 fira-sans font-bold text-main-dark focus:outline-none cursor-pointer';
+                    const labelClass = 'fira-sans text-xs uppercase tracking-widest text-main-dark/60';
+
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/trivia/solo';
+                    form.className = 'w-full flex flex-col gap-3';
+
+                    const intro = document.createElement('p');
+                    intro.className = 'fira-sans text-sm text-main-dark/70';
+                    intro.textContent = 'No game master needed: every question is timed, the answer is revealed when the time runs out, and you get your score at the end.';
+                    form.appendChild(intro);
+
+                    // Play solo (/trivia/solo) or challenge friends (/trivia/battle: a lobby you invite friends to).
+                    const modes = [
+                        { action: '/trivia/solo', label: 'Play solo', submit: 'Start Quiz' },
+                        { action: '/trivia/battle', label: 'Challenge friends', submit: 'Create Battle' },
+                    ];
+                    const modeRow = document.createElement('div');
+                    modeRow.className = 'grid grid-cols-2 border-4 border-main-dark';
+                    modeRow.setAttribute('role', 'radiogroup');
+                    const modeBtns = modes.map((m, i) => {
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.setAttribute('role', 'radio');
+                        b.textContent = m.label;
+                        b.className = 'px-3 py-2 russo uppercase tracking-wide text-xs md:text-sm' + (i === 0 ? ' border-r-4 border-main-dark' : '');
+                        b.addEventListener('click', () => setMode(i));
+                        modeRow.appendChild(b);
+                        return b;
+                    });
+                    form.appendChild(modeRow);
+
+                    const field = (labelText, el) => {
+                        const label = document.createElement('label');
+                        label.className = 'flex flex-col gap-1.5';
+                        const span = document.createElement('span');
+                        span.className = labelClass; span.textContent = labelText;
+                        label.appendChild(span); label.appendChild(el);
+                        form.appendChild(label);
+                    };
+                    const select = (name, options) => {
+                        const sel = document.createElement('select');
+                        sel.name = name; sel.className = fieldClass;
+                        options.forEach(([value, text]) => { const o = document.createElement('option'); o.value = value; o.textContent = text; sel.appendChild(o); });
+                        return sel;
+                    };
+
+                    field('Category', select('category', [['23', 'Any Category']].concat(this.categories.map(c => [String(c.id), c.name]))));
+                    field('Difficulty', select('difficulty', [['any', 'Any Difficulty'], ['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard']]));
+                    field('Questions', select('question_count', [['5', '5 questions'], ['10', '10 questions'], ['15', '15 questions'], ['20', '20 questions']]));
+                    form.querySelector('select[name="question_count"]').value = '10';
+
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden'; csrf.name = '_token'; csrf.value = '{{ csrf_token() }}';
+                    form.appendChild(csrf);
+
+                    const submit = document.createElement('button');
+                    submit.type = 'submit';
+                    submit.className = 'self-start mt-1 fira-sans font-black uppercase tracking-wider bg-main-accent text-white border-4 border-main-dark shadow-[4px_4px_0_0_#14323B] px-6 py-2.5 transition-all duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#14323B] active:translate-x-1 active:translate-y-1 active:shadow-[0px_0px_0_0_#14323B]';
+                    submit.textContent = 'Start Quiz';
+                    form.appendChild(submit);
+
+                    function setMode(i) {
+                        form.action = modes[i].action;
+                        submit.textContent = modes[i].submit;
+                        modeBtns.forEach((b, j) => {
+                            b.setAttribute('aria-checked', j === i ? 'true' : 'false');
+                            b.classList.toggle('bg-main-dark', j === i);
+                            b.classList.toggle('text-white', j === i);
+                            b.classList.toggle('bg-white', j !== i);
+                            b.classList.toggle('text-main-dark', j !== i);
+                        });
+                    }
+                    setMode(0);
+
+                    GameApi.openModal('game-modal', 'Random Quiz', form);
+                },
                 openRandomTriviaModal() {
-                    let title = 'Create Auto Generated Trivia';
+                    let title = 'Create Quick Trivia';
 
                     //create form for modal body to submit request to create trivia from all available questions in category
                     let form = document.createElement('form');

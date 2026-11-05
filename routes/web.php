@@ -61,6 +61,19 @@ Route::group(['middleware' => ['web']], function() {
 
     Route::post('/' . config('settings.prefix') . '/trivia/rating', 'TriviaController@rateTrivia');
     Route::post('/trivia/random', 'TriviaController@createRandomTrivia');
+    //Random Quiz: host-less, auto-timed quiz (questions picked from the bank)
+    Route::post('/trivia/solo', 'SoloQuizController@create');
+    Route::get('/trivia/solo/{id}', 'SoloQuizController@show')->where('id', '[0-9]+');
+    Route::post('/trivia/solo/{id}/answer', 'SoloQuizController@answer')->where('id', '[0-9]+');
+    //Trivia Battle: a Random Quiz played together by invited friends (no game master)
+    Route::post('/trivia/battle', 'QuizBattleController@create');
+    Route::get('/trivia/battle/{code}', 'QuizBattleController@show')->where('code', '[A-Z0-9]{8}');
+    Route::middleware('auth')->group(function () {
+        Route::post('/trivia/battle/{code}/join', 'QuizBattleController@join')->where('code', '[A-Z0-9]{8}');
+        Route::post('/trivia/battle/{code}/start', 'QuizBattleController@start')->where('code', '[A-Z0-9]{8}');
+        Route::get('/trivia/battle/{code}/state', 'QuizBattleController@state')->where('code', '[A-Z0-9]{8}');
+        Route::post('/trivia/battle/{code}/answer', 'QuizBattleController@answer')->where('code', '[A-Z0-9]{8}');
+    });
 
     Route::get('/' . config('settings.prefix') . '/trivia/{token}', 'TriviaController@game');
 
