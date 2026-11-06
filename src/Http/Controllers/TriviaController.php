@@ -267,7 +267,7 @@ class TriviaController
             }
         }
 
-        // Initial player list (username, avatar, points).
+        // Initial player list (username, avatar, points, border cosmetic, guest flag).
         $players = [];
         foreach ($gameInstance->playerInstances as $playerInstance) {
             $border = '';
@@ -281,7 +281,7 @@ class TriviaController
                 $avatar = ($user && $user->avatar) ? $user->avatar : '/images/default-avatar.jpg';
                 $border = ($user && $user->border) ? $user->border->color : '';
             }
-            $players[] = ['username' => $username, 'avatar' => $avatar, 'points' => $playerInstance->points, 'border' => $border];
+            $players[] = ['username' => $username, 'avatar' => $avatar, 'points' => $playerInstance->points, 'border' => $border, 'guest' => $playerInstance->user_type == 'guest'];
         }
 
         return view('trivia-game::game.display')->with([
