@@ -21,6 +21,10 @@
         .honk { font-family: 'Honk', system-ui, cursive; font-weight: 400; }
         .russo { font-family: 'Russo One', ui-sans-serif, sans-serif; }
         html, body { height: 100%; }
+        /* Joined-player business cards slide in */
+        .player-card-in { animation: player-card-in 0.4s cubic-bezier(.2, 1.4, .4, 1) both; }
+        @keyframes player-card-in { from { opacity: 0; transform: translateY(12px) rotate(-3deg); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .player-card-in { animation: none; } }
         /* Results reveal */
         .reveal-hidden { visibility: hidden; }
         .chip-in { animation: chip-in 0.35s ease-out both; }
@@ -137,8 +141,9 @@
                     <h2 class="russo text-white text-lg tracking-wide">Active Players</h2>
                     <span id="players-count" class="fira-sans text-sm font-bold text-pop">0</span>
                 </div>
-                <div id="players-list" class="flex-1 overflow-y-auto px-3 py-3 flex flex-row flex-wrap gap-2 content-start">
-                    <p id="players-empty" class="fira-sans text-main-dark/50 py-4">No players have joined yet.</p>
+                {{-- Joined players as little business cards --}}
+                <div id="players-list" class="flex-1 overflow-y-auto px-3 py-3 grid grid-cols-1 xl:grid-cols-2 gap-3 content-start">
+                    <p id="players-empty" class="col-span-full fira-sans text-main-dark/50 py-4">No players have joined yet.</p>
                 </div>
             </div>
         </div>
@@ -378,7 +383,7 @@
         // ---- Leaderboard ----
         function fetchLeaderboard() {
             fetch(LEADERBOARD_URL).then(function (r) { return r.json(); }).then(function (res) {
-                if (res && res.success) renderLeaderboard(res.data || []);
+                if (res && res.success) { renderLeaderboard(res.data || []); enrichPlayers(res.data || []); }
             }).catch(function () {});
         }
         function renderLeaderboard(players) {
@@ -400,34 +405,77 @@
             });
         }
 
-        // ---- Active players ----
+        // ---- Active players: business cards ----
+        // username -> { username, avatar, border, guest (null = not known yet), order }
         var playersMap = {};
+        var joinCounter = 0;
         function addPlayer(p) {
             if (!p || !p.username) return;
             if (playersMap[p.username]) return;
-            playersMap[p.username] = { username: p.username, avatar: p.avatar || '/images/default-avatar.jpg', border: p.border || '' };
+            playersMap[p.username] = {
+                username: p.username,
+                avatar: p.avatar || '/images/default-avatar.jpg',
+                border: p.border || '',
+                guest: (typeof p.guest === 'boolean') ? p.guest : null,
+                order: ++joinCounter,
+                isNew: true,
+            };
             renderPlayers();
+        }
+        // The live "joined" event doesn't say guest vs player; the leaderboard does.
+        function enrichPlayers(rows) {
+            var changed = false;
+            (rows || []).forEach(function (r) {
+                var p = playersMap[r.username];
+                if (p && p.guest === null && r.user_type) { p.guest = r.user_type === 'guest'; changed = true; }
+            });
+            if (changed) renderPlayers();
+        }
+        function playerCard(p) {
+            var accent = p.border || '#1E93AB';
+            var card = document.createElement('div');
+            card.setAttribute('data-player', '1');
+            card.className = 'player-card relative flex flex-row items-stretch bg-white border-2 border-main-dark shadow-[3px_3px_0_0_#14323B] overflow-hidden min-w-0' + (p.isNew ? ' player-card-in' : '');
+
+            var stripe = document.createElement('span');
+            stripe.className = 'w-2 shrink-0 border-r-2 border-main-dark';
+            stripe.style.background = accent;
+
+            var body = document.createElement('div');
+            body.className = 'flex flex-row items-center gap-2.5 px-2.5 py-2 min-w-0 flex-1';
+            var img = document.createElement('img');
+            img.src = p.avatar; img.alt = '';
+            img.className = 'w-10 h-10 shrink-0 object-cover border-2';
+            img.style.borderColor = p.border || '#14323B';
+            if (p.border) img.style.boxShadow = '2px 2px 0 0 ' + p.border;
+            img.onerror = function () { this.onerror = null; this.src = '/images/default-avatar.jpg'; };
+
+            var text = document.createElement('div');
+            text.className = 'min-w-0 flex flex-col leading-tight';
+            var name = document.createElement('span');
+            name.className = 'fira-sans font-bold text-main-dark text-sm truncate';
+            name.textContent = p.username;
+            var role = document.createElement('span');
+            role.className = 'fira-sans text-[9px] uppercase tracking-widest text-main-dark/50 truncate';
+            role.textContent = p.guest === true ? 'Guest · Quiz Crave' : 'Player · Quiz Crave';
+            text.appendChild(name); text.appendChild(role);
+            body.appendChild(img); body.appendChild(text);
+
+            var no = document.createElement('span');
+            no.className = 'absolute top-1 right-1.5 russo text-[10px] text-main-dark/30';
+            no.textContent = '#' + String(p.order).padStart(2, '0');
+
+            card.appendChild(stripe); card.appendChild(body); card.appendChild(no);
+            return card;
         }
         function renderPlayers() {
             var list = el('players-list');
             list.querySelectorAll('[data-player]').forEach(function (n) { n.remove(); });
-            var keys = Object.keys(playersMap);
-            el('players-empty').style.display = keys.length ? 'none' : 'block';
-            el('players-count').textContent = keys.length;
-            keys.forEach(function (k) {
-                var p = playersMap[k];
-                var chip = document.createElement('div');
-                chip.setAttribute('data-player', '1');
-                chip.className = 'flex flex-row items-center gap-2 pl-1 pr-3 py-1 bg-main-light border-2 border-main-dark';
-                // A chosen border cosmetic frames the avatar in its colour (border + hard shadow).
-                var hasBorder = !!p.border;
-                var imgClass = hasBorder ? 'w-8 h-8 object-cover border-4' : 'w-8 h-8 rounded-full border-2 border-main-dark';
-                var imgStyle = hasBorder ? ('border-color:' + p.border + ';box-shadow:3px 3px 0 0 ' + p.border + ';') : '';
-                chip.innerHTML =
-                    '<img src="' + p.avatar + '" class="' + imgClass + '" style="' + imgStyle + '" onerror="this.src=\'/images/default-avatar.jpg\'">' +
-                    '<span class="fira-sans text-sm font-semibold">' + p.username + '</span>';
-                list.appendChild(chip);
-            });
+            var players = Object.keys(playersMap).map(function (k) { return playersMap[k]; })
+                .sort(function (a, b) { return a.order - b.order; });
+            el('players-empty').style.display = players.length ? 'none' : 'block';
+            el('players-count').textContent = players.length;
+            players.forEach(function (p) { list.appendChild(playerCard(p)); p.isNew = false; });
         }
 
         // ---- Init ----
